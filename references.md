@@ -6,6 +6,8 @@ https://developer.qualcomm.com/qfile/67417/80-n2040-45_b_qualcomm_hexagon_v67_pr
 ### QEMU Hexagon
 https://github.com/revng/qemu-hexagon/tree/feature/for-upstream/target/hexagon
 
+#### ISA Compiler
+Actual important stuff for us: https://github.com/revng/qemu-hexagon/tree/feature/for-upstream/target/hexagon/idef-parser
 
 ### BAP intro
 0. A gentle introduction to core theory http://binaryanalysisplatform.github.io/bap/api/odoc/bap-core-theory/Bap_core_theory/index.html
