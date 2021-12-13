@@ -1,0 +1,1 @@
+- Makros like `sxt128->64` should become `sxt128_64`

@@ -1,0 +1,153 @@
+// Copyright (C) 2020 Google LLC
+// https://github.com/google/binja-hexagon
+start: fbody
+fbody: stmt* -> fbody
+
+    ?stmt: "if (" [not_sign] cond ")" stmt [ "else" stmt ] -> if_stmt
+     | "while" "(" exp ")" stmt
+     | "for" "(" [ assg ] ";" [ exp ] ";" [ assg ] ")" stmt -> for_stmt
+     | assg ";" -> assg_stmt
+     | operand ASSGOP exp ";" -> assg_binop_stmt
+     | call -> call_stmt
+     | "{" stmt* "}" -> multi_stmt
+     | ";" -> empty_stmt
+
+   ?exp: [not_sign] call [res_hint]      -> call_exp
+        | exp "?" "(" exp ")" ":" "(" exp ")" -> ternary_stmt
+        | "-" exp        -> neg_exp
+        | "!" exp        -> not_exp
+        | "~" exp        -> bit_not_exp
+        | exp BINOP exp -> exp_binop
+        | exp RELOP exp -> exp_relop
+        | exp LOGOP exp
+        | operand
+        | "(" exp ")"
+        | INTCON
+        | ESCAPED_STRING
+
+    // Macros
+    ?call: macro "(" exp ")"
+
+    ?cond: operand
+         | operand RELOP operand  -> cond2
+         | call
+
+    not_sign: "!"
+
+    // Weight 4
+    ASSGOP: "="
+        |    "+="
+        |    "-="
+        |    "&="
+        |    "^="
+        |    "|="
+        |    "<<="
+
+    // Weight 3
+    BINOP: "+"
+        |   "-"
+        |   "*"
+        |   "/"
+        |   "|"
+        |   "&"
+        |   "^"
+        |   "<<"
+        |   ">>"
+
+    // Weight 2
+    RELOP: "=="
+        |   "!="
+        |   "<="
+        |   "<"
+        |   ">="
+        |   ">"
+
+    // Weight 1
+    LOGOP: "&&"
+        |   "||"
+
+    assg: operand ["," reg] ASSGOP [unary_op] (operand | exp)     -> assign_to_op
+              | operand ASSGOP [unary_op] (operand | exp) ";" exp       -> assign_comma
+              | exp ASSGOP [unary_op] (operand | exp) -> assign_to_exp
+              | operand "++" -> assign_inc
+
+    rator: "+" | "<<" | "=" |  "-" | "&" | "|" | "^" | unary_op
+    unary_op: "++" | "~" | "--"
+    subfield: ".uh" | ".h" | ".uw" | ".w" | ".ub" | ".b"
+
+    shift_hint: ":<<1" | ":<<16" | ":>>1" | ":shift"
+    rnd_hint: ":rnd" | ":crnd"
+    sat_hint: ":sat"
+    hilo_hint: ":hi" | ":lo"
+    raw_hint: ":raw" [hilo_hint]
+    jump_hint: ":t" | ":nt"
+    carry_hint: ":carry"
+    scale_hint: ":scale"
+    lib_hint: ":lib"
+    pos_hint: ":pos"
+    neg_hint: ":neg"
+    chop_hint: ":chop"
+    scatter_hint: ":scatter_release"
+    nomatch_hint: ":nomatch"
+    ?res_hint: shift_hint [res_hint]
+             | rnd_hint [res_hint]
+             | sat_hint [res_hint]
+             | raw_hint [res_hint]
+             | jump_hint [res_hint]
+             | carry_hint [res_hint]
+             | scale_hint
+             | lib_hint
+             | pos_hint
+             | neg_hint
+             | chop_hint
+             | scatter_hint
+             | nomatch_hint
+
+    macro: WORD
+        | /\w(_\w)*/
+
+    circ_addr: imm_or_circi ":circ(" reg ")"
+    circ_i: "I"
+    ?imm_or_circi: imm | circ_i
+
+    const: "#" SIGNED_NUMBER
+
+    imm: "#" IMMLETT INT [":" INT]
+    IMMLETT: /[rRsSuUm]/
+
+    reg:  REG_A REG_B
+    REG_A: /[MNORCPQXSGVZA]/
+    REG_B: /[stuvwxyzdefg]+/
+
+    pred_reg: "p" DIGIT
+    gp_reg: "gp"
+    sys_reg: "pc" | "sgp" DIGIT ":0"? | "r29" | "r31"
+    dot_new: ".new"
+    dot_cur: ".cur" | ".tmp"
+    subreg: ".uh" | ".h" | ".uw" | ".w" | ".ub" | ".b"
+    regbit: reg "." loop_i
+    reg_dot: reg dot_new | pred_reg dot_new
+           | reg dot_cur
+           | reg subreg
+    reg_index: reg [ subreg ] "[" loop_i "]"
+    reg_brev: reg ":brev"
+    reg_star: reg "*"
+    not_reg: not_sign reg
+    ?any_reg: reg | reg_dot | pred_reg | gp_reg | sys_reg | reg_brev | reg_star | reg_index
+
+    ?operand: const | imm | any_reg | not_reg | circ_addr | var | regbit
+
+    ?var: /\w+/
+    ?loop_i: /i/
+
+    INTCON: HEX_NUMBER | DEC_NUMBER
+    HEX_NUMBER: /0x[\da-f]*/i
+    DEC_NUMBER: /0|[1-9][\d_]*/i
+
+    %import common.ESCAPED_STRING
+    %import common.WORD
+    %import common.INT
+    %import common.DIGIT
+    %import common.SIGNED_NUMBER
+    %import common.WS
+    %ignore WS
