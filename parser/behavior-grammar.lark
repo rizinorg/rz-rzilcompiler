@@ -22,11 +22,12 @@ fbody: stmt* -> fbody
         | exp LOGOP exp
         | operand
         | "(" exp ")"
+        | cast exp
         | INTCON
         | ESCAPED_STRING
 
     // Macros
-    ?call: macro "(" exp ")"
+    ?call: var "(" exp ")"
 
     ?cond: operand
          | operand RELOP operand  -> cond2
@@ -103,16 +104,13 @@ fbody: stmt* -> fbody
              | scatter_hint
              | nomatch_hint
 
-    macro: WORD
-        | /\w(_\w)*/
-
     circ_addr: imm_or_circi ":circ(" reg ")"
     circ_i: "I"
     ?imm_or_circi: imm | circ_i
 
     const: "#" SIGNED_NUMBER
 
-    imm: "#" IMMLETT INT [":" INT]
+    imm: "#" IMMLETT [INT] [":" INT]
     IMMLETT: /[rRsSuUm]/
 
     reg:  REG_A REG_B
@@ -125,11 +123,11 @@ fbody: stmt* -> fbody
     dot_new: ".new"
     dot_cur: ".cur" | ".tmp"
     subreg: ".uh" | ".h" | ".uw" | ".w" | ".ub" | ".b"
-    regbit: reg "." loop_i
+    regbit: reg "." loop_index
     reg_dot: reg dot_new | pred_reg dot_new
            | reg dot_cur
            | reg subreg
-    reg_index: reg [ subreg ] "[" loop_i "]"
+    reg_index: reg [ subreg ] "[" index "]"
     reg_brev: reg ":brev"
     reg_star: reg "*"
     not_reg: not_sign reg
@@ -138,7 +136,10 @@ fbody: stmt* -> fbody
     ?operand: const | imm | any_reg | not_reg | circ_addr | var | regbit
 
     ?var: /\w+/
-    ?loop_i: /i/
+    ?index: loop_index | DIGIT
+    ?loop_index: /i/
+    ?type: "size" ("8" | "16") ("s" | "u") "_t"
+    ?cast: "(" type ")"
 
     INTCON: HEX_NUMBER | DEC_NUMBER
     HEX_NUMBER: /0x[\da-f]*/i
