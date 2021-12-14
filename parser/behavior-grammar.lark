@@ -3,38 +3,38 @@
 start: fbody
 fbody: stmt* -> fbody
 
-    ?stmt: "if (" [NOT] cond ")" stmt [ "else if" stmt ] [ "else" stmt ] -> if_stmt
+    ?stmt: "if (" [NOT] cond ")" stmt [ "else if (" [NOT] cond ")" stmt ] [ "else" stmt ] -> if_stmt
      | "while" "(" exp ")" stmt
-     | "for" "(" [ assg ] ";" [ exp ] ";" [ assg ] ")" stmt -> for_stmt
+     | "for" "(" [ assg ] ";" [ cond ] ";" [ assg ] ")" stmt -> for_stmt
      | assg ";" -> assg_stmt
-     | operand ASSGOP exp ";" -> assg_binop_stmt
-     | call -> call_stmt
      | init
-     | "{" stmt "}" -> multi_stmt
+     | exp ";"
+     | "{" stmt* "}" -> multi_stmt
      | ";" -> empty_stmt
 
-   ?exp: [NOT] call [res_hint]      -> call_exp
-        | exp "?" "(" exp ")" ":" "(" exp ")" -> ternary_stmt
+   ?exp: [NOT] call      -> call_exp
+        | exp "?" exp ":" exp  -> ternary_stmt
         | "-" exp        -> neg_exp
         | "!" exp        -> not_exp
         | "~" exp        -> bit_not_exp
+        | exp "++"       -> inc_exp
+        | "*" exp        -> derefence_exp
         | exp BINOP exp -> exp_binop
         | exp LOGOP exp
         | operand
+        | cond
         | "(" exp ")"
         | cast exp
-        | INTCON
-        | ESCAPED_STRING
 
     // Macros
-    ?call: VAR "(" exp ")"
+    ?call: VAR "(" exp ("," exp)* ")"
 
     ?cond: operand
          | exp RELOP exp -> exp_relop
          | operand RELOP operand  -> cond2
-         | call
+         | exp
 
-    ?init: [TYPE] VAR "=" exp ";"
+    ?init: [type] VAR "=" exp ";"
 
     NOT: "!"
 
@@ -51,10 +51,12 @@ fbody: stmt* -> fbody
     BINOP: "+"
         |   "-"
         |   "*"
+        |   "**"
         |   "/"
         |   "|"
         |   "&"
         |   "^"
+        |   "%"
         |   "<<"
         |   ">>"
 
@@ -70,82 +72,40 @@ fbody: stmt* -> fbody
     LOGOP: "&&"
         |   "||"
 
-    assg: operand ["," reg] ASSGOP [UNARY_OP] (operand | exp)     -> assign_to_op
-              | operand ASSGOP [UNARY_OP] (operand | exp) ";" exp       -> assign_comma
-              | exp ASSGOP [UNARY_OP] (operand | exp) -> assign_to_exp
-              | operand "++" -> assign_inc
+    assg: operand ASSGOP exp     -> assign_to_op
+        | exp ASSGOP exp -> assign_to_exp
+        | operand "++" -> assign_inc
 
-    rator: "+" | "<<" | "=" |  "-" | "&" | "|" | "^" | UNARY_OP
-    UNARY_OP: "++" | "~" | "--"
-    SUBFIELD: ".uh" | ".h" | ".uw" | ".w" | ".ub" | ".b"
-
-    SHIFT_HINT: ":<<1" | ":<<16" | ":>>1" | ":shift"
-    RND_HINT: ":rnd" | ":crnd"
-    SAT_HINT: ":sat"
-    HILO_HINT: ":hi" | ":lo"
-    raw_hint: ":raw" [HILO_HINT]
-    JUMP_HINT: ":t" | ":nt"
-    CARRY_HINT: ":carry"
-    SCALE_HINT: ":scale"
-    LIB_HINT: ":lib"
-    POS_HINT: ":pos"
-    NEG_HINT: ":neg"
-    CHOP_HINT: ":chop"
-    SCATTER_HINT: ":scatter_release"
-    NOMATCH_HINT: ":nomatch"
-    ?res_hint: SHIFT_HINT [res_hint]
-             | RND_HINT [res_hint]
-             | SAT_HINT [res_hint]
-             | raw_hint [res_hint]
-             | JUMP_HINT [res_hint]
-             | CARRY_HINT [res_hint]
-             | SCALE_HINT
-             | LIB_HINT
-             | POS_HINT
-             | NEG_HINT
-             | CHOP_HINT
-             | SCATTER_HINT
-             | NOMATCH_HINT
-
-    circ_addr: imm_or_circi ":circ(" reg ")"
-    circ_i: "I"
-    ?imm_or_circi: imm | circ_i
-
-    const: "#" SIGNED_NUMBER
+    // w = word; h = half word; b = byte; u = unsigned; .s64 signed 64bit
+    SUBFIELD: ".uw" | ".w" | ".uh" | ".h" | ".ub" | ".b" | ("." ("s" | "u") BIT_WIDTH)
 
     imm: "#" IMMLETT [INT] [":" INT]
     IMMLETT: /[rRsSuUm]/
 
-    reg:  REG_A REG_B
-    REG_A: /[MNORCPQXSGVZA]/
-    REG_B: /[stuvwxyzdefg]+/
+    reg:  REG_TYPE (SRC_REG | SRC_REG_PAIR)
+    REG_TYPE: "C" | "N" | "P" | "R" | "M" | "Q" | "V" | "O"
+    SRC_REG: "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" | "d" | "e" | "f" | "g"
+    SRC_REG_PAIR: "ss" | "tt" | "uu" | "vv" | "xx"| "yy" | "zz" | "dd" | "ee" | "ff" | "gg"
 
-    pred_reg: "p" DIGIT
-    GP_REG: "gp"
-    sys_reg: "pc" | "sgp" DIGIT ":0"? | "r29" | "r31"
+    GP_REG: "GP"
+    SYS_REG: "PC"
+    hvx_pred: "Q" SRC_REG "V"
     DOT_NEW: ".new"
-    DOT_CUR: ".cur" | ".tmp"
-    SUBREG: ".uh" | ".h" | ".uw" | ".w" | ".ub" | ".b"
-    regbit: reg "." LOOP_INDEX
-    reg_dot: reg DOT_NEW | pred_reg DOT_NEW
-           | reg DOT_CUR
-           | reg SUBREG
-    reg_index: reg [ SUBREG ] "[" index "]"
-    reg_brev: reg ":brev"
-    reg_star: reg "*"
-    not_reg: NOT reg
-    ?any_reg: reg | reg_dot | pred_reg | GP_REG | sys_reg | reg_brev | reg_star | reg_index
+    regbit: reg "." VAR
+    reg_dot: reg [ SUBFIELD ] DOT_NEW
+           | reg [DOT_NEW] SUBFIELD
+    ?any_reg: reg | reg_dot | GP_REG | SYS_REG | hvx_pred
+    reg_indexed: any_reg "[" (VAR | DIGIT | exp | (exp ":" exp)) "]"
 
-    ?operand: const | imm | any_reg | not_reg | circ_addr | var | regbit
+    ?operand: imm | any_reg | VAR | regbit | INTCON | reg_indexed
 
     VAR: /\w+/
-    index: LOOP_INDEX | DIGIT
-    LOOP_INDEX: "i"
-    TYPE: "size" ("8" | "16") ("s" | "u") "_t"
-    cast: "(" TYPE ")"
+    type: "size" BIT_WIDTH ("s" | "u") "_t"
+    cast: "(" type ")"
 
     INT_TYPE: "LL"
 
+    BIT_WIDTH: "8" | "16" | "32" | "64"
     INTCON: HEX_NUMBER | DEC_NUMBER
     HEX_NUMBER: /0x[\da-f]*/i
     DEC_NUMBER: /0|[1-9][\d_]*/i
