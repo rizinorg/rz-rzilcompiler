@@ -15,9 +15,8 @@ fbody: stmt* -> fbody
    ?exp: [NOT] call      -> call_exp
         | exp "?" exp ":" exp  -> ternary_stmt
         | "-" exp        -> neg_exp
-        | "!" exp        -> not_exp
+        | NOT exp        -> not_exp
         | "~" exp        -> bit_not_exp
-        | exp "++"       -> inc_exp
         | "*" exp        -> derefence_exp
         | exp BINOP exp -> exp_binop
         | exp LOGOP exp
@@ -31,7 +30,6 @@ fbody: stmt* -> fbody
 
     ?cond: operand
          | exp RELOP exp -> exp_relop
-         | operand RELOP operand  -> cond2
          | exp
 
     ?init: [type] VAR "=" exp ";"
@@ -75,11 +73,12 @@ fbody: stmt* -> fbody
     assg: operand ASSGOP exp     -> assign_to_op
         | exp ASSGOP exp -> assign_to_exp
         | operand "++" -> assign_inc
+        | operand "--" -> assign_dec
 
     // w = word; h = half word; b = byte; u = unsigned; .s64 signed 64bit
     SUBFIELD: ".uw" | ".w" | ".uh" | ".h" | ".ub" | ".b" | ("." ("s" | "u") BIT_WIDTH)
 
-    imm: "#" IMMLETT [INT] [":" INT]
+    imm: "#" IMMLETT [INT]
     IMMLETT: /[rRsSuUm]/
 
     reg:  REG_TYPE (SRC_REG | SRC_REG_PAIR)

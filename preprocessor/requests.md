@@ -1,3 +1,4 @@
-- Makros like `sxt128->64` should become `sxt128_64`
-- Remove additional white space from macros: `zxt 5->32` should become `zxt5->32`
-- Remove brackets indiating possible syntax: `[!]`, `[.new]`, `[sat32]`, `[&|]` as in `Qx4[&|]=vcmp.eq(Vu.b,Vv.b)`
+- Makros like `sxt128->64` should become `sxt128_64`.
+- Remove additional white space from macros: `zxt 5->32` should become `zxt5->32`.
+- Remove brackets indicating possible syntax: `[!]`, `[.new]`, `[sat32]`, `[&|]` as in `Qx4[&|]=vcmp.eq(Vu.b,Vv.b)`.
+- Remove "" in certain if statements. As in: `if ("((#m9<0) && (#m9>-256))") {`

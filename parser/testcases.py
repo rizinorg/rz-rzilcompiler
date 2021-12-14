@@ -1,5 +1,13 @@
 behaviors = [
         """
+        if ("((#m9<0) && (#m9>-256))") {
+Assembler mapped to: "Rd=-mpyi(Rs,#m9*(-
+1))";
+} else {
+Assembler mapped to: "Rd=+mpyi(Rs,#m9)";
+}
+""",
+        """
         i = 4*i+4-1;
         """,
         """

@@ -14,7 +14,7 @@ if __name__ == '__main__':
     for beh in behaviors:
         try:
             tree = parser.parse(beh)
-            trees.append(tree.pretty())
+            trees.append((beh, tree.pretty()))
             correct += 1
         except Exception as e:
             fail_msg.append(e)
@@ -27,5 +27,13 @@ if __name__ == '__main__':
         print('\n' + ('#' * 20) + '\n')
         a = input('Failed test #{} - Print next [q=quit] > '.format(i))
         if a == 'q':
-            break
+            exit()
 
+    for i, m in enumerate(trees):
+        print("Syntax: {}".format(m[0]))
+        print('\n' + ('#' * 20) + '\n')
+        print(m[1])
+        print('\n' + ('#' * 20) + '\n')
+        a = input('Failed test #{} - Print next [q=quit] > '.format(i))
+        if a == 'q':
+            exit()
