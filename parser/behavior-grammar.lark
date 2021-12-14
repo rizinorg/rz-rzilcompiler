@@ -3,22 +3,22 @@
 start: fbody
 fbody: stmt* -> fbody
 
-    ?stmt: "if (" [not_sign] cond ")" stmt [ "else" stmt ] -> if_stmt
+    ?stmt: "if (" [NOT] cond ")" stmt [ "else if" stmt ] [ "else" stmt ] -> if_stmt
      | "while" "(" exp ")" stmt
      | "for" "(" [ assg ] ";" [ exp ] ";" [ assg ] ")" stmt -> for_stmt
      | assg ";" -> assg_stmt
      | operand ASSGOP exp ";" -> assg_binop_stmt
      | call -> call_stmt
-     | "{" stmt* "}" -> multi_stmt
+     | init
+     | "{" stmt "}" -> multi_stmt
      | ";" -> empty_stmt
 
-   ?exp: [not_sign] call [res_hint]      -> call_exp
+   ?exp: [NOT] call [res_hint]      -> call_exp
         | exp "?" "(" exp ")" ":" "(" exp ")" -> ternary_stmt
         | "-" exp        -> neg_exp
         | "!" exp        -> not_exp
         | "~" exp        -> bit_not_exp
         | exp BINOP exp -> exp_binop
-        | exp RELOP exp -> exp_relop
         | exp LOGOP exp
         | operand
         | "(" exp ")"
@@ -27,13 +27,16 @@ fbody: stmt* -> fbody
         | ESCAPED_STRING
 
     // Macros
-    ?call: var "(" exp ")"
+    ?call: VAR "(" exp ")"
 
     ?cond: operand
+         | exp RELOP exp -> exp_relop
          | operand RELOP operand  -> cond2
          | call
 
-    not_sign: "!"
+    ?init: [TYPE] VAR "=" exp ";"
+
+    NOT: "!"
 
     // Weight 4
     ASSGOP: "="
@@ -67,42 +70,42 @@ fbody: stmt* -> fbody
     LOGOP: "&&"
         |   "||"
 
-    assg: operand ["," reg] ASSGOP [unary_op] (operand | exp)     -> assign_to_op
-              | operand ASSGOP [unary_op] (operand | exp) ";" exp       -> assign_comma
-              | exp ASSGOP [unary_op] (operand | exp) -> assign_to_exp
+    assg: operand ["," reg] ASSGOP [UNARY_OP] (operand | exp)     -> assign_to_op
+              | operand ASSGOP [UNARY_OP] (operand | exp) ";" exp       -> assign_comma
+              | exp ASSGOP [UNARY_OP] (operand | exp) -> assign_to_exp
               | operand "++" -> assign_inc
 
-    rator: "+" | "<<" | "=" |  "-" | "&" | "|" | "^" | unary_op
-    unary_op: "++" | "~" | "--"
-    subfield: ".uh" | ".h" | ".uw" | ".w" | ".ub" | ".b"
+    rator: "+" | "<<" | "=" |  "-" | "&" | "|" | "^" | UNARY_OP
+    UNARY_OP: "++" | "~" | "--"
+    SUBFIELD: ".uh" | ".h" | ".uw" | ".w" | ".ub" | ".b"
 
-    shift_hint: ":<<1" | ":<<16" | ":>>1" | ":shift"
-    rnd_hint: ":rnd" | ":crnd"
-    sat_hint: ":sat"
-    hilo_hint: ":hi" | ":lo"
-    raw_hint: ":raw" [hilo_hint]
-    jump_hint: ":t" | ":nt"
-    carry_hint: ":carry"
-    scale_hint: ":scale"
-    lib_hint: ":lib"
-    pos_hint: ":pos"
-    neg_hint: ":neg"
-    chop_hint: ":chop"
-    scatter_hint: ":scatter_release"
-    nomatch_hint: ":nomatch"
-    ?res_hint: shift_hint [res_hint]
-             | rnd_hint [res_hint]
-             | sat_hint [res_hint]
+    SHIFT_HINT: ":<<1" | ":<<16" | ":>>1" | ":shift"
+    RND_HINT: ":rnd" | ":crnd"
+    SAT_HINT: ":sat"
+    HILO_HINT: ":hi" | ":lo"
+    raw_hint: ":raw" [HILO_HINT]
+    JUMP_HINT: ":t" | ":nt"
+    CARRY_HINT: ":carry"
+    SCALE_HINT: ":scale"
+    LIB_HINT: ":lib"
+    POS_HINT: ":pos"
+    NEG_HINT: ":neg"
+    CHOP_HINT: ":chop"
+    SCATTER_HINT: ":scatter_release"
+    NOMATCH_HINT: ":nomatch"
+    ?res_hint: SHIFT_HINT [res_hint]
+             | RND_HINT [res_hint]
+             | SAT_HINT [res_hint]
              | raw_hint [res_hint]
-             | jump_hint [res_hint]
-             | carry_hint [res_hint]
-             | scale_hint
-             | lib_hint
-             | pos_hint
-             | neg_hint
-             | chop_hint
-             | scatter_hint
-             | nomatch_hint
+             | JUMP_HINT [res_hint]
+             | CARRY_HINT [res_hint]
+             | SCALE_HINT
+             | LIB_HINT
+             | POS_HINT
+             | NEG_HINT
+             | CHOP_HINT
+             | SCATTER_HINT
+             | NOMATCH_HINT
 
     circ_addr: imm_or_circi ":circ(" reg ")"
     circ_i: "I"
@@ -118,28 +121,30 @@ fbody: stmt* -> fbody
     REG_B: /[stuvwxyzdefg]+/
 
     pred_reg: "p" DIGIT
-    gp_reg: "gp"
+    GP_REG: "gp"
     sys_reg: "pc" | "sgp" DIGIT ":0"? | "r29" | "r31"
-    dot_new: ".new"
-    dot_cur: ".cur" | ".tmp"
-    subreg: ".uh" | ".h" | ".uw" | ".w" | ".ub" | ".b"
-    regbit: reg "." loop_index
-    reg_dot: reg dot_new | pred_reg dot_new
-           | reg dot_cur
-           | reg subreg
-    reg_index: reg [ subreg ] "[" index "]"
+    DOT_NEW: ".new"
+    DOT_CUR: ".cur" | ".tmp"
+    SUBREG: ".uh" | ".h" | ".uw" | ".w" | ".ub" | ".b"
+    regbit: reg "." LOOP_INDEX
+    reg_dot: reg DOT_NEW | pred_reg DOT_NEW
+           | reg DOT_CUR
+           | reg SUBREG
+    reg_index: reg [ SUBREG ] "[" index "]"
     reg_brev: reg ":brev"
     reg_star: reg "*"
-    not_reg: not_sign reg
-    ?any_reg: reg | reg_dot | pred_reg | gp_reg | sys_reg | reg_brev | reg_star | reg_index
+    not_reg: NOT reg
+    ?any_reg: reg | reg_dot | pred_reg | GP_REG | sys_reg | reg_brev | reg_star | reg_index
 
     ?operand: const | imm | any_reg | not_reg | circ_addr | var | regbit
 
-    ?var: /\w+/
-    ?index: loop_index | DIGIT
-    ?loop_index: /i/
-    ?type: "size" ("8" | "16") ("s" | "u") "_t"
-    ?cast: "(" type ")"
+    VAR: /\w+/
+    index: LOOP_INDEX | DIGIT
+    LOOP_INDEX: "i"
+    TYPE: "size" ("8" | "16") ("s" | "u") "_t"
+    cast: "(" TYPE ")"
+
+    INT_TYPE: "LL"
 
     INTCON: HEX_NUMBER | DEC_NUMBER
     HEX_NUMBER: /0x[\da-f]*/i
