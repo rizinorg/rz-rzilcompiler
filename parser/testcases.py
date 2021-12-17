@@ -1,23 +1,39 @@
 behaviors = [
         """
-        if ("((#m9<0) && (#m9>-256))") {
-Assembler mapped to: "Rd=-mpyi(Rs,#m9*(-
-1))";
+        i = 4*i+4-1;
+        """,
+        """
+        i = 4+i*4-1;
+        """,
+        """
+        if (CHECK_TLB_OVERLAP((1LL<<63) | Rss)) {
+Rd=GET_OVERLAPPING_IDX((1LL<<63) | Rss);
+} else {
+Rd=0x80000000;
+}
+        """,
+        """
+        for (i = 0; i < NUM_TLB_ENTRIES; i++) {
+if ((TLB[i] == 0) && (TLB[i] == Rs[26:20])) {
+TLB[i] = TLB[i] & ~(1ULL << 63);
+}
+}
+
+        """,
+        """
+        if (((#m9<0) && (#m9>-256))) {
+Assembler mapped to: "Rd=-mpyi(Rs,#m9*(-1))";
 } else {
 Assembler mapped to: "Rd=+mpyi(Rs,#m9)";
 }
 """,
-        """
-        i = 4*i+4-1;
-        """,
         """
         QeV[4*i+4-1] = 1;
         """,
         """
         if (#u == 0) {
 Rdd = Rss;
-} else if ((Rss & (size8s_t)((1LL << (#u - 1)) -
-1LL)) == 0) {
+} else if ((Rss & (size8s_t)((1LL << (#u - 1)) - 1LL)) == 0) {
 src_128 = sxt64_128(Rss);
 rndbit_128 = sxt64_128(1LL);
 rndbit_128 = (rndbit_128 << #u);

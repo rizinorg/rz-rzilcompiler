@@ -6,7 +6,7 @@ from testcases import behaviors
 if __name__ == '__main__':
     with open('behavior-grammar.lark') as f:
         grammar = ''.join(f.readlines())
-    parser = Lark(grammar, start='fbody')#, ambiguity="explicit")
+    parser = Lark(grammar, start='fbody', ambiguity='explicit')#, ambiguity="explicit")
     correct = 0
     fail = 0
     fail_msg = []
@@ -20,20 +20,22 @@ if __name__ == '__main__':
             fail_msg.append(e)
             fail += 1
     print('\n\nParsed {} Not parsed {}'.format(correct, fail))
-    #print(trees[2])
-    for i, m in enumerate(fail_msg):
-        print('\n' + ('#' * 20) + '\n')
-        print(m)
-        print('\n' + ('#' * 20) + '\n')
-        a = input('Failed test #{} - Print next [q=quit] > '.format(i))
-        if a == 'q':
-            exit()
+    if (fail == 0):
+        print("SUCESSFUL PARSED\n")
+    else:
+        for i, m in enumerate(fail_msg):
+            print('\n' + ('#' * 20) + '\n')
+            print(m)
+            print('\n' + ('#' * 20) + '\n')
+            a = input('Failed test #{} - Print next [q=quit] > '.format(i))
+            if a == 'q':
+                exit()
 
     for i, m in enumerate(trees):
         print("Syntax: {}".format(m[0]))
         print('\n' + ('#' * 20) + '\n')
         print(m[1])
         print('\n' + ('#' * 20) + '\n')
-        a = input('Failed test #{} - Print next [q=quit] > '.format(i))
-        if a == 'q':
-            exit()
+        #a = input('Test #{} - Print next [q=quit] > '.format(i))
+        #if a == 'q':
+        #    exit()
