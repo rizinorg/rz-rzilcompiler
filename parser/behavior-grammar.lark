@@ -151,8 +151,7 @@ fbody: statement* -> fbody
 
     ?identifier: operand
 
-    unary_operator: "&"
-        | "*"
+    unary_operator: "*"
         | "+"
         | "-"
         | "~"
