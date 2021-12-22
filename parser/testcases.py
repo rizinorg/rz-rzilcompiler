@@ -6,6 +6,32 @@ behaviors = [
         i = 4+i*4-1;
         """,
         """
+        sumr = 0;
+sumi = 0;
+control = Rt.ub[#u];
+for (i = 0; i < 8; i += 2) {
+tmpr = Rss.b[i];
+tmpi = Rss.b[i+1];
+switch (control & 3) {
+case 0: sumr += tmpr;
+sumi += tmpi;
+break;
+case 1: sumr += tmpi;
+sumi -= tmpr;
+break;
+case 2: sumr -= tmpi;
+sumi += tmpr;
+break;
+case 3: sumr -= tmpr;
+sumi -= tmpi;
+break;
+}
+control = control >> 2;
+}
+Rdd.w[0]=sumr;
+Rdd.w[1]=sumi;
+        """,
+        """
         if (CHECK_TLB_OVERLAP((1LL<<63) | Rss)) {
 Rd=GET_OVERLAPPING_IDX((1LL<<63) | Rss);
 } else {
