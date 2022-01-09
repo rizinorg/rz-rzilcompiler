@@ -1,6 +1,5 @@
 All unsigned operations have also a signed variant.
 
-|-------------|----------------|
 | C Operation | RZIL Operation |
 |-------------|----------------|
 | +           | rz_il_op_new_add |
@@ -12,7 +11,7 @@ All unsigned operations have also a signed variant.
 | <           | Mapped (leq) |
 | >           | Mapped |
 | ^           | rz_il_op_new_bool_xor |
-| |           | rz_il_op_new_log_or |
+| \|           | rz_il_op_new_log_or |
 | &           | rz_il_op_new_log_and |
 | >>          | rz_il_op_new_shiftr |
 | <<          | rz_il_op_new_shiftl |
@@ -37,7 +36,7 @@ All unsigned operations have also a signed variant.
 | %=          | Mapped |
 | &=          | Mapped |
 | ^=          | Mapped |
-| |=          | Mapped |
+| \|=          | Mapped |
 | >=          | Mapped |
 | !=          | Mapped |
 | <=          | rz_il_op_new_ule |
