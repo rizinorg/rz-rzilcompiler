@@ -1,20 +1,20 @@
 
-*   Adapt scanner regex/parser grammar to fit the manuals syntax. Not the ISA ones.
-*   Map basic operations to function calls of RZIL →Spot the missing ones.
-*   Map memory operations to RZIL effects → Spot the missing ones.
-*   Choose representation of double/quadruble registers in RZIL. Arrays or Bitvectors? Something else?
-    *   Mind prediacte registers which are ANDed if two instructions operate on the same.
-*   Solve problem with pseudo functions/macros in behavior (e.g.: `can_handle_trap1_virtinsn`, `fpclassify(Rss)`).
-    *   How to find them, how to implement them?
-    *   How much can be taken from already existing parser code?
+- [x]   Adapt scanner regex/parser grammar to fit the manuals syntax. Not the ISA ones.
+- [x]   Map basic operations to function calls of RZIL → Spot the missing ones.
+- [x]   Map memory operations to RZIL effects → Spot the missing ones.
+- [x]   Choose representation of double/quadruble registers in RZIL. -> See: _Can't find the link. But registers can be devided and addressed within BAP._
+    - [x]   Mind prediacte registers which are ANDed if two instructions operate on the same.  -> Implement function for that.
+- [x]   Solve problem with pseudo functions/macros in behavior (e.g.: `can_handle_trap1_virtinsn`, `fpclassify(Rss)`). -> Some are defined in the QEMU `macros.h` file. Some not. Those need to be implementd, or we ignore them.
+    - [x]   How to find them, how to implement them?
+    - [x]   How much can be taken from already existing parser code? -> Macros.
 
 
-*   Parse txt version of manual and extract behavior
-    *   Create Python Instruction Object <> Behavior mapping
-    *   Substitute `[!]` and `[.new]` according to actual instruction syntax
-        *   e.g.:  `if ([!]Pu) { Rd = Rs[.new] }` becomes `if (Pu) { Rd = Rs.new }`
-    *   Spot behavior with missing brackets and ask the user to edit it e.g.: `trap1`.
-    *   Add cleaned up behavior to its Instruction Object.
+- [ ]   Parse txt version of manual and extract behavior
+    - [ ]   Create Python Instruction Object <> Behavior mapping
+    - [ ]   Substitute `[!]` and `[.new]` according to actual instruction syntax
+        - [ ]   e.g.:  `if ([!]Pu) { Rd = Rs[.new] }` becomes `if (Pu) { Rd = Rs.new }`
+    - [ ]   Spot behavior with missing brackets and ask the user to edit it e.g.: `trap1`.
+    - [ ]   Add cleaned up behavior to its Instruction Object.
 
 For Next milestone
 
