@@ -50,6 +50,7 @@ All unsigned operations have also a signed variant.
 | NOP         | rz_il_op_new_nop |
 | jump        | rz_il_op_new_jmp |
 | goto        | rz_il_op_new_goto |
+| case/labels | - |
 
 - `LOAD` and `LOAD_WORD` are already implemented. `LOAD_DWORD`, `LOAD_QWORD` and the like would be useful as well.
 
