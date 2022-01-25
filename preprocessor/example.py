@@ -13,7 +13,7 @@ import re
 
 
 # Open file. And read into memory.
-with open("../Hexagon-manuals-80-n2040-45-b-v67-and-80-n2040-44-b-v66-hvx.txt", encoding='utf_8') as g:
+with open("../ressources/Hexagon/Hexagon-manuals-80-n2040-45-b-v67-AND-80-n2040-44-b-v66-hvx.txt", encoding='utf_8') as g:
     testpages = g.read()
 g.close()
 

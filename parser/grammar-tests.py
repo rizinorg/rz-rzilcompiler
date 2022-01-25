@@ -4,7 +4,7 @@ from lark import Lark
 from testcases import behaviors
 
 if __name__ == '__main__':
-    with open('behavior-grammar.lark') as f:
+    with open('Hexagon/manual-grammar.lark') as f:
         grammar = ''.join(f.readlines())
     parser = Lark(grammar, start='fbody', ambiguity='explicit')#, ambiguity="explicit")
     correct = 0
@@ -21,7 +21,7 @@ if __name__ == '__main__':
             fail += 1
     print('\n\nParsed {} Not parsed {}'.format(correct, fail))
     if (fail == 0):
-        print("SUCESSFUL PARSED\n")
+        print("SUCCESSFUL PARSED\n")
     else:
         for i, m in enumerate(fail_msg):
             print('\n' + ('#' * 20) + '\n')
@@ -31,11 +31,11 @@ if __name__ == '__main__':
             if a == 'q':
                 exit()
 
-    for i, m in enumerate(trees):
-        print("Syntax: {}".format(m[0]))
-        print('\n' + ('#' * 20) + '\n')
-        print(m[1])
-        print('\n' + ('#' * 20) + '\n')
-        #a = input('Test #{} - Print next [q=quit] > '.format(i))
-        #if a == 'q':
-        #    exit()
+#    for i, m in enumerate(trees):
+#        print("Syntax: {}".format(m[0]))
+#        print('\n' + ('#' * 20) + '\n')
+#        print(m[1])
+#        print('\n' + ('#' * 20) + '\n')
+#        #a = input('Test #{} - Print next [q=quit] > '.format(i))
+#        #if a == 'q':
+#        #    exit()
