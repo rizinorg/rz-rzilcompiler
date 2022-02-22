@@ -17,3 +17,7 @@ The Python parser used to generate the IL of binaryninja https://github.com/lark
 0. A gentle introduction to core theory http://binaryanalysisplatform.github.io/bap/api/odoc/bap-core-theory/Bap_core_theory/index.html
 1. http://binaryanalysisplatform.github.io/bap/api/odoc/bap-core-theory/Bap_core_theory/Theory/index.html
 2. For core and array theories https://smtlib.cs.uiowa.edu/theories.shtml
+
+### Testing
+
+https://github.com/rizinorg/rz-tracetest
