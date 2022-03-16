@@ -28,10 +28,12 @@
     - [ ] Add missin grammar.
 - [ ] Document all macros which need replacement.
   - [ ] Match against existing macros in QEMUs `macros.h`
-- [ ] Implement missing RZIL effects etc.
+- [x] Implement missing RZIL effects etc.
+  - No missing effects seen yet.
 - [ ] Implement most common missing macros.
 - [ ] How to handle `assembler maps to?`
-- [ ] Implement floating point operations. If not already done by rizin people. See: [https://github.com/rizinorg/rz-hexagon/issues/12#issuecomment-983447973](https://github.com/rizinorg/rz-hexagon/issues/12#issuecomment-983447973)
+- [x] Implement floating point operations. If not already done by rizin people. See: [https://github.com/rizinorg/rz-hexagon/issues/12#issuecomment-983447973](https://github.com/rizinorg/rz-hexagon/issues/12#issuecomment-983447973)
+  - @heersin finishes it. In case she/he isn't done when we need it, we can help. [Branch](https://github.com/Heersin/rizin/commits/rz_util_float)
 
 ## Block III
 
