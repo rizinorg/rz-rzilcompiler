@@ -85,7 +85,7 @@ fbody: statement* -> fbody
     arr_access: _postfix_expression "[" _additive_expression ":" _additive_expression "]"
         | _postfix_expression "[" _expression "]"
 
-    bit_access: _postfix_expression "." identifier | INT
+    dot_ops: _postfix_expression "." (identifier | INT | SUBFIELD)
 
     inc_ret: _postfix_expression INC_OP
 
@@ -94,7 +94,7 @@ fbody: statement* -> fbody
     _postfix_expression: _primary_expression
         | arr_access
         | _call
-        | bit_access
+        | dot_ops
         | inc_ret
         | dec_ret
     
@@ -290,16 +290,12 @@ fbody: statement* -> fbody
     reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
         | REG_TYPE (SRC_REG_PAIR | DEST_REG_PAIR | SRC_DEST_REG_PAIR)
 
-    sub_reg: reg "." SUBFIELD
-
-    _register: sub_reg
-        | reg
+    _register: reg
         | local_var
 
 
     _VARIABLE: /[A-Za-z_]\w*/
 
-    mem_access: "mem" SUBFIELD
     mem_access: "mem" SUBFIELD
     MACRO_NAME: _VARIABLE
     local_var: _VARIABLE

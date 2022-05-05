@@ -22,4 +22,4 @@ class TestTransformer:
 
 
 if __name__ == "__main__":
-    Tests().test_transformer()
+    TestTransformer().test_transformer()

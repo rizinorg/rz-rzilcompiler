@@ -1,13 +1,22 @@
+# SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
+# SPDX-License-Identifier: LGPL-3.0-only
+
 transform_test = [
     """
-    Rd = Rs + Rtt.ub;
+    Rd = Rs + Rtt;
     """,
-    """
-    memw(Rs) = #s16;
-    """,
-    """
-    memw_locked(Rs) = #s16;
-    """,
+    # """
+    # Rd = Rs + Rtt.ub;
+    # """,
+    # """
+    # memw(Rs) = #s16;
+    # """,
+    # """
+    # memw_locked(Rs) = #s16;
+    # """,
+    # """
+    # memub(Rx) = Rx;
+    # """
 ]
 
 behaviors = [
