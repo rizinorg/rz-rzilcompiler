@@ -13,7 +13,8 @@ def test_transformer():
     for beh in transform_test:
         try:
             tree = parser.parse(beh)
-            ManualTransformer.transform(tree)
+            print(tree.pretty())
+            ManualTransformer().transform(tree)
         except Exception as e:
             print(e)
 

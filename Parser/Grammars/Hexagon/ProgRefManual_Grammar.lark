@@ -183,10 +183,10 @@ fbody: statement* -> fbody
     _conditional_expression: _logical_or_expression
         | tenary
 
-    assg: _unary_expression _assignment_operator _assignment_expression
+    assign: _unary_expression _assignment_operator _assignment_expression
 
     _assignment_expression: _conditional_expression
-        | assg
+        | assign
 
     ?identifier: _operand
 
@@ -266,8 +266,8 @@ fbody: statement* -> fbody
     _hvx_pred: _register
         | quad_pred_reg
 
-    reg: REG_TYPE SRC_REG
-        | REG_TYPE SRC_REG_PAIR
+    reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
+        | REG_TYPE (SRC_REG_PAIR | DEST_REG_PAIR | SRC_DEST_REG_PAIR)
 
     _register: reg
         | variable
@@ -276,15 +276,19 @@ fbody: statement* -> fbody
     variable: /[A-Za-z_]\w*/
 
     REG_TYPE: "C" | "N" | "P" | "R" | "M" | "Q" | "V" | "O"
-    SRC_REG: "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z" | "d" | "e" | "f" | "g"
-    SRC_REG_PAIR: "ss" | "tt" | "uu" | "vv" | "xx"| "yy" | "zz" | "dd" | "ee" | "ff" | "gg"
+    SRC_REG: "s" | "t" 
+    DEST_REG: "u" | "v" | "w" | "y" | "z" | "d" | "e" | "f" | "g"
+    SRC_DEST_REG: "x"
+    SRC_REG_PAIR: "ss" | "tt"
+    DEST_REG_PAIR: "uu" | "vv" | "yy" | "zz" | "dd" | "ee" | "ff" | "gg"
+    SRC_DEST_REG_PAIR: "xx"
     // w = word; h = half word; b = byte; u = unsigned; .s64 signed 64bit
     //SUBFIELD: "uw" | "w" | "uh" | "h" | "ub" | "b" | (("s" | "u") BIT_WIDTH)
 
     GP_REG: "GP"
     SYS_REG: "PC"
 
-    IMMLETT: /[rRsSuUm]/
+    IMMLETT: /[rRsSuUmn]/
     INSTRUCTION_MNEM: /[^"]+/
     TLB: "TLB"
     type_specifier: UT8
