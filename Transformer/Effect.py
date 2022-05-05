@@ -23,6 +23,14 @@ class Effect:
     def get_name(self):
         return self.name
 
+    def code_get_op_name(self):
+        """ Returns the name of the RzILOpPure variable. """
+        return self.name
+
+    def code_get_vm_name(self):
+        """ Returns the name by which the VM knows this variable. """
+        return self.name
+
     def code_write(self):
         """ Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
@@ -30,4 +38,4 @@ class Effect:
         raise OverloadException('')
 
     def code_init_var(self):
-        return f'RzIlOpEffect *{self.name} = {self.code_write()};'
+        return f'RzIlOpEffect *{self.code_get_op_name()} = {self.code_write()};'

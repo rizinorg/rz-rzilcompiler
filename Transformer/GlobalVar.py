@@ -11,4 +11,4 @@ class GlobalVar(Pure):
         super().init(name, PureType.GLOBAL)
 
     def code_read(self):
-        return f'VARG({self.name})'
+        return f'VARG("{self.code_get_vm_name()}")'

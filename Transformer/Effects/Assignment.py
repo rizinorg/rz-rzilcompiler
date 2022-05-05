@@ -22,7 +22,7 @@ class Assignment(Effect):
     src = None
 
     def __init__(self, name: str, assign_type: AssignmentType, dest: Pure, src: Pure):
-        self.type = assign_type
+        self.assign_type = assign_type
         self.dest = dest
         self.src = src
 
@@ -33,11 +33,15 @@ class Assignment(Effect):
         else:
             raise NotImplementedError
 
+    def code_get_op_name(self):
+        """ Returns the name of the RzILOpPure variable. """
+        return self.name
+
     def code_write(self):
         """ Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
         """
-        if self.type == AssignmentType.ASGN:
-            return f'SETG("{self.dest.name}", {self.src.name})'
+        if self.type == EffectType.SETG:
+            return f'SETG("{self.dest.code_get_vm_name()}", {self.src.code_get_op_name()})'
         else:
             raise NotImplementedError

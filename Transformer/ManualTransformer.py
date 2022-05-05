@@ -6,7 +6,7 @@ from Transformer.GlobalVar import GlobalVar
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pure import Pure
 
-read_regs = []
+ops = []
 
 
 class ManualTransformer(Transformer):
@@ -14,6 +14,11 @@ class ManualTransformer(Transformer):
     Transforms the tree into Pures and Effects.
     The classes do the actual code generation.
     """
+
+    def fbody(self, items):
+        # We are at the top. Generate code.
+        for op in ops:
+            print(op.code_init_var())
 
     # Returned value replaces node in tree
     # Transformers/Visitors are called bottom up! First leaves then parents
@@ -24,12 +29,18 @@ class ManualTransformer(Transformer):
 
         if reg_type == "SRC_REG":
             # Should be read before use. Add to read list.
-            return GlobalVar(name)
+            v = GlobalVar(name)
+            ops.append(v)
+            return v
         elif reg_type == "DEST_REG":
             # Dest regs are passed as string to SETG()
-            return GlobalVar(name)
+            v = GlobalVar(name)
+            ops.append(v)
+            return v
         elif reg_type == "SRC_DEST_REG":
-            return GlobalVar(name)
+            v = GlobalVar(name)
+            ops.append(v)
+            return v
 
     def imm(self, items):
         print(f'imm: {items}')
@@ -37,10 +48,12 @@ class ManualTransformer(Transformer):
 
     def assign(self, items):
         items: Token
-        dest = items[0].value
-        assign_type = AssignmentType[items[1].value]
-        src = items[2].value
-        return Assignment('dummy', assign_type, dest, src)
+        dest = items[0]
+        assign_type = AssignmentType.ASGN # AssignmentType[items[1].value]
+        src = items[2]
+        v = Assignment(f'assign{dest.code_get_op_name()}{src.code_get_op_name()}', assign_type, dest, src)
+        ops.append(v)
+        return v
 
     def add(self, items):
         print(f'add: {items}')

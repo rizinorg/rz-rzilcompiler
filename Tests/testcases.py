@@ -3,7 +3,7 @@
 
 transform_test = [
     """
-    Rd = Rs + Rtt;
+    Rd = Rs;
     """,
     # """
     # Rd = Rs + Rtt.ub;
