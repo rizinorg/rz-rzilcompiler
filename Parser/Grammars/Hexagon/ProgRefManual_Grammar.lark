@@ -29,16 +29,16 @@ fbody: statement* -> fbody
     assembler_statement: "Assembler mapped to: \"" INSTRUCTION_MNEM "\";"
 
     _labeled_statement: identifier ":" statement
-        | CASE constant_expression ":" statement
+        | CASE _constant_expression ":" statement
         | DEFAULT ":" statement
 
     _compound_statement: "{" "}"
-        | "{" block_item_list "}"
+        | "{" _block_item_list "}"
 
-    block_item_list: block_item
-        | block_item_list block_item
+    _block_item_list: _block_item
+        | _block_item_list _block_item
 
-    block_item: _declaration
+    _block_item: _declaration
         | statement
 
     _expression_statement: ";"
@@ -58,107 +58,146 @@ fbody: statement* -> fbody
         | RETURN ";"
         | RETURN _expression ";"
 
-    _expression: assignment_expression
-        | _expression "," assignment_expression
+    _expression: _assignment_expression
+        | _expression "," _assignment_expression
 
-    constant_expression: conditional_expression
+    _constant_expression: _conditional_expression
 
-    _declaration: type_specifier init_declarator ";"
-        | init_declarator ";" // Type is not always given.
+    _declaration: type_specifier init ";"
+        | init ";" // Type is not always given.
 
-    init_declarator: identifier "=" initializer
+    init: identifier "=" _initializer
 
-    initializer: assignment_expression
+    _initializer: _assignment_expression
 
-    primary_expression: operand 
+    _primary_expression: _operand 
         | string
         | "(" _expression ")"
 
-    _postfix_expression: primary_expression
-        | _postfix_expression "[" additive_expression ":" additive_expression "]"
+    _postfix_expression: _primary_expression
+        | _postfix_expression "[" _additive_expression ":" _additive_expression "]"
         | _postfix_expression "[" _expression "]"
         | _postfix_expression "(" ")"
-        | _postfix_expression "(" argument_expression_list ")"
+        | _postfix_expression "(" _argument_expression_list ")"
         | _postfix_expression "." identifier | INT
         | _postfix_expression INC_OP
         | _postfix_expression DEC_OP
     
-    argument_expression_list: assignment_expression
-	    | argument_expression_list "," assignment_expression
+    args: _argument_expression_list "," _assignment_expression
+    
+    _argument_expression_list: _assignment_expression
+	    | args
 
-    unary_expression: _postfix_expression
-        | INC_OP unary_expression
-        | DEC_OP unary_expression
-        | unary_operator cast_expression
+    inc: INC_OP _unary_expression
+    dec: DEC_OP _unary_expression
+    deref: DEREF _unary_expression
+    pos: POS _unary_expression
+    neg: NEG _unary_expression
+    lnot: LNOT _unary_expression
+    not: NOT _unary_expression
 
-    cast_expression: "(" type_specifier ")" unary_expression
-        | unary_expression
+    _unary_expression: _postfix_expression
+        | inc
+        | dec
+        | deref
+        | pos
+        | neg
+        | lnot
+        | not
 
-    multiplicative_expression: cast_expression
-        | multiplicative_expression "**" cast_expression
-        | multiplicative_expression "*" cast_expression
-        | multiplicative_expression "/" cast_expression
-        | multiplicative_expression "%" cast_expression
+    cast: "(" type_specifier ")" _unary_expression
+
+    _cast_expression: cast
+        | _unary_expression
+
+    pow: _multiplicative_expression "**" _cast_expression
+    mul: _multiplicative_expression "*" _cast_expression
+    div: _multiplicative_expression "/" _cast_expression
+    mod: _multiplicative_expression "%" _cast_expression
+
+    _multiplicative_expression: _cast_expression
+        | pow
+        | mul
+        | div
+        | mod
+
+    add: _additive_expression "+" _multiplicative_expression
+    sub: _additive_expression "-" _multiplicative_expression
+
+    _additive_expression: _multiplicative_expression
+        | add
+        | sub
+
+    sright: _shift_expression RIGHT_OP _additive_expression
+    sleft: _shift_expression LEFT_OP _additive_expression
+
+    _shift_expression: _additive_expression
+        | sleft
+        | sright
+
+    ge: _relational_expression GE_OP _shift_expression
+    le: _relational_expression LE_OP _shift_expression
+    gt: _relational_expression ">" _shift_expression
+    lt: _relational_expression "<" _shift_expression
+
+    _relational_expression: _shift_expression
+        | lt
+        | gt
+        | le
+        | ge
+
+    eq: _equality_expression EQ_OP _relational_expression
+    neq: _equality_expression NE_OP _relational_expression
+
+    _equality_expression: _relational_expression
+        | eq
+        | neq
+
+    and: _and_expression "&" _equality_expression
+
+    _and_expression: _equality_expression
+        | and
+
+    xor: _exclusive_or_expression "^" _and_expression
+
+    _exclusive_or_expression: _and_expression
+        | xor
+
+    or: _inclusive_or_expression "|" _exclusive_or_expression
+
+    _inclusive_or_expression: _exclusive_or_expression
+        | or
+
+    land: _logical__and_expression AND_OP _inclusive_or_expression
+
+    _logical__and_expression: _inclusive_or_expression
+        | land
+
+    lor: _logical_or_expression OR_OP _logical__and_expression
+
+    _logical_or_expression: _logical__and_expression
+        | lor
+
+    tenary: _logical_or_expression "?" _expression ":" _conditional_expression
+
+    _conditional_expression: _logical_or_expression
+        | tenary
+
+    assg: _unary_expression _assignment_operator _assignment_expression
+
+    _assignment_expression: _conditional_expression
+        | assg
+
+    ?identifier: _operand
+
+    DEREF: "*"
+    POS: "+"
+    NEG: "-"
+    LNOT: "~"
+    NOT: "!"
 
 
-    additive_expression: multiplicative_expression
-        | additive_expression "+" multiplicative_expression
-        | additive_expression "-" multiplicative_expression
-
-
-    shift_expression: additive_expression
-        | shift_expression LEFT_OP additive_expression
-        | shift_expression RIGHT_OP additive_expression
-
-
-    relational_expression: shift_expression
-        | relational_expression "<" shift_expression
-        | relational_expression ">" shift_expression
-        | relational_expression LE_OP shift_expression
-        | relational_expression GE_OP shift_expression
-
-
-    equality_expression: relational_expression
-        | equality_expression EQ_OP relational_expression
-        | equality_expression NE_OP relational_expression
-
-
-    and_expression: equality_expression
-        | and_expression "&" equality_expression
-
-
-    exclusive_or_expression: and_expression
-        | exclusive_or_expression "^" and_expression
-
-
-    inclusive_or_expression: exclusive_or_expression
-        | inclusive_or_expression "|" exclusive_or_expression
-
-
-    logical_and_expression: inclusive_or_expression
-        | logical_and_expression AND_OP inclusive_or_expression
-
-
-    logical_or_expression: logical_and_expression
-        | logical_or_expression OR_OP logical_and_expression
-
-
-    conditional_expression: logical_or_expression
-        | logical_or_expression "?" _expression ":" conditional_expression
-
-
-    assignment_expression: conditional_expression
-        | unary_expression assignment_operator assignment_expression
-
-    ?identifier: operand
-
-    unary_operator: "*"
-        | "+"
-        | "-"
-        | "~"
-        | "!"
-
-    assignment_operator: "="
+    _assignment_operator: ASSIGN
         | MUL_ASSIGN
         | DIV_ASSIGN
         | MOD_ASSIGN
@@ -170,6 +209,7 @@ fbody: statement* -> fbody
         | XOR_ASSIGN
         | OR_ASSIGN
 
+    ASSIGN: "="
     RIGHT_ASSIGN: ">>="
     LEFT_ASSIGN: "<<="
     ADD_ASSIGN: "+="
@@ -205,24 +245,33 @@ fbody: statement* -> fbody
     CASE: "case"
     DEFAULT: "default"
 
-    ?operand: imm
+    _operand: _immediate
         | INTCON
         | TYPED_INT
         | TLB
 
-    ?imm: any_reg
-        | "#" IMMLETT [INT]
+    imm: "#" IMMLETT [INT]
 
-    any_reg: hvx_pred
-        | GP_REG
+    _immediate: _any_reg
+        | imm
+
+    named_regs: GP_REG
         | SYS_REG
 
-    hvx_pred: reg
-        | "Q" SRC_REG "V"
+    _any_reg: _hvx_pred
+        | named_regs
 
-    reg: variable
-        | REG_TYPE SRC_REG
+    quad_pred_reg: "Q" SRC_REG "V"
+
+    _hvx_pred: _register
+        | quad_pred_reg
+
+    reg: REG_TYPE SRC_REG
         | REG_TYPE SRC_REG_PAIR
+
+    _register: reg
+        | variable
+
 
     variable: /[A-Za-z_]\w*/
 
