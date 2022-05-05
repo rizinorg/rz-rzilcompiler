@@ -7,7 +7,7 @@ from Tests.testcases import behaviors
 def test_grammar():
     with open("../Parser/Grammars/Hexagon/ProgRefManual_Grammar.lark") as f:
         grammar = "".join(f.readlines())
-    parser = Lark(grammar, start="fbody", ambiguity="explicit", parser="earley")
+    parser = Lark(grammar, start="fbody", ambiguity="explicit")
     correct = 0
     fail = 0
     fail_msg = []
@@ -21,6 +21,7 @@ def test_grammar():
             fail_msg.append(e)
             fail += 1
     print("\n\nParsed {} Not parsed {}".format(correct, fail))
+
     if fail == 0:
         print("SUCCESSFULLY PARSED\n")
     else:
@@ -32,6 +33,19 @@ def test_grammar():
             if a == "q":
                 exit()
 
+    # ambigs = 0
+    # for tree in trees:
+    #     if "ambig" in tree[1]:
+    #         ambigs += 1
+    # print(f"Ambiguouities in {ambigs} trees.")
+    # for tree in trees:
+    #     if "ambig" in tree[1]:
+    #         print(f"STATEMENT: {tree[0]}")
+    #         print("\n" + ("#" * 20) + "\n")
+    #         print(tree[1])
+    #         print("\n" + ("#" * 20) + "\n")
+    #         if a == "q":
+    #             exit()
 
 if __name__ == "__main__":
     test_grammar()

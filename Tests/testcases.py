@@ -1,6 +1,6 @@
 transform_test = [
     """
-    Rd = Rs + #r9;
+    Rd = Rs + Rtt.ub;
     """,
 ]
 
