@@ -74,14 +74,29 @@ fbody: statement* -> fbody
         | string
         | "(" _expression ")"
 
-    _postfix_expression: _primary_expression
-        | _postfix_expression "[" _additive_expression ":" _additive_expression "]"
+    macro: MACRO_NAME "(" ")"
+        | MACRO_NAME "(" _argument_expression_list ")"
+    
+    _mem_op: mem_access "(" _argument_expression_list ")"
+    
+    _call: _mem_op
+        | macro
+
+    arr_access: _postfix_expression "[" _additive_expression ":" _additive_expression "]"
         | _postfix_expression "[" _expression "]"
-        | _postfix_expression "(" ")"
-        | _postfix_expression "(" _argument_expression_list ")"
-        | _postfix_expression "." identifier | INT
-        | _postfix_expression INC_OP
-        | _postfix_expression DEC_OP
+
+    bit_access: _postfix_expression "." identifier | INT
+
+    inc_ret: _postfix_expression INC_OP
+
+    dec_ret: _postfix_expression DEC_OP
+
+    _postfix_expression: _primary_expression
+        | arr_access
+        | _call
+        | bit_access
+        | inc_ret
+        | dec_ret
     
     args: _argument_expression_list "," _assignment_expression
     
@@ -184,8 +199,14 @@ fbody: statement* -> fbody
         | tenary
 
     assign: _unary_expression _assignment_operator _assignment_expression
+    
+    mem_write: _mem_op "=" _assignment_expression
+    
+    mem_read: _unary_expression "=" _mem_op
 
     _assignment_expression: _conditional_expression
+        | mem_write
+        | mem_read
         | assign
 
     ?identifier: _operand
@@ -273,10 +294,15 @@ fbody: statement* -> fbody
 
     _register: sub_reg
         | reg
-        | variable
+        | local_var
 
 
-    variable: /[A-Za-z_]\w*/
+    _VARIABLE: /[A-Za-z_]\w*/
+
+    mem_access: "mem" SUBFIELD
+    mem_access: "mem" SUBFIELD
+    MACRO_NAME: _VARIABLE
+    local_var: _VARIABLE
 
     REG_TYPE: "C" | "N" | "P" | "R" | "M" | "Q" | "V" | "O"
     SRC_REG: "s" | "t" 

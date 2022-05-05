@@ -22,8 +22,22 @@ class ManualTransformer(Transformer):
 
     def assign(self, items):
         print(f'assign {items}')
-        return "ASSIGN"
+        return f"{items[0]}{items[1]}"
 
     def add(self, items):
         print(f'add: {items}')
-        return "ADD"
+        return f"{items[0]}{items[1]}"
+    
+    def mem_write(self, items):
+        print(f'mem_write: {items}')
+        return f"{items[0]}{items[1]}"
+
+    def mem_read(self, items):
+        print(f'mem_read: {items}')
+        return f"{items[0]}{items[1]}"
+    
+    def mem_access(self, items):
+        print(f'mem_access: {items}')
+        return f"{items[0]}"
+    
+    

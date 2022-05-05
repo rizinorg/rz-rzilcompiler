@@ -2,6 +2,12 @@ transform_test = [
     """
     Rd = Rs + Rtt.ub;
     """,
+    """
+    memw(Rs) = #s16;
+    """,
+    """
+    memw_locked(Rs) = #s16;
+    """,
 ]
 
 behaviors = [
