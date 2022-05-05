@@ -5,7 +5,7 @@ from Tests.testcases import behaviors
 
 
 def test_parser():
-    with open("Parser/Grammars/Hexagon/manual-grammar.lark") as f:
+    with open("Parser/Grammars/Hexagon/ProgRefManual_Grammar.lark") as f:
         grammar = "".join(f.readlines())
     parser = Lark(grammar, start="fbody", ambiguity="explicit", parser="earley")
     correct = 0

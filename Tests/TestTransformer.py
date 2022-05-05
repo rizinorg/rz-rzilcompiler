@@ -7,7 +7,7 @@ from lark import Lark
 
 
 def test_transformer():
-    with open("Parser/Grammars/Hexagon/manual-grammar.lark") as f:
+    with open("Parser/Grammars/Hexagon/ProgRefManual_Grammar.lark") as f:
         grammar = "".join(f.readlines())
     parser = Lark(grammar, start="fbody")
     for beh in transform_test:
