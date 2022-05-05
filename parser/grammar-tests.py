@@ -3,10 +3,10 @@
 from lark import Lark
 from testcases import behaviors
 
-if __name__ == '__main__':
-    with open('Hexagon/manual-grammar.lark') as f:
-        grammar = ''.join(f.readlines())
-    parser = Lark(grammar, start='fbody', ambiguity='explicit')#, ambiguity="explicit")
+if __name__ == "__main__":
+    with open("Hexagon/manual-grammar.lark") as f:
+        grammar = "".join(f.readlines())
+    parser = Lark(grammar, start="fbody", ambiguity="explicit", parser="earley")
     correct = 0
     fail = 0
     fail_msg = []
@@ -19,16 +19,16 @@ if __name__ == '__main__':
         except Exception as e:
             fail_msg.append(e)
             fail += 1
-    print('\n\nParsed {} Not parsed {}'.format(correct, fail))
-    if (fail == 0):
-        print("SUCCESSFUL PARSED\n")
+    print("\n\nParsed {} Not parsed {}".format(correct, fail))
+    if fail == 0:
+        print("SUCCESSFULLY PARSED\n")
     else:
         for i, m in enumerate(fail_msg):
-            print('\n' + ('#' * 20) + '\n')
+            print("\n" + ("#" * 20) + "\n")
             print(m)
-            print('\n' + ('#' * 20) + '\n')
-            a = input('Failed test #{} - Print next [q=quit] > '.format(i))
-            if a == 'q':
+            print("\n" + ("#" * 20) + "\n")
+            a = input("Failed test #{} - Print next [q=quit] > ".format(i))
+            if a == "q":
                 exit()
 
 #    for i, m in enumerate(trees):

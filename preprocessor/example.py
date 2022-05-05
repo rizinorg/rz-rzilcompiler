@@ -5,15 +5,18 @@ import pprint
 import re
 
 # General approach:
-# 
-# Search for all syntax and behavior pairs. 
-# Remove leading whitespace. 
+#
+# Search for all syntax and behavior pairs.
+# Remove leading whitespace.
 # Remove a single space leading and/or trailing every character.
 # Use two matching groups and the whitespace inbetween them to infer a block being syntax or behavior from the second one being empty or not.
 
 
 # Open file. And read into memory.
-with open("../ressources/Hexagon/Hexagon-manuals-80-n2040-45-b-v67-AND-80-n2040-44-b-v66-hvx.txt", encoding='utf_8') as g:
+with open(
+    "../ressources/Hexagon/Hexagon-manuals-80-n2040-45-b-v67-AND-80-n2040-44-b-v66-hvx.txt",
+    encoding="utf_8",
+) as g:
     testpages = g.read()
 g.close()
 
@@ -23,25 +26,28 @@ g.close()
 # 3  (?=Class|80-N) is a positive lookahead for either the Class description or a new page.
 # 2(?=3) results in matching every character between a newline after Behavior and before either Class or 80-N.
 # All in all one can find all Syntax-Behavior groups in the manual with this regex.
-sb_groups = re.compile(r"Syntax +Behavior\n(.+?)(?=Class|80-N)",flags=re.S | re.M)
+sb_groups = re.compile(r"Syntax +Behavior\n(.+?)(?=Class|80-N)", flags=re.S | re.M)
 
 # 0 "^([\w\d,;:+?\-%&$~[\]\}{.(#!)<>=]+) *([\w\d,;:+?\-%&$~[\]\}{.(#!)<>=]+)?"gm
 # 1  ^([\w\d,;:+?\-%&$~[\]\}{.(#!)<>=]+) captures every character at the start of a line in group 1
 # 2   * matches any potential whitespace between both groups
 # 3  ([\w\d,;:+?\-%&$~[\]\}{.(#!)<>=]+)? captures a potential second group but is omitted if there no spaces after the first group.
-# 1-3 together lets us find each syntax behavior pair in two capturing groups. If there is only on group found it has to be a behavior 
+# 1-3 together lets us find each syntax behavior pair in two capturing groups. If there is only on group found it has to be a behavior
 # group otherwise first is syntax and second is behavior.
-sb_pairs = re.compile(r"^([\w\d,;:+?\-%&$~[\]\}{.(#!)<>=]+) *([\w\d,;:+?\-%&$~[\]\}{.(#!)<>=]+)?", flags= re.M)
+sb_pairs = re.compile(
+    r"^([\w\d,;:+?\-%&$~[\]\}{.(#!)<>=]+) *([\w\d,;:+?\-%&$~[\]\}{.(#!)<>=]+)?",
+    flags=re.M,
+)
 
 # Returns an iterator for each syntax behavior block.
 sb = sb_groups.finditer(testpages)
 
 for match in sb:
-    # Strips all the leading whitespace at the start of each line aswell as a single space leading and/or trailing from a single character from the content of the syntax behavior groups. 
-    cleaned_groups = re.sub(r"^\s+", "", match.group(1), flags = re.M)
-    cleaned_groups = re.sub(r" ?([^ ]) ?", r'\1', cleaned_groups)
+    # Strips all the leading whitespace at the start of each line aswell as a single space leading and/or trailing from a single character from the content of the syntax behavior groups.
+    cleaned_groups = re.sub(r"^\s+", "", match.group(1), flags=re.M)
+    cleaned_groups = re.sub(r" ?([^ ]) ?", r"\1", cleaned_groups)
     # There is a special case in which a single space divides a syntax and behavior group so we need to add that back. The only occurence we've found so far was infront of a for.
-    cleaned_groups = re.sub(r"for"," for",cleaned_groups)
+    cleaned_groups = re.sub(r"for", " for", cleaned_groups)
     Syntax = ""
     Behavior = ""
     sb_dict = dict()
@@ -52,16 +58,16 @@ for match in sb:
         # There are two blocks since the second matching groups is not empty.
         if item[1]:
             # TODO work out the kinks of syntax behavior blocks that grow in parallel
-            if "if" in item[0]: 
+            if "if" in item[0]:
                 print("This is suspicious.")
             # We can add our instruction pair to the dictonairy and start a new one if we know that we either visited a double block or a single behavior block beforehand.
-            if consecutive or b_check: 
+            if consecutive or b_check:
                 sb_dict[Syntax] = Behavior
                 Syntax = item[0]
                 Behavior = item[1]
                 b_check = False
                 consecutive = True
-            # 
+            #
             else:
                 Syntax += item[0]
                 Behavior += item[1]
@@ -69,11 +75,11 @@ for match in sb:
                 b_check = True
         # Only one matching group has content so it has to be a behavior entry.
         else:
-            Behavior += " "+item[0]
+            Behavior += " " + item[0]
             consecutive = False
             b_check = True
-    
-    # We need to add the last pair manually as we finished the for loop.      
+
+    # We need to add the last pair manually as we finished the for loop.
     sb_dict[Syntax] = Behavior
     pprint.pprint(sb_dict)
 
@@ -122,7 +128,7 @@ for match in sb:
 #                                       } else {
 #                                            NOP;
 #                                       }
-#  
+#
 # Multiple lines of syntax but each of which is a single instructuction.
 #
 # Syntax                                     Behavior
