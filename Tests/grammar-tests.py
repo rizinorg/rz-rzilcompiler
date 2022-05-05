@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 from lark import Lark
-from testcases import behaviors, transform_test
+from testcases import behaviors
+
 
 def test_parser():
-    with open("Grammars/Hexagon/manual-grammar.lark") as f:
+    with open("../Parser/Grammars/Hexagon/manual-grammar.lark") as f:
         grammar = "".join(f.readlines())
     parser = Lark(grammar, start="fbody", ambiguity="explicit", parser="earley")
     correct = 0
@@ -30,16 +31,6 @@ def test_parser():
             a = input("Failed test #{} - Print next [q=quit] > ".format(i))
             if a == "q":
                 exit()
-
-
-#    for i, m in enumerate(trees):
-#        print("Syntax: {}".format(m[0]))
-#        print('\n' + ('#' * 20) + '\n')
-#        print(m[1])
-#        print('\n' + ('#' * 20) + '\n')
-#        #a = input('Test #{} - Print next [q=quit] > '.format(i))
-#        #if a == 'q':
-#        #    exit()
 
 
 if __name__ == "__main__":
