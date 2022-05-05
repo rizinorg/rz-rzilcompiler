@@ -2,29 +2,32 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from enum import Enum
+from Exceptions import OverloadException
 
 
-class PureTypes(Enum):
-    ADD = (0,)
-    SUB = (1,)
-    MUL = (2,)
-    DIV = (3,)
-    MOD = (4,)
-    POW = (5,)
-    LT = (6,)
-    LE = (7,)
-    GT = (8,)
-    GE = (9,)
-    AND = (10,)
-    OR = (11,)
-    XOR = (12,)
-    LOADW = (100,)
+class PureType(Enum):
+    GLOBAL = 0  # Registers
+    LOCAL = 1  # Local variables
+    EXEC = 2  # Any value returned from operations like add, sub etc.
+    MEM = 3  # Read memory access
 
 
 class Pure:
-    """
-    Pures generate statements of the for `RzILOpPure var = <Pure>`.
-    """
+    name: str = ''  # Name of pure
+    type: PureType = None
 
-    def init(self):
-        pass
+    def init(self, name: str, pure_type: PureType):
+        self.name = name
+        self.type = pure_type
+
+    def get_name(self):
+        return self.name
+
+    def code_read(self):
+        """ Returns the RZIL ops to read the variable value.
+        :return: RZIL ops to read the pure value.
+        """
+        raise OverloadException('')
+
+    def code_init_var(self):
+        return f'RzIlOpPure *{self.name} = {self.code_read()};'
