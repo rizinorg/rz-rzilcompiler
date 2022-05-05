@@ -1,3 +1,9 @@
+transform_test = [
+    """
+    Rd = Rs + #U
+    """,
+]
+
 behaviors = [
     """
         i = 4*i+4-1;

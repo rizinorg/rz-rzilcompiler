@@ -4,8 +4,8 @@
 // - multiple declarations and initializations (like structs, arrays, inits list)
 //   - only simple `identifier = x` or `sizeX_t identifier = x`
 // - No `->` operator
-// - Loops with only declaration and expression_statement.
-//   They need three expression_statements in the brackets.
+// - Loops with only declaration and _expression_statement.
+//   They need three _expression_statements in the brackets.
 //   Also a declaration as first part is mandatory.
 // - std types liek `int`, `float`, `double` etc. Only `sizeX_t`.
 // Adds:
@@ -21,7 +21,7 @@ fbody: statement* -> fbody
     ?statement: assembler_statement
         | labeled_statement 
         | compound_statement
-        | expression_statement
+        | _expression_statement
         | selection_statement
         | iteration_statement
         | jump_statement
@@ -41,25 +41,25 @@ fbody: statement* -> fbody
     block_item: declaration
         | statement
 
-    expression_statement: ";"
-	    | expression ";"
+    _expression_statement: ";"
+	    | _expression ";"
 
-    selection_statement: IF "(" expression ")" statement ELSE statement
-        | IF "(" expression ")" statement
-        | SWITCH "(" expression ")" statement
+    selection_statement: IF "(" _expression ")" statement ELSE statement
+        | IF "(" _expression ")" statement
+        | SWITCH "(" _expression ")" statement
 
-    iteration_statement: WHILE "(" expression ")" statement
-        | DO statement WHILE "(" expression ")" ";"
-        | FOR "(" declaration expression_statement expression ")" statement
+    iteration_statement: WHILE "(" _expression ")" statement
+        | DO statement WHILE "(" _expression ")" ";"
+        | FOR "(" declaration _expression_statement _expression ")" statement
 
     jump_statement: GOTO identifier ";"
         | CONTINUE ";"
         | BREAK ";"
         | RETURN ";"
-        | RETURN expression ";"
+        | RETURN _expression ";"
 
-    expression: assignment_expression
-        | expression "," assignment_expression
+    _expression: assignment_expression
+        | _expression "," assignment_expression
 
     constant_expression: conditional_expression
 
@@ -72,11 +72,11 @@ fbody: statement* -> fbody
 
     primary_expression: operand 
         | string
-        | "(" expression ")"
+        | "(" _expression ")"
 
     postfix_expression: primary_expression
         | postfix_expression "[" additive_expression ":" additive_expression "]"
-        | postfix_expression "[" expression "]"
+        | postfix_expression "[" _expression "]"
         | postfix_expression "(" ")"
         | postfix_expression "(" argument_expression_list ")"
         | postfix_expression "." identifier | INT
@@ -144,7 +144,7 @@ fbody: statement* -> fbody
 
 
     conditional_expression: logical_or_expression
-        | logical_or_expression "?" expression ":" conditional_expression
+        | logical_or_expression "?" _expression ":" conditional_expression
 
 
     assignment_expression: conditional_expression
