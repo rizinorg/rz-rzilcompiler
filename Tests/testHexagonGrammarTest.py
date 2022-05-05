@@ -4,7 +4,7 @@ from lark import Lark
 from Tests.testcases import behaviors
 
 
-def test_parser():
+def test_grammar():
     with open("../Parser/Grammars/Hexagon/ProgRefManual_Grammar.lark") as f:
         grammar = "".join(f.readlines())
     parser = Lark(grammar, start="fbody", ambiguity="explicit", parser="earley")
@@ -34,5 +34,5 @@ def test_parser():
 
 
 if __name__ == "__main__":
-    test_parser()
+    test_grammar()
 

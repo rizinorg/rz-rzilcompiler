@@ -19,40 +19,40 @@ start: fbody
 fbody: statement* -> fbody
 
     ?statement: assembler_statement
-        | labeled_statement 
-        | compound_statement
+        | _labeled_statement 
+        | _compound_statement
         | _expression_statement
-        | selection_statement
-        | iteration_statement
-        | jump_statement
+        | _selection_statement
+        | _iteration_statement
+        | _jump_statement
 
     assembler_statement: "Assembler mapped to: \"" INSTRUCTION_MNEM "\";"
 
-    labeled_statement: identifier ":" statement
+    _labeled_statement: identifier ":" statement
         | CASE constant_expression ":" statement
         | DEFAULT ":" statement
 
-    compound_statement: "{" "}"
+    _compound_statement: "{" "}"
         | "{" block_item_list "}"
 
     block_item_list: block_item
         | block_item_list block_item
 
-    block_item: declaration
+    block_item: _declaration
         | statement
 
     _expression_statement: ";"
 	    | _expression ";"
 
-    selection_statement: IF "(" _expression ")" statement ELSE statement
+    _selection_statement: IF "(" _expression ")" statement ELSE statement
         | IF "(" _expression ")" statement
         | SWITCH "(" _expression ")" statement
 
-    iteration_statement: WHILE "(" _expression ")" statement
+    _iteration_statement: WHILE "(" _expression ")" statement
         | DO statement WHILE "(" _expression ")" ";"
-        | FOR "(" declaration _expression_statement _expression ")" statement
+        | FOR "(" _declaration _expression_statement _expression ")" statement
 
-    jump_statement: GOTO identifier ";"
+    _jump_statement: GOTO identifier ";"
         | CONTINUE ";"
         | BREAK ";"
         | RETURN ";"
@@ -63,7 +63,7 @@ fbody: statement* -> fbody
 
     constant_expression: conditional_expression
 
-    declaration: type_specifier init_declarator ";"
+    _declaration: type_specifier init_declarator ";"
         | init_declarator ";" // Type is not always given.
 
     init_declarator: identifier "=" initializer
@@ -74,19 +74,19 @@ fbody: statement* -> fbody
         | string
         | "(" _expression ")"
 
-    postfix_expression: primary_expression
-        | postfix_expression "[" additive_expression ":" additive_expression "]"
-        | postfix_expression "[" _expression "]"
-        | postfix_expression "(" ")"
-        | postfix_expression "(" argument_expression_list ")"
-        | postfix_expression "." identifier | INT
-        | postfix_expression INC_OP
-        | postfix_expression DEC_OP
+    _postfix_expression: primary_expression
+        | _postfix_expression "[" additive_expression ":" additive_expression "]"
+        | _postfix_expression "[" _expression "]"
+        | _postfix_expression "(" ")"
+        | _postfix_expression "(" argument_expression_list ")"
+        | _postfix_expression "." identifier | INT
+        | _postfix_expression INC_OP
+        | _postfix_expression DEC_OP
     
     argument_expression_list: assignment_expression
 	    | argument_expression_list "," assignment_expression
 
-    unary_expression: postfix_expression
+    unary_expression: _postfix_expression
         | INC_OP unary_expression
         | DEC_OP unary_expression
         | unary_operator cast_expression
