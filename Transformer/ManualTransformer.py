@@ -29,16 +29,16 @@ class ManualTransformer(Transformer):
 
         if reg_type == "SRC_REG":
             # Should be read before use. Add to read list.
-            v = GlobalVar(name)
+            v = GlobalVar(name, True)
             ops.append(v)
             return v
         elif reg_type == "DEST_REG":
             # Dest regs are passed as string to SETG()
-            v = GlobalVar(name)
+            v = GlobalVar(name, True)
             ops.append(v)
             return v
         elif reg_type == "SRC_DEST_REG":
-            v = GlobalVar(name)
+            v = GlobalVar(name, True)
             ops.append(v)
             return v
 
@@ -51,7 +51,7 @@ class ManualTransformer(Transformer):
         dest = items[0]
         assign_type = AssignmentType.ASGN # AssignmentType[items[1].value]
         src = items[2]
-        v = Assignment(f'assign{dest.code_get_op_name()}{src.code_get_op_name()}', assign_type, dest, src)
+        v = Assignment(f'assign{dest.get_isa_name()}{src.get_isa_name()}', assign_type, dest, src)
         ops.append(v)
         return v
 

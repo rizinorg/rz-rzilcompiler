@@ -31,9 +31,9 @@ class Assignment(Effect):
         elif dest.type == PureType.GLOBAL:
             super().init(name, EffectType.SETG)
         else:
-            raise NotImplementedError
+            raise NotImplementedError()
 
-    def code_get_op_name(self):
+    def get_isa_name(self):
         """ Returns the name of the RzILOpPure variable. """
         return self.name
 
@@ -42,6 +42,6 @@ class Assignment(Effect):
         :return: RZIL ops to write the pure value.
         """
         if self.type == EffectType.SETG:
-            return f'SETG("{self.dest.code_get_vm_name()}", {self.src.code_get_op_name()})'
+            return f'SETG("{self.dest.get_isa_name()}", {self.src.get_isa_name()})'
         else:
-            raise NotImplementedError
+            raise NotImplementedError()

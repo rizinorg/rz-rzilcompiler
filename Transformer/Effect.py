@@ -23,7 +23,7 @@ class Effect:
     def get_name(self):
         return self.name
 
-    def code_get_op_name(self):
+    def get_isa_name(self):
         """ Returns the name of the RzILOpPure variable. """
         return self.name
 
@@ -38,4 +38,4 @@ class Effect:
         raise OverloadException('')
 
     def code_init_var(self):
-        return f'RzIlOpEffect *{self.code_get_op_name()} = {self.code_write()};'
+        return f'RzIlOpEffect *{self.get_isa_name()} = {self.code_write()};'
