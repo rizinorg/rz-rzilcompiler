@@ -19,5 +19,12 @@ class Register(GlobalVar):
         self.access = access
         super().__init__(name)
 
+    def code_init_var(self):
+        if self.access == RegisterAccessType.W: # Registers which are are only written do not need an own RzILOpPure.
+            return self.code_isa_to_assoc_name()
+        init = self.code_isa_to_assoc_name() + '\n'
+        init += f'RzIlOpPure *{self.get_isa_name()} = VARG({self.get_isa_name()});'
+        return init
+
     def code_isa_to_assoc_name(self):
-        return f'const char *{self.name_assoc} = {isa_to_reg_fnc}({", ".join(isa_to_reg_args)}, "{self.name}");\n'
+        return f'const char *{self.name_assoc} = {isa_to_reg_fnc}({", ".join(isa_to_reg_args)}, "{self.name}");'
