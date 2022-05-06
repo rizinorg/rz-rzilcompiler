@@ -3,6 +3,7 @@
 
 from lark import Transformer, Token
 from Transformer.GlobalVar import GlobalVar
+from Transformer.Effect import Effect
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pure import Pure
 
@@ -17,8 +18,14 @@ class ManualTransformer(Transformer):
 
     def fbody(self, items):
         # We are at the top. Generate code.
+        print("// READ")
         for op in ops:
-            print(op.code_init_var())
+            if isinstance(op, Pure):
+                print(op.code_init_var())
+        print("\n// EXEC & WRITE")
+        for op in ops:
+            if isinstance(op, Effect):
+                print(op.code_init_var())
 
     # Returned value replaces node in tree
     # Transformers/Visitors are called bottom up! First leaves then parents
