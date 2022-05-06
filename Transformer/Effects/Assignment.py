@@ -42,6 +42,6 @@ class Assignment(Effect):
         :return: RZIL ops to write the pure value.
         """
         if self.type == EffectType.SETG:
-            return f'SETG("{self.dest.get_name()}", {self.src.get_name()})'
+            return f'SETG({self.dest.get_assoc_name()}, {self.src.get_name()})'
         else:
             raise NotImplementedError('')
