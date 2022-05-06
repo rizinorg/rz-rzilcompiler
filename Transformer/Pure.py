@@ -3,7 +3,6 @@
 
 from enum import Enum
 from Exceptions import OverloadException
-from itertools import count
 
 class PureType(Enum):
     GLOBAL = 0  # Registers
@@ -16,13 +15,11 @@ class Pure:
     name: str = ''  # Name of pure
     name_assoc: str = '' # Name associated with the ISA name. E.g. ISA: "Rs" Associated: "R3"
     type: PureType = None
-    _ids = count(0)
 
     def init(self, name: str, pure_type: PureType):
         self.name = name
         self.name_assoc = name + '_assoc'
         self.type = pure_type
-        self.id = next(self._ids)
 
     def get_name(self):
         return self.name
@@ -37,6 +34,12 @@ class Pure:
     def code_read(self):
         """ Returns the RZIL ops to read the variable value.
         :return: RZIL ops to read the pure value.
+        """
+        raise OverloadException('')
+
+    def code_exec(self):
+        """ Returns the RZIL ops to execute the operation.
+        :return: RZIL ops to exec the operation value.
         """
         raise OverloadException('')
     

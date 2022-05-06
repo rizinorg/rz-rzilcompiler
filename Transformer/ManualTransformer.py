@@ -5,7 +5,9 @@ from lark import Transformer, Token
 from Transformer.GlobalVar import GlobalVar
 from Transformer.Effect import Effect
 from Transformer.Effects.Assignment import Assignment, AssignmentType
-from Transformer.Pure import Pure
+from Transformer.Pure import Pure, PureType
+from Transformer.Pures.Add import Add
+
 
 ops = []
 
@@ -21,8 +23,14 @@ class ManualTransformer(Transformer):
         print("// READ")
         for op in ops:
             if isinstance(op, Pure):
-                print(op.code_init_var())
-        print("\n// EXEC & WRITE")
+                if op.type == PureType.GLOBAL or op.type == PureType.LOCAL:
+                    print(op.code_init_var())
+        print('\n// EXEC')
+        for op in ops:
+            if isinstance(op, Pure):
+                if op.type == PureType.EXEC or op.type == PureType.MEM:
+                    print(op.code_init_var())
+        print("\n// WRITE")
         for op in ops:
             if isinstance(op, Effect):
                 print(op.code_init_var())
@@ -58,13 +66,16 @@ class ManualTransformer(Transformer):
         dest = items[0]
         assign_type = AssignmentType.ASGN # AssignmentType[items[1].value]
         src = items[2]
-        v = Assignment(f'assign{dest.get_isa_name()}{src.get_isa_name()}', assign_type, dest, src)
+        v = Assignment(f'assign{dest.get_name()}{src.get_name()}', assign_type, dest, src)
         ops.append(v)
         return v
 
     def add(self, items):
-        print(f'add: {items}')
-        return f"{items[0]}{items[1]}"
+        a = items[0]
+        b = items[1]
+        v = Add(f'add{a.get_name()}{b.get_name()}', a, b)
+        ops.append(v)
+        return v
 
     def mem_write(self, items):
         print(f'mem_write: {items}')
