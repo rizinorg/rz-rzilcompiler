@@ -26,7 +26,7 @@ class GlobalVar(Pure):
         return init
 
     def code_read(self):
-        if self.reads <= 1: # First use of this variable
+        if self.reads < 1: # First use of this variable
             ret = self.get_isa_name()
         else:
             ret = f'DUP({self.get_isa_name()})'

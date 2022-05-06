@@ -9,7 +9,7 @@ from Transformer.Pure import Pure, PureType
 from Transformer.Pures.Add import Add
 
 
-ops = []
+ops = dict()
 
 
 class ManualTransformer(Transformer):
@@ -21,17 +21,15 @@ class ManualTransformer(Transformer):
     def fbody(self, items):
         # We are at the top. Generate code.
         print("// READ")
-        for op in ops:
-            if isinstance(op, Pure):
-                if op.type == PureType.GLOBAL or op.type == PureType.LOCAL:
-                    print(op.code_init_var())
+        for op in ops.values():
+            if op.type == PureType.GLOBAL or op.type == PureType.LOCAL:
+                print(op.code_init_var())
         print('\n// EXEC')
-        for op in ops:
-            if isinstance(op, Pure):
-                if op.type == PureType.EXEC or op.type == PureType.MEM:
-                    print(op.code_init_var())
+        for op in ops.values():
+            if op.type == PureType.EXEC or op.type == PureType.MEM:
+                print(op.code_init_var())
         print("\n// WRITE")
-        for op in ops:
+        for op in ops.values():
             if isinstance(op, Effect):
                 print(op.code_init_var())
 
@@ -44,18 +42,24 @@ class ManualTransformer(Transformer):
 
         if reg_type == "SRC_REG":
             # Should be read before use. Add to read list.
-            v = GlobalVar(name, True)
-            ops.append(v)
-            return v
+            if name not in ops:
+                v = GlobalVar(name, True)
+                ops[name] = v
+                return v
+            return ops[name]
         elif reg_type == "DEST_REG":
             # Dest regs are passed as string to SETG()
-            v = GlobalVar(name, True)
-            ops.append(v)
-            return v
+            if name not in ops:
+                v = GlobalVar(name, True)
+                ops[name] = v
+                return v
+            return ops[name]
         elif reg_type == "SRC_DEST_REG":
-            v = GlobalVar(name, True)
-            ops.append(v)
-            return v
+            if name not in ops:
+                v = GlobalVar(name, True)
+                ops[name] = v
+                return v
+            return ops[name]
 
     def imm(self, items):
         print(f'imm: {items}')
@@ -64,17 +68,20 @@ class ManualTransformer(Transformer):
     def assign(self, items):
         items: Token
         dest = items[0]
-        assign_type = AssignmentType.ASGN # AssignmentType[items[1].value]
+        assign_type = AssignmentType.ASGN
         src = items[2]
-        v = Assignment(f'assign{dest.get_name()}{src.get_name()}', assign_type, dest, src)
-        ops.append(v)
+        name = f'assign{dest.get_name()}{src.get_name()}'
+        v = Assignment(name, assign_type, dest, src)
+        # ! How to handle effects which do the same? Unique ids for effects and non Vars!
+        ops[name] = v
         return v
 
     def add(self, items):
         a = items[0]
         b = items[1]
-        v = Add(f'add{a.get_name()}{b.get_name()}', a, b)
-        ops.append(v)
+        name = f'add{a.get_name()}{b.get_name()}'
+        v = Add(name, a, b)
+        ops[name] = v
         return v
 
     def mem_write(self, items):
