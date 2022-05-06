@@ -7,8 +7,7 @@ from Exceptions import OverloadException
 class PureType(Enum):
     GLOBAL = 0  # Registers
     LOCAL = 1  # Local variables
-    EXEC = 2  # Any value returned from operations like add, sub etc.
-    MEM = 3  # Read memory access
+    EXEC = 2  # Read memory access
 
 
 class Pure:
@@ -16,7 +15,7 @@ class Pure:
     name_assoc: str = '' # Name associated with the ISA name. E.g. ISA: "Rs" Associated: "R3"
     type: PureType = None
 
-    def init(self, name: str, pure_type: PureType):
+    def __init__(self, name: str, pure_type: PureType):
         self.name = name
         self.name_assoc = name + '_assoc'
         self.type = pure_type

@@ -7,6 +7,7 @@ from Transformer.Effect import Effect
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pure import Pure, PureType
 from Transformer.Pures.Add import Add
+from Transformer.Register import Register, RegisterAccessType
 
 
 ops = dict()
@@ -22,11 +23,11 @@ class ManualTransformer(Transformer):
         # We are at the top. Generate code.
         print("// READ")
         for op in ops.values():
-            if op.type == PureType.GLOBAL or op.type == PureType.LOCAL:
+            if isinstance(op, Register):
                 print(op.code_init_var())
         print('\n// EXEC')
         for op in ops.values():
-            if op.type == PureType.EXEC or op.type == PureType.MEM:
+            if op.type == PureType.EXEC:
                 print(op.code_init_var())
         print("\n// WRITE")
         for op in ops.values():
@@ -43,20 +44,20 @@ class ManualTransformer(Transformer):
         if reg_type == "SRC_REG":
             # Should be read before use. Add to read list.
             if name not in ops:
-                v = GlobalVar(name, True)
+                v = Register(name, RegisterAccessType.R)
                 ops[name] = v
                 return v
             return ops[name]
         elif reg_type == "DEST_REG":
             # Dest regs are passed as string to SETG()
             if name not in ops:
-                v = GlobalVar(name, True)
+                v = Register(name, RegisterAccessType.W)
                 ops[name] = v
                 return v
             return ops[name]
         elif reg_type == "SRC_DEST_REG":
             if name not in ops:
-                v = GlobalVar(name, True)
+                v = Register(name, RegisterAccessType.RW)
                 ops[name] = v
                 return v
             return ops[name]
