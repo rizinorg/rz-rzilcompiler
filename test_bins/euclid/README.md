@@ -5,8 +5,7 @@ The test binary calculates the greatest common divisor with the help of Extended
 The build script builds object files with an optimization of 0-3
 and two linked binaries with optimization 0 and 3.
 
-Each binary should contain different instructions and is therefore harder to emulate.
-The object file with the optimization level 0 is the easiest. The hardest is the completly linked program with optimization level 3.
+Each binary should contain unique instructions and is therefore different to emulate, while the result should stay the same.
 
 The `gen_stats.h` script runs Rizins `aaa` command on each of those binaries and writes the disassembled instructions into stat files.
 Rizin needs to be patched for that so it prints the disassembled instructions to `stdout`.
