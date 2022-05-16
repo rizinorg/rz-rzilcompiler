@@ -16,21 +16,21 @@
 //
 
 start: fbody
-fbody: statement* -> fbody
+fbody: _statement* -> fbody
 
-    ?statement: assembler_statement
+    _statement: assembler_statement
         | _labeled_statement 
         | _compound_statement
         | _expression_statement
-        | _selection_statement
-        | _iteration_statement
+        | selection_statement
+        | iteration_statement
         | _jump_statement
 
     assembler_statement: "Assembler mapped to: \"" INSTRUCTION_MNEM "\";"
 
-    _labeled_statement: identifier ":" statement
-        | CASE _constant_expression ":" statement
-        | DEFAULT ":" statement
+    _labeled_statement: identifier ":" _statement
+        | CASE _constant_expression ":" _statement
+        | DEFAULT ":" _statement
 
     _compound_statement: "{" "}"
         | "{" _block_item_list "}"
@@ -39,18 +39,18 @@ fbody: statement* -> fbody
         | _block_item_list _block_item
 
     _block_item: _declaration
-        | statement
+        | _statement
 
     _expression_statement: ";"
 	    | _expression ";"
 
-    _selection_statement: IF "(" _expression ")" statement ELSE statement
-        | IF "(" _expression ")" statement
-        | SWITCH "(" _expression ")" statement
+    selection_statement: IF "(" _expression ")" _statement ELSE _statement
+        | IF "(" _expression ")" _statement
+        | SWITCH "(" _expression ")" _statement
 
-    _iteration_statement: WHILE "(" _expression ")" statement
-        | DO statement WHILE "(" _expression ")" ";"
-        | FOR "(" _declaration _expression_statement _expression ")" statement
+    iteration_statement: WHILE "(" _expression ")" _statement
+        | DO _statement WHILE "(" _expression ")" ";"
+        | FOR "(" _declaration _expression_statement _expression ")" _statement
 
     _jump_statement: GOTO identifier ";"
         | CONTINUE ";"
