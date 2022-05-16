@@ -63,8 +63,8 @@ fbody: statement* -> fbody
 
     _constant_expression: _conditional_expression
 
-    _declaration: type_specifier init ";"
-        | init ";" // Type is not always given.
+    _declaration: _assignment_expression
+        | type_specifier init ";"
 
     init: identifier "=" _initializer
 
@@ -77,10 +77,7 @@ fbody: statement* -> fbody
     macro: MACRO_NAME "(" ")"
         | MACRO_NAME "(" _argument_expression_list ")"
     
-    _mem_op: mem_access "(" _argument_expression_list ")"
-    
-    _call: _mem_op
-        | macro
+    _call: macro
 
     arr_access: _postfix_expression "[" _additive_expression ":" _additive_expression "]"
         | _postfix_expression "[" _expression "]"
@@ -200,9 +197,9 @@ fbody: statement* -> fbody
 
     assign: _unary_expression _assignment_operator _assignment_expression
     
-    mem_write: _mem_op "=" _assignment_expression
+    mem_write: deref "=" _assignment_expression
     
-    mem_read: _unary_expression "=" _mem_op
+    mem_read: _unary_expression "=" deref
 
     _assignment_expression: _conditional_expression
         | mem_write
@@ -294,11 +291,10 @@ fbody: statement* -> fbody
         | local_var
 
 
-    _VARIABLE: /[A-Za-z_]\w*/
+    VARIABLE: /[A-Za-z_]\w*/
 
-    mem_access: "mem" SUBFIELD
-    MACRO_NAME: _VARIABLE
-    local_var: _VARIABLE
+    MACRO_NAME: VARIABLE
+    local_var: VARIABLE
 
     REG_TYPE: "C" | "N" | "P" | "R" | "M" | "Q" | "V" | "O"
     SRC_REG: "s" | "t" 

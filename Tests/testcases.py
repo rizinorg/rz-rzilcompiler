@@ -5,18 +5,25 @@ transform_test = [
     """
     Rd = Rs + Rs;
     """,
-    # """
-    # Rd = Rs + Rtt.ub;
-    # """,
-    # """
-    # memw(Rs) = #s16;
-    # """,
-    # """
-    # memw_locked(Rs) = #s16;
-    # """,
-    # """
-    # memub(Rx) = Rx;
-    # """
+    """
+    Rd = Rs + Rtt.ub;
+    """,
+    """
+    EA=Rs+(Rt<<#u);
+    if (!Pv.new[0]) {
+        Rdd = *EA;
+    } else {
+        NOP;
+    }
+    """,
+    """
+    EA=Rs+(Rt<<#u);
+    if (!Pv.new[0]) {
+        *EA = Rdd;
+    } else {
+        NOP;
+    }
+    """,
 ]
 
 behaviors = [
