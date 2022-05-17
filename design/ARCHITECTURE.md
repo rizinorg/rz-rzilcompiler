@@ -29,9 +29,9 @@
                                                         |                                            +------------------------------------+
 +----------------+                                      |                                            | Implements default token transform |
 |                |       +--------------+               |                                            | methods: add, mul, reg, ite etc.   |
-| Arch: RISCV    |       |              |               |                                            | Prints src to file                 |
-|                +------>| Preprocessor +---------------+                                            +------------------------------------+
-| RESSOURCE      |       |  RISCV       |
+| Arch: RISCV    |       |              |               |                                            | Inits class for each token.        |
+|                +------>| Preprocessor +---------------+                                            | Class generates RZIL code          |
+| RESSOURCE      |       |  RISCV       |                                                            +------------------------------------+
 |                |       |              |
 +----------------+       +--------------+
 ```
