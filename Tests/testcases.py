@@ -3,27 +3,25 @@
 
 transform_test = [
     """
-    Rd = Rs + Rs;
-    """,
-    """
-    Rd = Rs + Rtt.ub;
-    """,
-    """
-    EA=Rs+(Rt<<#u);
-    if (!Pv.new[0]) {
-        Rdd = *EA;
-    } else {
-        NOP;
+    {
+      do {
+        RddV = (RddV & ~(0x0ffffffffLL << ((0) * 32))) |
+               (((RsV)&0x0ffffffffLL) << ((0) * 32));
+      } while (0);
+      do {
+        RddV = (RddV & ~(0x0ffffffffLL << ((1) * 32))) |
+               (((0) & 0x0ffffffffLL) << ((1) * 32));
+      } while (0);
     }
     """,
     """
-    EA=Rs+(Rt<<#u);
-    if (!Pv.new[0]) {
-        *EA = Rdd;
-    } else {
-        NOP;
+    {
+      int i;
+      for (i = 0; i < (((1 << (7)) * 8) / 16); i++) {
+        VdV.uh[i] = VuV.uh[i] & VvV.h[i];
+      }
     }
-    """,
+    """
 ]
 
 behaviors = [
