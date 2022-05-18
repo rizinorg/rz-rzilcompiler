@@ -1,0 +1,348 @@
+// Stripped down ANSI C grammar - 2011 ISO C standard
+// Source: http://www.quut.com/c/ANSI-C-grammar-y.html
+// Does not support:
+// - multiple declarations and initializations (like structs, arrays, inits list)
+//   - only simple `identifier = x` or `sizeX_t identifier = x`
+// - No `->` operator
+// - Loops with only declaration and _expression_statement.
+//   They need three _expression_statements in the brackets.
+//   Also a declaration as first part is mandatory.
+// - std types liek `int`, `float`, `double` etc. Only `sizeX_t`.
+// Adds:
+// - Range indexing in arrays arr[a:b]
+//
+// Please note: Assignemnets and initialization declarations can look the same
+// since in the manual is sometimes missing. This leads to an ambiguous tree which is handled later.
+//
+
+start: fbody
+fbody: _statement* -> fbody
+
+    _statement: assembler_statement
+        | _labeled_statement 
+        | _compound_statement
+        | _expression_statement
+        | selection_statement
+        | iteration_statement
+        | _jump_statement
+
+    assembler_statement: "Assembler mapped to: \"" INSTRUCTION_MNEM "\";"
+
+    _labeled_statement: identifier ":" _statement
+        | CASE _constant_expression ":" _statement
+        | DEFAULT ":" _statement
+
+    _compound_statement: "{" "}"
+        | "{" _block_item_list "}"
+
+    _block_item_list: _block_item
+        | _block_item_list _block_item
+
+    _block_item: _declaration
+        | _statement
+
+    _expression_statement: ";"
+	    | _expression ";"
+
+    selection_statement: IF "(" _expression ")" _statement ELSE _statement
+        | IF "(" _expression ")" _statement
+        | SWITCH "(" _expression ")" _statement
+
+    iteration_statement: WHILE "(" _expression ")" _statement
+        | DO _statement WHILE "(" _expression ")" ";"
+        | FOR "(" _declaration _expression_statement _expression ")" _statement
+
+    _jump_statement: GOTO identifier ";"
+        | CONTINUE ";"
+        | BREAK ";"
+        | RETURN ";"
+        | RETURN _expression ";"
+
+    _expression: _assignment_expression
+        | _expression "," _assignment_expression
+
+    _constant_expression: _conditional_expression
+
+    _declaration: _assignment_expression
+        | type_specifier init ";"
+
+    init: identifier "=" _initializer
+
+    _initializer: _assignment_expression
+
+    _primary_expression: _operand 
+        | string
+        | "(" _expression ")"
+
+    macro: MACRO_NAME "(" ")"
+        | MACRO_NAME "(" _argument_expression_list ")"
+    
+    _call: macro
+
+    arr_access: _postfix_expression "[" _additive_expression ":" _additive_expression "]"
+        | _postfix_expression "[" _expression "]"
+
+    dot_ops: _postfix_expression "." (identifier | INT | SUBFIELD)
+
+    inc_ret: _postfix_expression INC_OP
+
+    dec_ret: _postfix_expression DEC_OP
+
+    _postfix_expression: _primary_expression
+        | arr_access
+        | _call
+        | dot_ops
+        | inc_ret
+        | dec_ret
+    
+    args: _argument_expression_list "," _assignment_expression
+    
+    _argument_expression_list: _assignment_expression
+	    | args
+
+    inc: INC_OP _unary_expression
+    dec: DEC_OP _unary_expression
+    deref: DEREF _unary_expression
+    pos: POS _unary_expression
+    neg: NEG _unary_expression
+    lnot: LNOT _unary_expression
+    not: NOT _unary_expression
+
+    _unary_expression: _postfix_expression
+        | inc
+        | dec
+        | deref
+        | pos
+        | neg
+        | lnot
+        | not
+
+    cast: "(" type_specifier ")" _unary_expression
+
+    _cast_expression: cast
+        | _unary_expression
+
+    pow: _multiplicative_expression "**" _cast_expression
+    mul: _multiplicative_expression "*" _cast_expression
+    div: _multiplicative_expression "/" _cast_expression
+    mod: _multiplicative_expression "%" _cast_expression
+
+    _multiplicative_expression: _cast_expression
+        | pow
+        | mul
+        | div
+        | mod
+
+    add: _additive_expression "+" _multiplicative_expression
+    sub: _additive_expression "-" _multiplicative_expression
+
+    _additive_expression: _multiplicative_expression
+        | add
+        | sub
+
+    sright: _shift_expression RIGHT_OP _additive_expression
+    sleft: _shift_expression LEFT_OP _additive_expression
+
+    _shift_expression: _additive_expression
+        | sleft
+        | sright
+
+    ge: _relational_expression GE_OP _shift_expression
+    le: _relational_expression LE_OP _shift_expression
+    gt: _relational_expression ">" _shift_expression
+    lt: _relational_expression "<" _shift_expression
+
+    _relational_expression: _shift_expression
+        | lt
+        | gt
+        | le
+        | ge
+
+    eq: _equality_expression EQ_OP _relational_expression
+    neq: _equality_expression NE_OP _relational_expression
+
+    _equality_expression: _relational_expression
+        | eq
+        | neq
+
+    and: _and_expression "&" _equality_expression
+
+    _and_expression: _equality_expression
+        | and
+
+    xor: _exclusive_or_expression "^" _and_expression
+
+    _exclusive_or_expression: _and_expression
+        | xor
+
+    or: _inclusive_or_expression "|" _exclusive_or_expression
+
+    _inclusive_or_expression: _exclusive_or_expression
+        | or
+
+    land: _logical__and_expression AND_OP _inclusive_or_expression
+
+    _logical__and_expression: _inclusive_or_expression
+        | land
+
+    lor: _logical_or_expression OR_OP _logical__and_expression
+
+    _logical_or_expression: _logical__and_expression
+        | lor
+
+    tenary: _logical_or_expression "?" _expression ":" _conditional_expression
+
+    _conditional_expression: _logical_or_expression
+        | tenary
+
+    assign: _unary_expression _assignment_operator _assignment_expression
+    
+    mem_write: deref "=" _assignment_expression
+    
+    mem_read: _unary_expression "=" deref
+
+    _assignment_expression: _conditional_expression
+        | mem_write
+        | mem_read
+        | assign
+
+    ?identifier: _operand
+
+    DEREF: "*"
+    POS: "+"
+    NEG: "-"
+    LNOT: "~"
+    NOT: "!"
+
+
+    _assignment_operator: ASSIGN
+        | MUL_ASSIGN
+        | DIV_ASSIGN
+        | MOD_ASSIGN
+        | ADD_ASSIGN
+        | SUB_ASSIGN
+        | LEFT_ASSIGN
+        | RIGHT_ASSIGN
+        | AND_ASSIGN
+        | XOR_ASSIGN
+        | OR_ASSIGN
+
+    ASSIGN: "="
+    RIGHT_ASSIGN: ">>="
+    LEFT_ASSIGN: "<<="
+    ADD_ASSIGN: "+="
+    SUB_ASSIGN: "-="
+    MUL_ASSIGN: "*="
+    DIV_ASSIGN: "/="
+    MOD_ASSIGN: "%="
+    AND_ASSIGN: "&="
+    XOR_ASSIGN: "^="
+    OR_ASSIGN: "|="
+    RIGHT_OP: ">>"
+    LEFT_OP: "<<"
+    INC_OP: "++"
+    DEC_OP: "--"
+    PTR_OP: "->"
+    AND_OP: "&&"
+    OR_OP: "||"
+    LE_OP: "<="
+    GE_OP: ">="
+    EQ_OP: "=="
+    NE_OP: "!="
+    IF: "if"
+    ELSEIF: "else if"
+    ELSE: "else"
+    FOR: "for"
+    WHILE: "while"
+    DO: "do"
+    SWITCH: "switch"
+    RETURN: "return"
+    CONTINUE: "continue"
+    BREAK: "break"
+    GOTO: "goto"
+    CASE: "case"
+    DEFAULT: "default"
+
+    _operand: _immediate
+        | INTCON
+        | TYPED_INT
+        | TLB
+
+    imm: "#" IMMLETT [INT]
+
+    _immediate: _any_reg
+        | imm
+
+    named_regs: GP_REG
+        | SYS_REG
+
+    _any_reg: _hvx_pred
+        | named_regs
+
+    quad_pred_reg: "Q" SRC_REG "V"
+
+    _hvx_pred: _register
+        | quad_pred_reg
+
+    reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
+        | REG_TYPE (SRC_REG_PAIR | DEST_REG_PAIR | SRC_DEST_REG_PAIR)
+
+    _register: reg
+        | local_var
+
+
+    VARIABLE: /[A-Za-z_]\w*/
+
+    MACRO_NAME: VARIABLE
+    local_var: VARIABLE
+
+    REG_TYPE: "C" | "N" | "P" | "R" | "M" | "Q" | "V" | "O"
+    SRC_REG: "s" | "t" 
+    DEST_REG: "u" | "v" | "w" | "d" | "e" | "f" | "g"
+    SRC_DEST_REG: "x" | "y" | "z"
+    SRC_REG_PAIR: "ss" | "tt"
+    DEST_REG_PAIR: "uu" | "vv" | "dd" | "ee" | "ff" | "gg"
+    SRC_DEST_REG_PAIR: "xx" | "yy" | "zz"
+    // w = word; h = half word; b = byte; u = unsigned; .s64 signed 64bit
+    SUBFIELD: "uw" | "w" | "uh" | "h" | "ub" | "b" | (("s" | "u") BIT_WIDTH)
+
+    GP_REG: "GP"
+    SYS_REG: "PC"
+
+    IMMLETT: /[rRsSuUmn]/
+    INSTRUCTION_MNEM: /[^"]+/
+    TLB: "TLB"
+    type_specifier: UT8
+        | UT16
+        | UT32
+        | UT64
+        | ST8
+        | ST16
+        | ST32
+        | ST64
+    
+    UT8: "size8u_t"
+    UT16: "size16u_t"
+    UT32: "size32u_t"
+    UT64: "size64u_t"
+    ST8: "size8s_t"
+    ST16: "size16s_t"
+    ST32: "size32s_t"
+    ST64: "size64s_t"
+
+    INT_TYPE: "LL" | "ULL"
+    TYPED_INT: INT INT_TYPE
+    BIT_WIDTH: "8" | "16" | "32" | "64"
+    INTCON: HEX_NUMBER | DEC_NUMBER
+    HEX_NUMBER: /0x[\da-f]*/i
+    DEC_NUMBER: /0|[1-9][\d_]*/i
+
+    string: ESCAPED_STRING
+
+    %import common.ESCAPED_STRING
+    %import common.WORD
+    %import common.INT
+    %import common.DIGIT
+    %import common.SIGNED_NUMBER
+    %import common.WS
+    %ignore WS
