@@ -1,39 +1,39 @@
 start: fbody
-fbody: statement* -> fbody
+fbody: stmt* -> fbody
 
-?primary_expression: op 
-	| "(" expression ")"
+?primary_expr: op 
+	| "(" expr ")"
 	| generic_selection
 
 ?enumeration_constant: IDENTIFIER
 
-?generic_selection: GENERIC "(" assignment_expression "," generic_assoc_list ")"
+?generic_selection: GENERIC "(" assignment_expr "," generic_assoc_list ")"
 
 ?generic_assoc_list: generic_association
 	| generic_assoc_list "," generic_association
 
-?generic_association: type_name ":" assignment_expression
-	| DEFAULT ":" assignment_expression
+?generic_association: type_name ":" assignment_expr
+	| DEFAULT ":" assignment_expr
 
-?postfix_expression: primary_expression
-	| postfix_expression "[" expression "]"
-	| postfix_expression "(" ")"
-	| postfix_expression "(" argument_expression_list ")"
-	| postfix_expression "." IDENTIFIER
-	| postfix_expression PTR_OP IDENTIFIER
-	| postfix_expression INC_OP
-	| postfix_expression DEC_OP
+?postfix_expr: primary_expr
+	| postfix_expr "[" expr "]"
+	| postfix_expr "(" ")"
+	| postfix_expr "(" argument_expr_list ")"
+	| postfix_expr "." IDENTIFIER
+	| postfix_expr PTR_OP IDENTIFIER
+	| postfix_expr INC_OP
+	| postfix_expr DEC_OP
 	| "(" type_name ")" "{" initializer_list "}"
 	| "(" type_name ")" "{" initializer_list "," "}"
 
-?argument_expression_list: assignment_expression
-	| argument_expression_list "," assignment_expression
+?argument_expr_list: assignment_expr
+	| argument_expr_list "," assignment_expr
 
-?unary_expression: postfix_expression
-	| INC_OP unary_expression
-	| DEC_OP unary_expression
-	| unary_operator cast_expression
-	| SIZEOF unary_expression
+?unary_expr: postfix_expr
+	| INC_OP unary_expr
+	| DEC_OP unary_expr
+	| unary_operator cast_expr
+	| SIZEOF unary_expr
 	| SIZEOF "(" type_name ")"
 	| ALIGNOF "(" type_name ")"
 
@@ -44,52 +44,52 @@ fbody: statement* -> fbody
 	| "~"
 	| "!"
 
-?cast_expression: unary_expression
-	| "(" type_name ")" cast_expression
+?cast_expr: unary_expr
+	| "(" type_name ")" cast_expr
 
-?multiplicative_expression: cast_expression
-	| multiplicative_expression "*" cast_expression
-	| multiplicative_expression "/" cast_expression
-	| multiplicative_expression "%" cast_expression
+?multiplicative_expr: cast_expr
+	| multiplicative_expr "*" cast_expr
+	| multiplicative_expr "/" cast_expr
+	| multiplicative_expr "%" cast_expr
 
-?additive_expression: multiplicative_expression
-	| additive_expression "+" multiplicative_expression
-	| additive_expression "-" multiplicative_expression
+?additive_expr: multiplicative_expr
+	| additive_expr "+" multiplicative_expr
+	| additive_expr "-" multiplicative_expr
 
-?shift_expression: additive_expression
-	| shift_expression LEFT_OP additive_expression
-	| shift_expression RIGHT_OP additive_expression
+?shift_expr: additive_expr
+	| shift_expr LEFT_OP additive_expr
+	| shift_expr RIGHT_OP additive_expr
 
-?relational_expression: shift_expression
-	| relational_expression "<" shift_expression
-	| relational_expression ">" shift_expression
-	| relational_expression LE_OP shift_expression
-	| relational_expression GE_OP shift_expression
+?relational_expr: shift_expr
+	| relational_expr "<" shift_expr
+	| relational_expr ">" shift_expr
+	| relational_expr LE_OP shift_expr
+	| relational_expr GE_OP shift_expr
 
-?equality_expression: relational_expression
-	| equality_expression EQ_OP relational_expression
-	| equality_expression NE_OP relational_expression
+?equality_expr: relational_expr
+	| equality_expr EQ_OP relational_expr
+	| equality_expr NE_OP relational_expr
 
-?and_expression: equality_expression
-	| and_expression "&" equality_expression
+?and_expr: equality_expr
+	| and_expr "&" equality_expr
 
-?exclusive_or_expression: and_expression
-	| exclusive_or_expression "^" and_expression
+?exclusive_or_expr: and_expr
+	| exclusive_or_expr "^" and_expr
 
-?inclusive_or_expression: exclusive_or_expression
-	| inclusive_or_expression "|" exclusive_or_expression
+?inclusive_or_expr: exclusive_or_expr
+	| inclusive_or_expr "|" exclusive_or_expr
 
-?logical_and_expression: inclusive_or_expression
-	| logical_and_expression AND_OP inclusive_or_expression
+?logical_and_expr: inclusive_or_expr
+	| logical_and_expr AND_OP inclusive_or_expr
 
-?logical_or_expression: logical_and_expression
-	| logical_or_expression OR_OP logical_and_expression
+?logical_or_expr: logical_and_expr
+	| logical_or_expr OR_OP logical_and_expr
 
-?conditional_expression: logical_or_expression
-	| logical_or_expression "?" expression ":" conditional_expression
+?conditional_expr: logical_or_expr
+	| logical_or_expr "?" expr ":" conditional_expr
 
-?assignment_expression: conditional_expression
-	| unary_expression assignment_operator assignment_expression
+?assignment_expr: conditional_expr
+	| unary_expr assignment_operator assignment_expr
 
 ?assignment_operator: "="
 	| MUL_ASSIGN
@@ -103,10 +103,10 @@ fbody: statement* -> fbody
 	| XOR_ASSIGN
 	| OR_ASSIGN
 
-?expression: assignment_expression
-	| expression "," assignment_expression
+?expr: assignment_expr
+	| expr "," assignment_expr
 
-?constant_expression: conditional_expression
+?constant_expr: conditional_expr
 
 ?declaration: declaration_specifiers ";"
 	| declaration_specifiers init_declarator_list ";"
@@ -174,8 +174,8 @@ fbody: statement* -> fbody
 ?struct_declarator_list: struct_declarator
 	| struct_declarator_list "," struct_declarator
 
-?struct_declarator: ":" constant_expression
-	| declarator ":" constant_expression
+?struct_declarator: ":" constant_expr
+	| declarator ":" constant_expr
 	| declarator
 
 ?enum_specifier: ENUM "{" enumerator_list "}"
@@ -187,7 +187,7 @@ fbody: statement* -> fbody
 ?enumerator_list: enumerator
 	| enumerator_list "," enumerator
 
-?enumerator: enumeration_constant "=" constant_expression
+?enumerator: enumeration_constant "=" constant_expr
 	| enumeration_constant
 
 ?atomic_type_specifier: ATOMIC "(" type_name ")"
@@ -201,7 +201,7 @@ fbody: statement* -> fbody
 	| NORETURN
 
 ?alignment_specifier: ALIGNAS "(" type_name ")"
-	| ALIGNAS "(" constant_expression ")"
+	| ALIGNAS "(" constant_expr ")"
 
 ?declarator: pointer direct_declarator
 	| direct_declarator
@@ -210,13 +210,13 @@ fbody: statement* -> fbody
 	| "(" declarator ")"
 	| direct_declarator "[" "]"
 	| direct_declarator "[" "*" "]"
-	| direct_declarator "[" STATIC type_qualifier_list assignment_expression "]"
-	| direct_declarator "[" STATIC assignment_expression "]"
+	| direct_declarator "[" STATIC type_qualifier_list assignment_expr "]"
+	| direct_declarator "[" STATIC assignment_expr "]"
 	| direct_declarator "[" type_qualifier_list "*" "]"
-	| direct_declarator "[" type_qualifier_list STATIC assignment_expression "]"
-	| direct_declarator "[" type_qualifier_list assignment_expression "]"
+	| direct_declarator "[" type_qualifier_list STATIC assignment_expr "]"
+	| direct_declarator "[" type_qualifier_list assignment_expr "]"
 	| direct_declarator "[" type_qualifier_list "]"
-	| direct_declarator "[" assignment_expression "]"
+	| direct_declarator "[" assignment_expr "]"
 	| direct_declarator "(" parameter_type_list ")"
 	| direct_declarator "(" ")"
 	| direct_declarator "(" identifier_list ")"
@@ -253,20 +253,20 @@ fbody: statement* -> fbody
 ?direct_abstract_declarator: "(" abstract_declarator ")"
 	| "[" "]"
 	| "[" "*" "]"
-	| "[" STATIC type_qualifier_list assignment_expression "]"
-	| "[" STATIC assignment_expression "]"
-	| "[" type_qualifier_list STATIC assignment_expression "]"
-	| "[" type_qualifier_list assignment_expression "]"
+	| "[" STATIC type_qualifier_list assignment_expr "]"
+	| "[" STATIC assignment_expr "]"
+	| "[" type_qualifier_list STATIC assignment_expr "]"
+	| "[" type_qualifier_list assignment_expr "]"
 	| "[" type_qualifier_list "]"
-	| "[" assignment_expression "]"
+	| "[" assignment_expr "]"
 	| direct_abstract_declarator "[" "]"
 	| direct_abstract_declarator "[" "*" "]"
-	| direct_abstract_declarator "[" STATIC type_qualifier_list assignment_expression "]"
-	| direct_abstract_declarator "[" STATIC assignment_expression "]"
-	| direct_abstract_declarator "[" type_qualifier_list assignment_expression "]"
-	| direct_abstract_declarator "[" type_qualifier_list STATIC assignment_expression "]"
+	| direct_abstract_declarator "[" STATIC type_qualifier_list assignment_expr "]"
+	| direct_abstract_declarator "[" STATIC assignment_expr "]"
+	| direct_abstract_declarator "[" type_qualifier_list assignment_expr "]"
+	| direct_abstract_declarator "[" type_qualifier_list STATIC assignment_expr "]"
 	| direct_abstract_declarator "[" type_qualifier_list "]"
-	| direct_abstract_declarator "[" assignment_expression "]"
+	| direct_abstract_declarator "[" assignment_expr "]"
 	| "(" ")"
 	| "(" parameter_type_list ")"
 	| direct_abstract_declarator "(" ")"
@@ -274,7 +274,7 @@ fbody: statement* -> fbody
 
 ?initializer: "{" initializer_list "}"
 	| "{" initializer_list "," "}"
-	| assignment_expression
+	| assignment_expr
 
 ?initializer_list: designation initializer
 	| initializer
@@ -286,50 +286,50 @@ fbody: statement* -> fbody
 ?designator_list: designator
 	| designator_list designator
 
-?designator: "[" constant_expression "]"
+?designator: "[" constant_expr "]"
 	| "." IDENTIFIER
 
-?static_assert_declaration: STATIC_ASSERT "(" constant_expression "," STRING_LITERAL ")" ";"
+?static_assert_declaration: STATIC_ASSERT "(" constant_expr "," STRING_LITERAL ")" ";"
 
-?statement: labeled_statement
-	| compound_statement
-	| expression_statement
-	| selection_statement
-	| iteration_statement
-	| jump_statement
+?stmt: labeled_stmt
+	| compound_stmt
+	| expr_stmt
+	| selection_stmt
+	| iteration_stmt
+	| jump_stmt
 
-?labeled_statement: IDENTIFIER ":" statement
-	| CASE constant_expression ":" statement
-	| DEFAULT ":" statement
+?labeled_stmt: IDENTIFIER ":" stmt
+	| CASE constant_expr ":" stmt
+	| DEFAULT ":" stmt
 
-?compound_statement: "{" "}"
+?compound_stmt: "{" "}"
 	| "{"  block_item_list "}"
 
 ?block_item_list: block_item
 	| block_item_list block_item
 
 ?block_item: declaration
-	| statement
+	| stmt
 
-?expression_statement: ";"
-	| expression ";"
+?expr_stmt: ";"
+	| expr ";"
 
-?selection_statement: IF "(" expression ")" statement ELSE statement
-	| IF "(" expression ")" statement
-	| SWITCH "(" expression ")" statement
+?selection_stmt: IF "(" expr ")" stmt ELSE stmt
+	| IF "(" expr ")" stmt
+	| SWITCH "(" expr ")" stmt
 
-?iteration_statement: WHILE "(" expression ")" statement
-	| DO statement WHILE "(" expression ")" ";"
-	| FOR "(" expression_statement expression_statement ")" statement
-	| FOR "(" expression_statement expression_statement expression ")" statement
-	| FOR "(" declaration expression_statement ")" statement
-	| FOR "(" declaration expression_statement expression ")" statement
+?iteration_stmt: WHILE "(" expr ")" stmt
+	| DO stmt WHILE "(" expr ")" ";"
+	| FOR "(" expr_stmt expr_stmt ")" stmt
+	| FOR "(" expr_stmt expr_stmt expr ")" stmt
+	| FOR "(" declaration expr_stmt ")" stmt
+	| FOR "(" declaration expr_stmt expr ")" stmt
 
-?jump_statement: GOTO IDENTIFIER ";"
+?jump_stmt: GOTO IDENTIFIER ";"
 	| CONTINUE ";"
 	| BREAK ";"
 	| RETURN ";"
-	| RETURN expression ";"
+	| RETURN expr ";"
 
 ?translation_unit: external_declaration
 	| translation_unit external_declaration
@@ -337,8 +337,8 @@ fbody: statement* -> fbody
 ?external_declaration: function_definition
 	| declaration
 
-?function_definition: declaration_specifiers declarator declaration_list compound_statement
-	| declaration_specifiers declarator compound_statement
+?function_definition: declaration_specifiers declarator declaration_list compound_stmt
+	| declaration_specifiers declarator compound_stmt
 
 ?declaration_list: declaration
 	| declaration_list declaration
