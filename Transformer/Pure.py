@@ -22,9 +22,6 @@ class Pure:
         self.type = pure_type
         self.size = size
 
-    def get_name(self):
-        return self.name
-
     def get_isa_name(self):
         """ Returns the name of the RzILOpPure variable. """
         return self.name

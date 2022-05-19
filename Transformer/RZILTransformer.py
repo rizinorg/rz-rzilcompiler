@@ -68,7 +68,6 @@ class RZILTransformer(Transformer):
         return f"{items[0]}{items[1]}"
 
     def assignment_expr(self, items):
-        print(items)
         dest: Pure = items[0]
         assign_type = AssignmentType(items[1])
         src: Pure = items[2]

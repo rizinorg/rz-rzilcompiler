@@ -15,7 +15,7 @@ class Add(Pure):
         self.a = a
         self.b = b
 
-        super().__init__(name, PureType.EXEC)
+        super().__init__(name, PureType.EXEC, max(self.a.size, self.b.size))
 
     def get_isa_name(self):
         """ Returns the name of the RzILOpPure variable. """
