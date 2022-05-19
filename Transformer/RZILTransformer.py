@@ -44,20 +44,20 @@ class RZILTransformer(Transformer):
         if reg_type == RegisterAccessType.R:
             # Should be read before use. Add to read list.
             if name not in ops:
-                v = Register(name, RegisterAccessType.R)
+                v = Register(name, RegisterAccessType.R, -1)
                 ops[name] = v
                 return v
             return ops[name]
         elif reg_type == RegisterAccessType.W:
-            # Dest regs are passed as string to SETG()
+            # Dest regs are passed as string to SETG(). Need no Pure variable.
             if name not in ops:
-                v = Register(name, RegisterAccessType.W)
+                v = Register(name, RegisterAccessType.W, -1)
                 ops[name] = v
                 return v
             return ops[name]
         elif reg_type == RegisterAccessType.RW:
             if name not in ops:
-                v = Register(name, RegisterAccessType.RW)
+                v = Register(name, RegisterAccessType.RW, -1)
                 ops[name] = v
                 return v
             return ops[name]
