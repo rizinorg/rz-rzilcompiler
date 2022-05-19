@@ -10,6 +10,9 @@ class RegisterAccessType(StrEnum):
     R = 'SRC_REG'
     W = 'DEST_REG'
     RW = 'SRC_DEST_REG'
+    PR = 'SRC_REG_PAIR'
+    PW = 'DEST_REG_PAIR'
+    PRW = 'SRC_DEST_REG_PAIR'
 
 
 class Register(GlobalVar):

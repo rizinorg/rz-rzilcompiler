@@ -89,9 +89,9 @@ fbody: stmt* -> fbody
 	| logical_or_expr "?" expr ":" conditional_expr
 
 ?assignment_expr: conditional_expr
-	| unary_expr assignment_operator assignment_expr
+	| unary_expr ASSIGN_OP assignment_expr
 
-?assignment_operator: "="
+ASSIGN_OP: "="
 	| MUL_ASSIGN
 	| DIV_ASSIGN
 	| MOD_ASSIGN

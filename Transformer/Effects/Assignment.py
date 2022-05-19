@@ -4,15 +4,21 @@
 from Exceptions import OverloadException
 from Transformer.Effect import Effect, EffectType
 from Transformer.Pure import Pure, PureType
-from enum import Enum
+from enum import StrEnum
 
 
-class AssignmentType(Enum):
-    ASGN = '='
-    ASGN_ADD = '+='
-    ASGN_SUB = '-='
-    ASGN_MUL = '*='
-    ASGN_DIV = '/='
+class AssignmentType(StrEnum):
+    ASSIGN = '='
+    ASSIGN_ADD = '+='
+    ASSIGN_SUB = '-='
+    ASSIGN_MUL = '*='
+    ASSIGN_DIV = '/='
+    ASSIGN_RIGHT = '>>='
+    ASSIGN_LEFT = '<<='
+    ASSIGN_MOD = '%='
+    ASSIGN_AND = '&='
+    ASSIGN_XOR = '^='
+    ASSIGN_OR = '|='
 
 
 class Assignment(Effect):
