@@ -5,7 +5,7 @@ from lark import Transformer, Token
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pure import Pure
 from Transformer.Effects.Assignment import Assignment, AssignmentType
-from Transformer.Pures.Add import Add
+from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Register import Register, RegisterAccessType
 
 
@@ -71,12 +71,12 @@ class RZILTransformer(Transformer):
         # ! How to handle effects which do the same? Unique ids for effects and non Vars!
         return v
 
-    def add(self, items):
+    def additive_expr(self, items):
         holder = ILOpsHolder()
         a = items[0]
-        b = items[1]
-        name = f'add{a.get_name()}{b.get_name()}'
-        v = Add(name, a, b)
+        b = items[2]
+        name = f'{"add" if items[1] == "+" else "sub"}{a.get_name()}{b.get_name()}'
+        v = ArithmeticOp(name, a, b, ArithmeticType(items[1]))
         return v
 
     def mem_write(self, items):

@@ -6,7 +6,7 @@ from Transformer.Effect import Effect, EffectType
 from Transformer.Pure import Pure, PureType
 from enum import StrEnum
 
-from Transformer.Pures.Add import Add
+from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 
 
 class AssignmentType(StrEnum):
@@ -47,7 +47,7 @@ class Assignment(Effect):
         if self.assign_type == AssignmentType.ASSIGN:
             return
         elif self.assign_type == AssignmentType.ASSIGN_ADD:
-            self.src = Add(f'add{self.src.get_isa_name()}{self.dest.get_isa_name()}', self.src, self.dest)
+            self.src = ArithmeticOp(f'add{self.src.get_isa_name()}{self.dest.get_isa_name()}', self.src, self.dest, ArithmeticType.ADD)
         else:
             NotImplementedError('')
 
