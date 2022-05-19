@@ -10,5 +10,5 @@ class LocalVar(Pure):
     def __init__(self, name: str):
         super().__init__(name, PureType.LOCAL)
 
-    def code_read(self):
+    def il_read(self):
         return f'VARL({self.name})'

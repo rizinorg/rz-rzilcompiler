@@ -24,15 +24,15 @@ class RZILTransformer(Transformer):
         print("// READ")
         for op in ops.values():
             if isinstance(op, Register):
-                print(op.code_init_var())
+                print(op.il_init_var())
         print('\n// EXEC')
         for op in ops.values():
             if op.type == PureType.EXEC:
-                print(op.code_init_var())
+                print(op.il_init_var())
         print("\n// WRITE")
         for op in ops.values():
             if isinstance(op, Effect):
-                print(op.code_init_var())
+                print(op.il_init_var())
 
     # Returned value replaces node in tree
     # Transformers/Visitors are called bottom up! First leaves then parents

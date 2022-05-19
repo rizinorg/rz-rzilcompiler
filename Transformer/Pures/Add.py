@@ -21,9 +21,9 @@ class Add(Pure):
         """ Returns the name of the RzILOpPure variable. """
         return self.name
 
-    def code_exec(self):
-        return f'ADD({self.a.code_read()}, {self.b.code_read()}'
+    def il_exec(self):
+        return f'ADD({self.a.il_read()}, {self.b.il_read()}'
 
-    def code_init_var(self):
-        init = f'RzIlOpPure *{self.get_name()} = {self.code_exec()});'
+    def il_init_var(self):
+        init = f'RzIlOpPure *{self.get_name()} = {self.il_exec()});'
         return init

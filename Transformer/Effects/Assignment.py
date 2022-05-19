@@ -33,11 +33,7 @@ class Assignment(Effect):
         else:
             raise NotImplementedError('')
 
-    def get_isa_name(self):
-        """ Returns the name of the RzILOpPure variable. """
-        return self.name
-
-    def code_write(self):
+    def il_write(self):
         """ Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
         """
