@@ -13,14 +13,27 @@ class PureType(Enum):
 
 class Pure:
     name: str = ''  # Name of pure
-    name_assoc: str = '' # Name associated with the ISA name. E.g. ISA: "Rs" Associated: "R3"
+    name_assoc: str = ''  # Name associated with the ISA name. E.g. ISA: "Rs" Associated: "R3"
     type: PureType = None
 
     def __init__(self, name: str, pure_type: PureType, size: int):
+        from Transformer.ILOpsHolder import ILOpsHolder
+
+        holder = ILOpsHolder()
+        if name in holder.read_ops or name in holder.exec_ops:
+            return
         self.name = name
         self.name_assoc = name + '_assoc'
         self.type = pure_type
         self.size = size
+        if self.type == PureType.GLOBAL:
+            holder.read_ops[name] = self
+        else:
+            holder.exec_ops[name] = self
+
+    def get_name(self):
+        """ Returns the name of the pure. If it is defined in the ISA, this returns teh ISA name. """
+        return self.name
 
     def get_isa_name(self):
         """ Returns the name of the RzILOpPure variable. """

@@ -40,13 +40,14 @@ class Assignment(Effect):
             super().init(name, EffectType.SETG)
         else:
             raise NotImplementedError('')
-        self.set_dest()
+        self.set_src()
 
-    def set_dest(self):
+    def set_src(self):
+        """ Update the src in case of +=, -= and similar assignments. """
         if self.assign_type == AssignmentType.ASSIGN:
             return
         elif self.assign_type == AssignmentType.ASSIGN_ADD:
-            self.dest = Add(f'add{self.src.get_isa_name()}{self.dest.get_isa_name()}', self.src, self.dest)
+            self.src = Add(f'add{self.src.get_isa_name()}{self.dest.get_isa_name()}', self.src, self.dest)
         else:
             NotImplementedError('')
 
@@ -57,6 +58,6 @@ class Assignment(Effect):
         if self.type == EffectType.SETG:
             return f'SETG({self.dest.get_assoc_name()}, {self.src.get_isa_name()})'
         elif self.type == EffectType.SETL:
-            return f'SETG({self.dest.get_isa_name()}, {self.src.get_isa_name()})'
+            return f'SETL({self.dest.get_isa_name()}, {self.src.get_isa_name()})'
         else:
             raise NotImplementedError('')
