@@ -4,12 +4,13 @@
 from Transformer.Pure import Pure, PureType
 from Transformer.PluginInfo import isa_to_reg_fnc, isa_to_reg_args
 from Transformer.GlobalVar import GlobalVar
-from enum import Enum
+from enum import Enum, StrEnum
 
-class RegisterAccessType(Enum):
-    R = 1
-    W = 2
-    RW = 3
+
+class RegisterAccessType(StrEnum):
+    R = 'SRC_REG'
+    W = 'DEST_REG'
+    RW = 'SRC_DEST_REG'
 
 class Register(GlobalVar):
 

@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Transformer.ManualTransformer import ManualTransformer
+from Transformer.RZILTransformer import RZILTransformer
 from Tests.testcases import transform_test
 from lark import Lark
 
@@ -17,7 +17,7 @@ class TestTransformer:
             try:
                 tree = parser.parse(beh)
                 print(tree.pretty())
-                ManualTransformer().transform(tree)
+                RZILTransformer().transform(tree)
             except Exception as e:
                 print(e)
 

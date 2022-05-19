@@ -13,7 +13,7 @@ from Transformer.Register import Register, RegisterAccessType
 ops = dict()
 
 
-class ManualTransformer(Transformer):
+class RZILTransformer(Transformer):
     """
     Transforms the tree into Pures and Effects.
     The classes do the actual code generation.
@@ -41,21 +41,21 @@ class ManualTransformer(Transformer):
         name = ''.join(items)
         reg_type = items[1].type  # src, dest, both
 
-        if reg_type == "SRC_REG":
+        if reg_type == RegisterAccessType.R:
             # Should be read before use. Add to read list.
             if name not in ops:
                 v = Register(name, RegisterAccessType.R)
                 ops[name] = v
                 return v
             return ops[name]
-        elif reg_type == "DEST_REG":
+        elif reg_type == RegisterAccessType.W:
             # Dest regs are passed as string to SETG()
             if name not in ops:
                 v = Register(name, RegisterAccessType.W)
                 ops[name] = v
                 return v
             return ops[name]
-        elif reg_type == "SRC_DEST_REG":
+        elif reg_type == RegisterAccessType.RW:
             if name not in ops:
                 v = Register(name, RegisterAccessType.RW)
                 ops[name] = v
