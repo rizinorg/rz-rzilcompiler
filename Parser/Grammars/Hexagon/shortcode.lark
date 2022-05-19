@@ -48,21 +48,21 @@ fbody: stmt* -> fbody
 	| "(" type_name ")" cast_expr
 
 ?multiplicative_expr: cast_expr
-	| multiplicative_expr "*" cast_expr
-	| multiplicative_expr "/" cast_expr
-	| multiplicative_expr "%" cast_expr
+	| multiplicative_expr MUL_OP cast_expr
+	| multiplicative_expr DIV_OP cast_expr
+	| multiplicative_expr MOD_OP cast_expr
 
 ?additive_expr: multiplicative_expr
-	| additive_expr "+" multiplicative_expr
-	| additive_expr "-" multiplicative_expr
+	| additive_expr ADD_OP multiplicative_expr
+	| additive_expr SUB_OP multiplicative_expr
 
 ?shift_expr: additive_expr
 	| shift_expr LEFT_OP additive_expr
 	| shift_expr RIGHT_OP additive_expr
 
 ?relational_expr: shift_expr
-	| relational_expr "<" shift_expr
-	| relational_expr ">" shift_expr
+	| relational_expr LT_OP shift_expr
+	| relational_expr GT_OP shift_expr
 	| relational_expr LE_OP shift_expr
 	| relational_expr GE_OP shift_expr
 
@@ -438,10 +438,17 @@ DEC_OP: "--"
 PTR_OP: "->" 
 AND_OP: "&&" 
 OR_OP: "||" 
+LT_OP: "<"
+GT_OP: ">"
 LE_OP: "<=" 
 GE_OP: ">=" 
 EQ_OP: "==" 
 NE_OP: "!="
+MUL_OP: "*"
+DIV_OP: "/"
+MOD_OP: "%"
+ADD_OP: "+"
+SUB_OP: "-"
 
 IDENTIFIER: /[A-Za-z_]+\w*/
 
