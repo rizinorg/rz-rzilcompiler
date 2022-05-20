@@ -33,7 +33,7 @@ class ILOpsHolder(object):
         elif pure.type == PureType.EXEC:
             self.exec_ops[pure.get_name()] = pure
         else:
-            NotImplementedError('')
+            raise NotImplementedError('')
 
     def add_effect(self, effect: Effect):
         self.write_ops[effect.get_name()] = effect

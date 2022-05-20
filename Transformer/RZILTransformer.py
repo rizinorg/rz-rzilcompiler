@@ -96,7 +96,7 @@ class RZILTransformer(Transformer):
         if items[0] == '~':
             return self.bit_operations(items, BitOperationType.BIT_NOT_OP)
         else:
-            NotImplementedError('')
+            raise NotImplementedError('')
 
     def bit_operations(self, items: list, op_type: BitOperationType):
         if len(items) < 3:

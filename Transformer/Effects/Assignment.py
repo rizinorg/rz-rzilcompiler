@@ -56,7 +56,7 @@ class Assignment(Effect):
         elif self.assign_type == AssignmentType.ASSIGN_DIV:
             self.src = ArithmeticOp(f'div{self.src.get_isa_name()}{self.dest.get_isa_name()}', self.src, self.dest, ArithmeticType.DIV)
         else:
-            NotImplementedError('')
+            raise NotImplementedError('')
 
     def il_write(self):
         """ Returns the RZIL ops to write the variable value.

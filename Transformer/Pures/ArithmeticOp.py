@@ -35,4 +35,4 @@ class ArithmeticOp(PureExec):
         elif self.a_type == ArithmeticType.MOD:
             return f'MOD({self.a.il_read()}, {self.b.il_read()}'
         else:
-            NotImplementedError('')
+            raise NotImplementedError('')

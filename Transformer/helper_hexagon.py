@@ -19,7 +19,7 @@ def determine_reg_size(token_list: list) -> int:
     elif reg_type == 'Q':
         size = 128
     else:
-        NotImplementedError('')
+        raise NotImplementedError('')
 
     if 'PAIR' in reg_access:
         size *= 2

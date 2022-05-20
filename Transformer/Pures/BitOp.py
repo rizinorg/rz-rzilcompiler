@@ -32,4 +32,4 @@ class BitOp(PureExec):
         elif self.op_type == BitOperationType.BIT_NOT_OP:
             return f'LOGNOT({self.a.il_read()}'
         else:
-            NotImplementedError('')
+            raise NotImplementedError('')
