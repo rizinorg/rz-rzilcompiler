@@ -7,7 +7,7 @@ from Transformer.Pure import Pure
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Register import Register, RegisterAccessType
-
+from Transformer.helper_hexagon import determine_reg_size
 
 ops = dict()
 
@@ -44,6 +44,7 @@ class RZILTransformer(Transformer):
         items: [Token]
         name = ''.join(items) + f'_{self.get_op_id()}'
         reg_type = items[1].type  # src, dest, both
+        reg_size = determine_reg_size(items)
 
         if reg_type == RegisterAccessType.R or reg_type == RegisterAccessType.PR:
             # Should be read before use. Add to read list.
