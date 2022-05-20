@@ -20,7 +20,7 @@ class BitOp(PureExec):
         self.b = b
         self.op_type = op_type
 
-        super().__init__(name, max(self.a.size, self.b.size) if self.b is not None else self.a.size)
+        super().__init__(name, max(self.a.value_type.bit_width, self.b.value_type.bit_width) if self.b else self.a.value_type.bit_width)
 
     def il_exec(self):
         if self.op_type == BitOperationType.BIT_AND_OP:

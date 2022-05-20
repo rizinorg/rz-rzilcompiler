@@ -1,15 +1,18 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
+import re
 
 from lark import Transformer, Token
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.BitOp import BitOperationType, BitOp
+from Transformer.Pures.LetVar import LetVar
 from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.Pure import Pure
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Pures.Register import Register, RegisterAccessType
-from Transformer.helper_hexagon import get_value_type_from_reg_type, get_value_type_by_c_type
+from Transformer.helper_hexagon import get_value_type_from_reg_type, get_value_type_by_c_type, \
+    get_value_type_by_c_number, get_num_base_by_token
 
 
 class RZILTransformer(Transformer):
@@ -70,6 +73,12 @@ class RZILTransformer(Transformer):
     def imm(self, items):
         print(f'imm: {items}')
         return f"{items[0]}{items[1]}"
+
+    def number(self, items):
+        v_type = get_value_type_by_c_number(items)
+        num_str = (str(items[0]) if items[0] else '') + str(items[1])
+        name = f'const_{"neg" if items[0] == "-" else "pos"}{items[1]}{items[2] if items[2] else ""}'
+        return LetVar(name, int(num_str, get_num_base_by_token(items[1])), v_type)
 
     def declaration(self, items):
         if len(items) != 2:

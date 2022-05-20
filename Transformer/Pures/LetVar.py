@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Exceptions import OverloadException
 from Transformer.Pures.Pure import Pure, PureType, ValueType
 
 
@@ -9,9 +8,6 @@ class LetVar(Pure):
     """ This class represents a LetVar. Let variables are immutable. """
 
     def __init__(self, name: str, value: int, value_type: ValueType):
-        if value < 0 and not value_type.signed:
-            raise Exception(f'Illegal value given to LocalVar. Was {value} < 0 but ValueType says var is unsigned.')
-
         self.value = value
         super().__init__(name, PureType.LET, value_type)
 

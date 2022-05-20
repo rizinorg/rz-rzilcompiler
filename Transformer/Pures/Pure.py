@@ -35,13 +35,14 @@ class Pure:
     def __init__(self, name: str, pure_type: PureType, value_type: ValueType):
         from Transformer.ILOpsHolder import ILOpsHolder
 
-        holder = ILOpsHolder()
-        if name in holder.read_ops or name in holder.exec_ops:
-            return
         self.name = name
         self.name_assoc = name + '_assoc'
         self.type = pure_type
         self.value_type = value_type
+
+        holder = ILOpsHolder()
+        if name in holder.read_ops or name in holder.exec_ops:
+            return
         holder.add_pure(self)
 
     def get_name(self):

@@ -19,12 +19,12 @@ class Effect:
     def init(self, name: str, effect_type: EffectType):
         from Transformer.ILOpsHolder import ILOpsHolder
 
-        holder = ILOpsHolder()
-        if name in holder.write_ops:
-            return
         self.name = name
         self.type = effect_type
 
+        holder = ILOpsHolder()
+        if name in holder.write_ops:
+            return
         holder.add_effect(self)
 
     def get_name(self):
