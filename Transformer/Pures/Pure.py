@@ -48,12 +48,6 @@ class Pure:
         """
         raise OverloadException('')
 
-    def il_exec(self):
-        """ Returns the RZIL ops to execute the operation.
-        :return: RZIL ops to exec the operation value.
-        """
-        raise OverloadException('')
-
     def il_isa_to_assoc_name(self):
         """ Returns code to: Translate a placeholder ISA name of an operand (like u6:2 or Rs)
         to the real operand name of the current instruction.
