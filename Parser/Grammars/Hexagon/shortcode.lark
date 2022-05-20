@@ -344,19 +344,19 @@ ASSIGN_OP: "="
 	| declaration_list declaration
 
 ?op: reg "V"
-    | IMM "iV"
+    | imm "iV"
     | number
-    | typed_int
     | IDENTIFIER
 
 reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
     | REG_TYPE (SRC_REG_PAIR | DEST_REG_PAIR | SRC_DEST_REG_PAIR)
 
-?number: [NUM_SIGN] (HEX_NUMBER | DEC_NUMBER)
-?typed_int: number INT_TYPE
+?number: [NUM_SIGN] (HEX_NUMBER | DEC_NUMBER) [INT_POST_TYPE]
+
+?imm: IMMEDIATE
 // Patterns from:
 // https://github.com/quic/qemu/blob/9d66a1fe6b1f83bc27ce78c1d56bece967340052/target/hexagon/hex_common.py#L39
-IMM: /[rRsSuUmn]/
+IMMEDIATE: /[rRsSuUmn]/
 
 // Register descriptions:
 // https://github.com/quic/qemu/blob/9d66a1fe6b1f83bc27ce78c1d56bece967340052/target/hexagon/hex_common.py#L138
@@ -368,7 +368,7 @@ DEST_REG_PAIR: "dd"
 SRC_DEST_REG: /[xyz]/
 SRC_DEST_REG_PAIR: "xx" | "yy"
 
-INT_TYPE: "LL" | "ULL"
+INT_POST_TYPE: "LL" | "ULL"
 HEX_NUMBER: /0x[\da-f]*/i
 DEC_NUMBER: /0|[1-9][\d_]*/i
 NUM_SIGN: /[-+]/i
