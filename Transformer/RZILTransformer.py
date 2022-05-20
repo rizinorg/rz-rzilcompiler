@@ -10,8 +10,6 @@ from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Pures.Register import Register, RegisterAccessType
 from Transformer.helper_hexagon import determine_reg_size
 
-ops = dict()
-
 
 class RZILTransformer(Transformer):
     """
@@ -43,7 +41,7 @@ class RZILTransformer(Transformer):
     def reg(self, items):
         holder = ILOpsHolder()
         items: [Token]
-        name = ''.join(items) + f'_{self.get_op_id()}'
+        name = ''.join(items)
         reg_type = items[1].type  # src, dest, both
         reg_size = determine_reg_size(items)
 
@@ -71,18 +69,18 @@ class RZILTransformer(Transformer):
 
     def assignment_expr(self, items):
         dest: Pure = items[0]
-        assign_type = AssignmentType(items[1])
+        op_type = AssignmentType(items[1])
         src: Pure = items[2]
-        print(items)
-        name = f'assign{dest.get_isa_name()}{src.get_isa_name()}_{self.get_op_id()}'
-        v = Assignment(name, assign_type, dest, src)
+        name = f'op_{op_type.name}_{self.get_op_id()}'
+        v = Assignment(name, op_type, dest, src)
         return v
 
     def additive_expr(self, items):
         a = items[0]
         b = items[2]
-        name = f'{"add" if items[1] == "+" else "sub"}{a.get_name()}{b.get_name()}_{self.get_op_id()}'
-        v = ArithmeticOp(name, a, b, ArithmeticType(items[1]))
+        op_type = ArithmeticType(items[1])
+        name = f'op_{op_type.name}_{self.get_op_id()}'
+        v = ArithmeticOp(name, a, b, op_type)
         return v
 
     def and_expr(self, items):
@@ -103,12 +101,12 @@ class RZILTransformer(Transformer):
     def bit_operations(self, items: list, op_type: BitOperationType):
         if len(items) < 3:
             a = items[1]
-            name = f'bit_op_{a.get_name()}_{self.get_op_id()}'
+            name = f'op_{op_type.name}_{self.get_op_id()}'
             v = BitOp(name, a, None, op_type)
             return v
         a = items[0]
         b = items[2]
-        name = f'bit_op_{a.get_name()}{b.get_name()}_{self.get_op_id()}'
+        name = f'op_{op_type.name}_{self.get_op_id()}'
         v = BitOp(name, a, b, op_type)
         return v
 
