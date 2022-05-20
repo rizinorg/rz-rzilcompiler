@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Transformer.Effect import Effect
-from Transformer.Pure import Pure, PureType
+from Transformer.Effects.Effect import Effect
+from Transformer.Pures.Pure import Pure, PureType
 
 
 def singleton(cls, *args, **kw):

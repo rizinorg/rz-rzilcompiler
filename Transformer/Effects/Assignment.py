@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Transformer.Effect import Effect, EffectType
-from Transformer.Pure import Pure, PureType
+from Transformer.Effects.Effect import Effect, EffectType
+from Transformer.Pures.Pure import Pure, PureType
 from enum import StrEnum
 
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType

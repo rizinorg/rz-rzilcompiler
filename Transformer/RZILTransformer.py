@@ -3,10 +3,10 @@
 
 from lark import Transformer, Token
 from Transformer.ILOpsHolder import ILOpsHolder
-from Transformer.Pure import Pure
+from Transformer.Pures.Pure import Pure
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
-from Transformer.Register import Register, RegisterAccessType
+from Transformer.Pures.Register import Register, RegisterAccessType
 from Transformer.helper_hexagon import determine_reg_size
 
 ops = dict()

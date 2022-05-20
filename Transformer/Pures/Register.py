@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from Transformer.PluginInfo import isa_to_reg_fnc, isa_to_reg_args
-from Transformer.GlobalVar import GlobalVar
+from Transformer.Pures.GlobalVar import GlobalVar
 from enum import StrEnum
 
 

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from enum import StrEnum
 
-from Transformer.Pure import Pure
+from Transformer.Pures.Pure import Pure
 from Transformer.Pures.PureExec import PureExec
 
 
