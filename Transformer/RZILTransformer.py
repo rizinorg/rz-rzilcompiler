@@ -36,6 +36,9 @@ class RZILTransformer(Transformer):
         print("\n// WRITE")
         for op in holder.write_ops.values():
             print(op.il_init_var())
+        #
+        # Wrap into LET(...SEQ(
+        #
 
     # Returned value replaces node in tree
     # Transformers/Visitors are called bottom up! First leaves then parents

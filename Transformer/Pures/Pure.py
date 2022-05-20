@@ -13,10 +13,17 @@ class PureType(Enum):
 
 
 class ValueType:
-    def __init__(self, c_type: str, is_num: bool, bit_width: int):
+    """ Is used to match value against their UN() and SN() equivalence. """
+    def __init__(self, c_type: str, signed: bool, bit_width: int):
         self.c_type = c_type
-        self.is_num = is_num
+        self.signed = signed
         self.bit_width = bit_width
+
+    def il_op(self, value: int):
+        """ Returns the corresponding SN/UN(size, val) string. """
+        s = 'SN' if self.signed else 'UN'
+        s += f'({self.bit_width}, {value})'
+        return s
 
 
 class Pure:
