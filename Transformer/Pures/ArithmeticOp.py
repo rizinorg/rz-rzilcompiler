@@ -16,10 +16,10 @@ class ArithmeticType(StrEnum):
 
 class ArithmeticOp(PureExec):
 
-    def __init__(self, name: str, a: Pure, b: Pure, atype: ArithmeticType):
+    def __init__(self, name: str, a: Pure, b: Pure, a_type: ArithmeticType):
         self.a = a
         self.b = b
-        self.a_type = atype
+        self.a_type = a_type
 
         super().__init__(name, max(self.a.size, self.b.size))
 
@@ -28,5 +28,11 @@ class ArithmeticOp(PureExec):
             return f'ADD({self.a.il_read()}, {self.b.il_read()}'
         elif self.a_type == ArithmeticType.SUB:
             return f'SUB({self.a.il_read()}, {self.b.il_read()}'
+        elif self.a_type == ArithmeticType.MUL:
+            return f'MUL({self.a.il_read()}, {self.b.il_read()}'
+        elif self.a_type == ArithmeticType.DIV:
+            return f'DIV({self.a.il_read()}, {self.b.il_read()}'
+        elif self.a_type == ArithmeticType.MOD:
+            return f'MOD({self.a.il_read()}, {self.b.il_read()}'
         else:
             NotImplementedError('')

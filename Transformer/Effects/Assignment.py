@@ -48,6 +48,14 @@ class Assignment(Effect):
             return
         elif self.assign_type == AssignmentType.ASSIGN_ADD:
             self.src = ArithmeticOp(f'add{self.src.get_isa_name()}{self.dest.get_isa_name()}', self.src, self.dest, ArithmeticType.ADD)
+        elif self.assign_type == AssignmentType.ASSIGN_SUB:
+            self.src = ArithmeticOp(f'sub{self.src.get_isa_name()}{self.dest.get_isa_name()}', self.src, self.dest, ArithmeticType.SUB)
+        elif self.assign_type == AssignmentType.ASSIGN_MUL:
+            self.src = ArithmeticOp(f'mul{self.src.get_isa_name()}{self.dest.get_isa_name()}', self.src, self.dest, ArithmeticType.MUL)
+        elif self.assign_type == AssignmentType.ASSIGN_MOD:
+            self.src = ArithmeticOp(f'mod{self.src.get_isa_name()}{self.dest.get_isa_name()}', self.src, self.dest, ArithmeticType.MOD)
+        elif self.assign_type == AssignmentType.ASSIGN_DIV:
+            self.src = ArithmeticOp(f'div{self.src.get_isa_name()}{self.dest.get_isa_name()}', self.src, self.dest, ArithmeticType.DIV)
         else:
             NotImplementedError('')
 
