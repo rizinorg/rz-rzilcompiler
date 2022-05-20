@@ -25,7 +25,7 @@ class Effect:
         self.name = name
         self.type = effect_type
 
-        holder.write_ops[name] = self
+        holder.add_effect(self)
 
     def get_name(self):
         return self.name

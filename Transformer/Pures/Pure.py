@@ -35,10 +35,7 @@ class Pure:
         self.name_assoc = name + '_assoc'
         self.type = pure_type
         self.value_type = value_type
-        if self.type == PureType.GLOBAL:
-            holder.read_ops[name] = self
-        else:
-            holder.exec_ops[name] = self
+        holder.add_pure(self)
 
     def get_name(self):
         """ Returns the name of the pure. If it is defined in the ISA, this returns teh ISA name. """
