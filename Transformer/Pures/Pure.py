@@ -13,10 +13,9 @@ class PureType(Enum):
 
 
 class ValueType:
-    def __init__(self, c_type: str, is_num: bool, unsigned: bool, bit_width: int):
+    def __init__(self, c_type: str, is_num: bool, bit_width: int):
         self.c_type = c_type
         self.is_num = is_num
-        self.unsigned = unsigned
         self.bit_width = bit_width
 
 

@@ -1,15 +1,15 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Transformer.Pures.Pure import Pure, PureType
+from Transformer.Pures.Pure import Pure, PureType, ValueType
 
 
 class GlobalVar(Pure):
     reads = None
 
-    def __init__(self, name: str, size: int):
+    def __init__(self, name: str, v_type: ValueType):
         self.reads = 0
-        super().__init__(name, PureType.GLOBAL, size)
+        super().__init__(name, PureType.GLOBAL, v_type)
 
     def il_init_var(self):
         init = self.il_isa_to_assoc_name()

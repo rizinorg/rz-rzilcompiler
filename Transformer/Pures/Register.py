@@ -5,6 +5,8 @@ from Transformer.PluginInfo import isa_to_reg_fnc, isa_to_reg_args
 from Transformer.Pures.GlobalVar import GlobalVar
 from enum import StrEnum
 
+from Transformer.Pures.Pure import ValueType
+
 
 class RegisterAccessType(StrEnum):
     R = 'SRC_REG'
@@ -17,9 +19,9 @@ class RegisterAccessType(StrEnum):
 
 class Register(GlobalVar):
 
-    def __init__(self, name: str, access: RegisterAccessType, size: int):
+    def __init__(self, name: str, access: RegisterAccessType, v_type: ValueType):
         self.access = access
-        super().__init__(name, size)
+        super().__init__(name, v_type)
 
     def il_init_var(self):
         if self.access == RegisterAccessType.W:  # Registers which are only written do not need an own RzILOpPure.

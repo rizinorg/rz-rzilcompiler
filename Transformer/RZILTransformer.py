@@ -9,7 +9,7 @@ from Transformer.Pures.Pure import Pure
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Pures.Register import Register, RegisterAccessType
-from Transformer.helper_hexagon import determine_reg_size, get_value_type_by_c_type
+from Transformer.helper_hexagon import get_value_type_from_reg_type, get_value_type_by_c_type
 
 
 class RZILTransformer(Transformer):
@@ -44,23 +44,23 @@ class RZILTransformer(Transformer):
         items: [Token]
         name = ''.join(items)
         reg_type = items[1].type  # src, dest, both
-        reg_size = determine_reg_size(items)
+        v_type = get_value_type_from_reg_type(items)
 
         if reg_type == RegisterAccessType.R or reg_type == RegisterAccessType.PR:
             # Should be read before use. Add to read list.
             if name not in holder.read_ops:
-                v = Register(name, RegisterAccessType.R, reg_size)
+                v = Register(name, RegisterAccessType.R, v_type)
                 return v
             return holder.read_ops[name]
         elif reg_type == RegisterAccessType.W or reg_type == RegisterAccessType.PW:
             # Dest regs are passed as string to SETG(). Need no Pure variable.
             if name not in holder.read_ops:
-                v = Register(name, RegisterAccessType.W, reg_size)
+                v = Register(name, RegisterAccessType.W, v_type)
                 return v
             return holder.read_ops[name]
         elif reg_type == RegisterAccessType.RW or reg_type == RegisterAccessType.PRW:
             if name not in holder.read_ops:
-                v = Register(name, RegisterAccessType.RW, reg_size)
+                v = Register(name, RegisterAccessType.RW, v_type)
                 return v
             return holder.read_ops[name]
 
