@@ -49,18 +49,18 @@ class RZILTransformer(Transformer):
         if reg_type == RegisterAccessType.R or reg_type == RegisterAccessType.PR:
             # Should be read before use. Add to read list.
             if name not in holder.read_ops:
-                v = Register(name, RegisterAccessType.R, -1)
+                v = Register(name, RegisterAccessType.R, reg_size)
                 return v
             return holder.read_ops[name]
         elif reg_type == RegisterAccessType.W or reg_type == RegisterAccessType.PW:
             # Dest regs are passed as string to SETG(). Need no Pure variable.
             if name not in holder.read_ops:
-                v = Register(name, RegisterAccessType.W, -1)
+                v = Register(name, RegisterAccessType.W, reg_size)
                 return v
             return holder.read_ops[name]
         elif reg_type == RegisterAccessType.RW or reg_type == RegisterAccessType.PRW:
             if name not in holder.read_ops:
-                v = Register(name, RegisterAccessType.RW, -1)
+                v = Register(name, RegisterAccessType.RW, reg_size)
                 return v
             return holder.read_ops[name]
 
