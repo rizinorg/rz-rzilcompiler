@@ -65,6 +65,6 @@ class Assignment(Effect):
         if self.type == EffectType.SETG:
             return f'SETG({self.dest.get_assoc_name()}, {self.src.get_isa_name()})'
         elif self.type == EffectType.SETL:
-            return f'SETL({self.dest.get_isa_name()}, {self.src.get_isa_name()})'
+            return f'SETL("{self.dest.get_isa_name()}", {self.src.get_isa_name()})'
         else:
             raise NotImplementedError('')

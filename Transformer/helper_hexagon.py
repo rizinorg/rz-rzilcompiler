@@ -3,10 +3,11 @@
 
 from lark import Token
 
+from Transformer.Pures.Pure import ValueType
+
 
 def determine_reg_size(token_list: list) -> int:
     """ Determines the size for Hexagon registers by their parse tree tokens. """
-    size = -1
     reg_type: Token = token_list[0].value  # R, P, V, Q etc.
     reg_access = token_list[1].type  # SRC/DEST/DEST_PAIR etc.
 
@@ -24,3 +25,12 @@ def determine_reg_size(token_list: list) -> int:
     if 'PAIR' in reg_access:
         size *= 2
     return size
+
+
+def get_value_type_by_c_type(c_type: str) -> ValueType:
+    """ Returns the size in bits for the given C integer type. """
+
+    if c_type == 'short':
+        return ValueType(c_type, True, False, 16)
+    else:
+        raise NotImplementedError('')

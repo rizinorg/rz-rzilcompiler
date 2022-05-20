@@ -4,11 +4,12 @@
 from lark import Transformer, Token
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.BitOp import BitOperationType, BitOp
+from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.Pure import Pure
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Pures.Register import Register, RegisterAccessType
-from Transformer.helper_hexagon import determine_reg_size
+from Transformer.helper_hexagon import determine_reg_size, get_value_type_by_c_type
 
 
 class RZILTransformer(Transformer):
@@ -66,6 +67,27 @@ class RZILTransformer(Transformer):
     def imm(self, items):
         print(f'imm: {items}')
         return f"{items[0]}{items[1]}"
+
+    def declaration(self, items):
+        if len(items) != 2:
+            raise NotImplementedError('')
+        t = get_value_type_by_c_type(items[0])
+        if isinstance(items[1], Assignment):
+            assg: Assignment = items[1]
+            assg.dest.set_value_type(t)
+        elif isinstance(items[1], str):
+            return LocalVar(items[1], get_value_type_by_c_type(items[0]))
+        return
+
+    def init_declarator(self, items):
+        if len(items) != 2:
+            raise NotImplementedError('')
+        dest = LocalVar(items[0], None)  # Size is updated in declaration handler.
+        op_type = AssignmentType.ASSIGN
+        src: Pure = items[1]
+        name = f'op_{op_type.name}_{self.get_op_id()}'
+        v = Assignment(name, op_type, dest, src)
+        return v
 
     def assignment_expr(self, items):
         dest: Pure = items[0]

@@ -8,15 +8,25 @@ from Exceptions import OverloadException
 class PureType(Enum):
     GLOBAL = 0  # Registers
     LOCAL = 1  # Local variables
-    EXEC = 2  # Read memory access
+    LET = 2  # Let variables
+    EXEC = 3  # Read memory access
+
+
+class ValueType:
+    def __init__(self, c_type: str, is_num: bool, unsigned: bool, bit_width: int):
+        self.c_type = c_type
+        self.is_num = is_num
+        self.unsigned = unsigned
+        self.bit_width = bit_width
 
 
 class Pure:
     name: str = ''  # Name of pure
     name_assoc: str = ''  # Name associated with the ISA name. E.g. ISA: "Rs" Associated: "R3"
     type: PureType = None
+    value_type: ValueType = None
 
-    def __init__(self, name: str, pure_type: PureType, size: int):
+    def __init__(self, name: str, pure_type: PureType, value_type: ValueType):
         from Transformer.ILOpsHolder import ILOpsHolder
 
         holder = ILOpsHolder()
@@ -25,7 +35,7 @@ class Pure:
         self.name = name
         self.name_assoc = name + '_assoc'
         self.type = pure_type
-        self.size = size
+        self.value_type = value_type
         if self.type == PureType.GLOBAL:
             holder.read_ops[name] = self
         else:
@@ -41,6 +51,9 @@ class Pure:
 
     def get_assoc_name(self):
         return self.name_assoc
+
+    def set_value_type(self, value_type: ValueType):
+        self.value_type = value_type
 
     def il_read(self):
         """ Returns the RZIL ops to read the variable value.
