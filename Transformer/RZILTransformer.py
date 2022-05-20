@@ -17,6 +17,12 @@ class RZILTransformer(Transformer):
     Transforms the tree into Pures and Effects.
     The classes do the actual code generation.
     """
+    op_count = 0
+
+    def get_op_id(self):
+        op_id = self.op_count
+        self.op_count += 1
+        return op_id
 
     def fbody(self, items):
         holder = ILOpsHolder()
@@ -36,7 +42,7 @@ class RZILTransformer(Transformer):
     def reg(self, items):
         holder = ILOpsHolder()
         items: [Token]
-        name = ''.join(items)
+        name = ''.join(items) + f'_{self.get_op_id()}'
         reg_type = items[1].type  # src, dest, both
 
         if reg_type == RegisterAccessType.R or reg_type == RegisterAccessType.PR:
@@ -62,20 +68,18 @@ class RZILTransformer(Transformer):
         return f"{items[0]}{items[1]}"
 
     def assignment_expr(self, items):
-        holder = ILOpsHolder()
         dest: Pure = items[0]
         assign_type = AssignmentType(items[1])
         src: Pure = items[2]
-        name = f'assign{dest.get_isa_name()}{src.get_isa_name()}'
+        name = f'assign{dest.get_isa_name()}{src.get_isa_name()}_{self.get_op_id()}'
         v = Assignment(name, assign_type, dest, src)
         # ! How to handle effects which do the same? Unique ids for effects and non Vars!
         return v
 
     def additive_expr(self, items):
-        holder = ILOpsHolder()
         a = items[0]
         b = items[2]
-        name = f'{"add" if items[1] == "+" else "sub"}{a.get_name()}{b.get_name()}'
+        name = f'{"add" if items[1] == "+" else "sub"}{a.get_name()}{b.get_name()}_{self.get_op_id()}'
         v = ArithmeticOp(name, a, b, ArithmeticType(items[1]))
         return v
 
