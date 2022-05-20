@@ -3,6 +3,7 @@
 
 from lark import Transformer, Token
 from Transformer.ILOpsHolder import ILOpsHolder
+from Transformer.Pures.BitOp import BitOperationType, BitOp
 from Transformer.Pures.Pure import Pure
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
@@ -72,9 +73,9 @@ class RZILTransformer(Transformer):
         dest: Pure = items[0]
         assign_type = AssignmentType(items[1])
         src: Pure = items[2]
+        print(items)
         name = f'assign{dest.get_isa_name()}{src.get_isa_name()}_{self.get_op_id()}'
         v = Assignment(name, assign_type, dest, src)
-        # ! How to handle effects which do the same? Unique ids for effects and non Vars!
         return v
 
     def additive_expr(self, items):
@@ -82,6 +83,33 @@ class RZILTransformer(Transformer):
         b = items[2]
         name = f'{"add" if items[1] == "+" else "sub"}{a.get_name()}{b.get_name()}_{self.get_op_id()}'
         v = ArithmeticOp(name, a, b, ArithmeticType(items[1]))
+        return v
+
+    def and_expr(self, items):
+        return self.bit_operations(items, BitOperationType.BIT_AND_OP)
+
+    def inclusive_or_expr(self, items):
+        return self.bit_operations(items, BitOperationType.BIT_OR_OP)
+
+    def exclusive_or_expr(self, items):
+        return self.bit_operations(items, BitOperationType.BIT_XOR_OP)
+
+    def unary_expr(self, items):
+        if items[0] == '~':
+            return self.bit_operations(items, BitOperationType.BIT_NOT_OP)
+        else:
+            NotImplementedError('')
+
+    def bit_operations(self, items: list, op_type: BitOperationType):
+        if len(items) < 3:
+            a = items[1]
+            name = f'bit_op_{a.get_name()}_{self.get_op_id()}'
+            v = BitOp(name, a, None, op_type)
+            return v
+        a = items[0]
+        b = items[2]
+        name = f'bit_op_{a.get_name()}{b.get_name()}_{self.get_op_id()}'
+        v = BitOp(name, a, b, op_type)
         return v
 
     def mem_write(self, items):

@@ -32,12 +32,12 @@ fbody: stmt* -> fbody
 ?unary_expr: postfix_expr
 	| INC_OP unary_expr
 	| DEC_OP unary_expr
-	| unary_operator cast_expr
+	| UNARY_OPERATOR cast_expr
 	| SIZEOF unary_expr
 	| SIZEOF "(" type_name ")"
 	| ALIGNOF "(" type_name ")"
 
-?unary_operator: "&"
+UNARY_OPERATOR: "&"
 	| "*"
 	| "+"
 	| "-"
@@ -71,13 +71,13 @@ fbody: stmt* -> fbody
 	| equality_expr NE_OP relational_expr
 
 ?and_expr: equality_expr
-	| and_expr "&" equality_expr
+	| and_expr BIT_AND_OP equality_expr
 
 ?exclusive_or_expr: and_expr
-	| exclusive_or_expr "^" and_expr
+	| exclusive_or_expr BIT_XOR_OP and_expr
 
 ?inclusive_or_expr: exclusive_or_expr
-	| inclusive_or_expr "|" exclusive_or_expr
+	| inclusive_or_expr BIT_OR_OP exclusive_or_expr
 
 ?logical_and_expr: inclusive_or_expr
 	| logical_and_expr AND_OP inclusive_or_expr
@@ -449,6 +449,9 @@ DIV_OP: "/"
 MOD_OP: "%"
 ADD_OP: "+"
 SUB_OP: "-"
+BIT_OR_OP: "|"
+BIT_AND_OP: "&"
+BIT_XOR_OP: "^"
 
 IDENTIFIER: /[A-Za-z_]+\w*/
 
