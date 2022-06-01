@@ -7,29 +7,33 @@ from Transformer.Pures.PureExec import PureExec
 
 
 class BitOperationType(StrEnum):
-    BIT_OR_OP = '|'
-    BIT_AND_OP = '&'
-    BIT_XOR_OP = '^'
-    BIT_NOT_OP = '~'
+    BIT_OR_OP = "|"
+    BIT_AND_OP = "&"
+    BIT_XOR_OP = "^"
+    BIT_NOT_OP = "~"
 
 
 class BitOp(PureExec):
-
     def __init__(self, name: str, a: Pure, b: Pure, op_type: BitOperationType):
         self.a = a
         self.b = b
         self.op_type = op_type
 
-        super().__init__(name, max(self.a.value_type.bit_width, self.b.value_type.bit_width) if self.b else self.a.value_type.bit_width)
+        super().__init__(
+            name,
+            self.a.value_type
+            if self.a.value_type.bit_width > self.b.value_type.bit_width
+            else (self.b.value_type if self.b else self.a.value_type),
+        )
 
     def il_exec(self):
         if self.op_type == BitOperationType.BIT_AND_OP:
-            return f'LOGAND({self.a.il_read()}, {self.b.il_read()}'
+            return f"LOGAND({self.a.il_read()}, {self.b.il_read()}"
         elif self.op_type == BitOperationType.BIT_OR_OP:
-            return f'LOGOR({self.a.il_read()}, {self.b.il_read()}'
+            return f"LOGOR({self.a.il_read()}, {self.b.il_read()}"
         elif self.op_type == BitOperationType.BIT_XOR_OP:
-            return f'LOGXOR({self.a.il_read()}, {self.b.il_read()}'
+            return f"LOGXOR({self.a.il_read()}, {self.b.il_read()}"
         elif self.op_type == BitOperationType.BIT_NOT_OP:
-            return f'LOGNOT({self.a.il_read()}'
+            return f"LOGNOT({self.a.il_read()}"
         else:
-            raise NotImplementedError('')
+            raise NotImplementedError("")

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from Exceptions import OverloadException
-from Transformer.Pures.Pure import Pure, PureType
+from Transformer.Pures.Pure import Pure, PureType, ValueType
 
 
 class PureExec(Pure):
@@ -10,8 +10,8 @@ class PureExec(Pure):
         They difference to Pure, LocalVars and GlobalVars is only the initialization.
     """
 
-    def __init__(self, name: str, size: int):
-        super().__init__(name, PureType.EXEC, size)
+    def __init__(self, name: str, val_type: ValueType):
+        super().__init__(name, PureType.EXEC, val_type)
 
     def il_exec(self):
         """ Returns the RZIL ops to execute the operation.

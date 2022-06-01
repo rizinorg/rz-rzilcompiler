@@ -21,7 +21,9 @@ class ArithmeticOp(PureExec):
         self.b = b
         self.a_type = a_type
 
-        super().__init__(name, max(self.a.value_type.bit_width, self.b.value_type.bit_width))
+        super().__init__(name, self.a.value_type
+                         if self.a.value_type.bit_width > self.b.value_type.bit_width
+                         else self.b.value_type)
 
     def il_exec(self):
         if self.a_type == ArithmeticType.ADD:
