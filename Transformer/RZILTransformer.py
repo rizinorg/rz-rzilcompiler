@@ -5,6 +5,7 @@ import re
 from lark import Transformer, Token
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.BitOp import BitOperationType, BitOp
+from Transformer.Pures.Immediate import Immediate
 from Transformer.Pures.LetVar import LetVar
 from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.Number import Number
@@ -13,7 +14,7 @@ from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Pures.Register import Register, RegisterAccessType
 from Transformer.helper_hexagon import get_value_type_from_reg_type, get_value_type_by_c_type, \
-    get_value_type_by_c_number, get_num_base_by_token
+    get_value_type_by_c_number, get_num_base_by_token, get_value_type_by_isa_imm
 
 
 class RZILTransformer(Transformer):
@@ -71,9 +72,11 @@ class RZILTransformer(Transformer):
                 return v
             return holder.read_ops[name]
 
+    # SPECIFIC FOR: Hexagon
     def imm(self, items):
-        print(f'imm: {items}')
-        return f"{items[0]}{items[1]}"
+        v_type = get_value_type_by_isa_imm(items)
+        name = f'{items[0]}'
+        return Immediate(name, -1, v_type)
 
     def number(self, items):
         v_type = get_value_type_by_c_number(items)

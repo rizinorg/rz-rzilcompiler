@@ -1,9 +1,11 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
+import re
 
 from lark import Token
 
 from Transformer.Pures.Pure import ValueType
+from Transformer.Pures.Register import Register
 
 
 def get_value_type_from_reg_type(token_list: list) -> ValueType:
@@ -69,3 +71,15 @@ def get_value_type_by_c_number(items: [Token]) -> ValueType:
     if postfix == 'ULL' or postfix == 'LL':
         size = 64
     return ValueType('unknown_t', signed, size)
+
+# SPECIFIC FOR: Hexagon
+def get_value_type_by_isa_imm(items: Token) -> ValueType:
+    """ Returns the value type for a immediate parser tree token. """
+
+    imm_char = items[0]
+    signed = False
+    if re.search(r'[rRsS]', imm_char):
+        signed = True
+
+    # Immediate size is unfortunately not encoded in the short code.
+    return ValueType('unknown_t', signed, -1)
