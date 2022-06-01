@@ -30,9 +30,9 @@ class ILOpsHolder(object):
         self.let_ops = dict()
 
     def add_pure(self, pure: Pure):
-        if pure.type == PureType.GLOBAL:
+        if pure.type == PureType.GLOBAL or pure.type == PureType.LOCAL:
             self.read_ops[pure.get_name()] = pure
-        elif pure.type == PureType.EXEC or pure.type == PureType.LOCAL:
+        elif pure.type == PureType.EXEC:
             self.exec_ops[pure.get_name()] = pure
         elif pure.type == PureType.LET:
             self.read_ops[pure.get_name()] = pure
