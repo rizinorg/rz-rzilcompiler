@@ -39,21 +39,21 @@
                  reg_field_info[FIELD].offset, (VAL))
 
 
-#define MEM_LOAD1s(VA) ((int8_t)mem_load1(env, slot, VA))
-#define MEM_LOAD1u(VA) ((uint8_t)mem_load1(env, slot, VA))
-#define MEM_LOAD2s(VA) ((int16_t)mem_load2(env, slot, VA))
-#define MEM_LOAD2u(VA) ((uint16_t)mem_load2(env, slot, VA))
-#define MEM_LOAD4s(VA) ((int32_t)mem_load4(env, slot, VA))
-#define MEM_LOAD4u(VA) ((uint32_t)mem_load4(env, slot, VA))
-#define MEM_LOAD8s(VA) ((int64_t)mem_load8(env, slot, VA))
-#define MEM_LOAD8u(VA) ((uint64_t)mem_load8(env, slot, VA))
+#define MEM_LOAD1s(VA) (mem_load_s8(VA))
+#define MEM_LOAD1u(VA) (mem_load_u8(VA))
+#define MEM_LOAD2s(VA) (mem_load_s16(VA))
+#define MEM_LOAD2u(VA) (mem_load_u16(VA))
+#define MEM_LOAD4s(VA) (mem_load_s32(VA))
+#define MEM_LOAD4u(VA) (mem_load_u32(VA))
+#define MEM_LOAD8s(VA) (mem_load_s64(VA))
+#define MEM_LOAD8u(VA) (mem_load_u64(VA))
 
-#define MEM_STORE1(VA, DATA, SLOT) log_store32(env, VA, DATA, 1, SLOT)
-#define MEM_STORE2(VA, DATA, SLOT) log_store32(env, VA, DATA, 2, SLOT)
-#define MEM_STORE4(VA, DATA, SLOT) log_store32(env, VA, DATA, 4, SLOT)
-#define MEM_STORE8(VA, DATA, SLOT) log_store64(env, VA, DATA, 8, SLOT)
+#define MEM_STORE1(VA, DATA, SLOT) mem_store_u8(VA, DATA)
+#define MEM_STORE2(VA, DATA, SLOT) mem_store_u16(VA, DATA)
+#define MEM_STORE4(VA, DATA, SLOT) mem_store_u32(VA, DATA)
+#define MEM_STORE8(VA, DATA, SLOT) mem_store_u64(VA, DATA)
 
-#define CANCEL cancel_slot(env, slot)
+#define CANCEL cancel_slot
 
 #define LOAD_CANCEL(EA) do { CANCEL; } while (0)
 

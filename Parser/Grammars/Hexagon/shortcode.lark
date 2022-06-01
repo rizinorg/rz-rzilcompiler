@@ -1,9 +1,16 @@
 start: fbody
 fbody: stmt* -> fbody
 
-?primary_expr: op 
+?primary_expr: op
 	| "(" expr ")"
 	| generic_selection
+
+_mem_access: mem_load
+    | mem_store
+
+mem_load: "mem_load_" SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")"
+
+mem_store: "mem_store_" SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")"
 
 ?enumeration_constant: IDENTIFIER
 
@@ -18,7 +25,7 @@ fbody: stmt* -> fbody
 ?postfix_expr: primary_expr
 	| postfix_expr "[" expr "]"
 	| postfix_expr "(" ")"
-	| postfix_expr "(" argument_expr_list ")"
+	| _mem_access
 	| postfix_expr "." IDENTIFIER
 	| postfix_expr PTR_OP IDENTIFIER
 	| postfix_expr INC_OP
@@ -105,6 +112,7 @@ ASSIGN_OP: "="
 
 ?expr: assignment_expr
 	| expr "," assignment_expr
+	| cancel_slot_expr
 
 ?constant_expr: conditional_expr
 
@@ -298,6 +306,8 @@ ASSIGN_OP: "="
 	| iteration_stmt
 	| jump_stmt
 
+cancel_slot_expr: "cancel_slot" ";"
+
 ?labeled_stmt: IDENTIFIER ":" stmt
 	| CASE constant_expr ":" stmt
 	| DEFAULT ":" stmt
@@ -353,7 +363,7 @@ reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
 
 ?number: [NUM_SIGN] (HEX_NUMBER | DEC_NUMBER) [INT_POST_TYPE]
 
-?imm: IMMEDIATE
+imm: IMMEDIATE
 // Patterns from:
 // https://github.com/quic/qemu/blob/9d66a1fe6b1f83bc27ce78c1d56bece967340052/target/hexagon/hex_common.py#L39
 IMMEDIATE: /[rRsSuUmn]/
@@ -372,6 +382,9 @@ INT_POST_TYPE: "LL" | "ULL"
 HEX_NUMBER: /0x[\da-f]*/i
 DEC_NUMBER: /0|[1-9][\d_]*/i
 NUM_SIGN: /[-+]/i
+
+SIGN_TYPE: /[su]/
+BIT_WIDTH: "8" | "16" | "32" | "64"
 
 AUTO: "auto" 
 BREAK: "break" 

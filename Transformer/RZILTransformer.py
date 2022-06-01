@@ -149,14 +149,13 @@ class RZILTransformer(Transformer):
         v = BitOp(name, a, b, op_type)
         return v
 
-    def mem_write(self, items):
+    def mem_store(self, items):
         print(f'mem_write: {items}')
         return f"{items[0]}{items[1]}"
 
-    def mem_read(self, items):
+    def mem_load(self, items):
         print(f'mem_read: {items}')
         return f"{items[0]}{items[1]}"
 
-    def mem_access(self, items):
-        print(f'mem_access: {items}')
-        return f"{items[0]}"
+    def argument_expr_list(self, items):
+        return list(items)
