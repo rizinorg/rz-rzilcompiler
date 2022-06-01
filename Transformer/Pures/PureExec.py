@@ -28,5 +28,11 @@ class PureExec(Pure):
         raise OverloadException('')
 
     def il_init_var(self):
-        init = f'RzIlOpPure *{self.get_name()} = {self.il_exec()});'
+        if len(self.lets) == 0:
+            init = f'RzIlOpPure *{self.get_name()} = {self.il_exec()});'
+            return init
+        init = f'RzIlOpPure *{self.get_name()} = '
+        for let in self.lets:
+            init += f'LET("{let.get_name()}", {let.get_name()}, '
+        init += self.il_exec() + ')' * len(self.lets) + ');'
         return init

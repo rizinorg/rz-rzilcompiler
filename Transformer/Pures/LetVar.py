@@ -20,4 +20,4 @@ class LetVar(Pure):
 
     def il_read(self):
         """ Returns the code to read the let variable for the VM. """
-        return f'VARLP({self.get_name()})'
+        return f'VARLP("{self.get_name()}")'
