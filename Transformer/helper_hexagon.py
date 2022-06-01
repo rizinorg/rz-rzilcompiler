@@ -72,14 +72,15 @@ def get_value_type_by_c_number(items: [Token]) -> ValueType:
         size = 64
     return ValueType('unknown_t', signed, size)
 
+
 # SPECIFIC FOR: Hexagon
 def get_value_type_by_isa_imm(items: Token) -> ValueType:
-    """ Returns the value type for a immediate parser tree token. """
+    """ Returns the value type for an immediate parser tree token. """
 
     imm_char = items[0]
     signed = False
     if re.search(r'[rRsS]', imm_char):
         signed = True
 
-    # Immediate size is unfortunately not encoded in the short code.
+    # Immediate size is not encoded in the short code.
     return ValueType('unknown_t', signed, -1)
