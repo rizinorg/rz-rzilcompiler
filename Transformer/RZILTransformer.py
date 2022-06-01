@@ -7,6 +7,7 @@ from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.BitOp import BitOperationType, BitOp
 from Transformer.Pures.LetVar import LetVar
 from Transformer.Pures.LocalVar import LocalVar
+from Transformer.Pures.Number import Number
 from Transformer.Pures.Pure import Pure
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
@@ -78,7 +79,7 @@ class RZILTransformer(Transformer):
         v_type = get_value_type_by_c_number(items)
         num_str = (str(items[0]) if items[0] else '') + str(items[1])
         name = f'const_{"neg" if items[0] == "-" else "pos"}{items[1]}{items[2] if items[2] else ""}'
-        return LetVar(name, int(num_str, get_num_base_by_token(items[1])), v_type)
+        return Number(name, int(num_str, get_num_base_by_token(items[1])), v_type)
 
     def declaration(self, items):
         if len(items) != 2:
