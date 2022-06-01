@@ -135,6 +135,7 @@ class RZILTransformer(Transformer):
 
     def bit_operations(self, items: list, op_type: BitOperationType):
         if len(items) < 3:
+            # Single operand bit operation e.g. ~
             a = items[1]
             name = f'op_{op_type.name}_{self.get_op_id()}'
             v = BitOp(name, a, None, op_type)

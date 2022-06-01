@@ -17,24 +17,20 @@ class ArithmeticType(StrEnum):
 class ArithmeticOp(PureExec):
 
     def __init__(self, name: str, a: Pure, b: Pure, a_type: ArithmeticType):
-        self.a = a
-        self.b = b
         self.a_type = a_type
 
-        super().__init__(name, self.a.value_type
-                         if self.a.value_type.bit_width > self.b.value_type.bit_width
-                         else self.b.value_type)
+        super().__init__(name, [a, b])
 
     def il_exec(self):
         if self.a_type == ArithmeticType.ADD:
-            return f'ADD({self.a.il_read()}, {self.b.il_read()}'
+            return f'ADD({self.ops[0].il_read()}, {self.ops[1].il_read()}'
         elif self.a_type == ArithmeticType.SUB:
-            return f'SUB({self.a.il_read()}, {self.b.il_read()}'
+            return f'SUB({self.ops[0].il_read()}, {self.ops[1].il_read()}'
         elif self.a_type == ArithmeticType.MUL:
-            return f'MUL({self.a.il_read()}, {self.b.il_read()}'
+            return f'MUL({self.ops[0].il_read()}, {self.ops[1].il_read()}'
         elif self.a_type == ArithmeticType.DIV:
-            return f'DIV({self.a.il_read()}, {self.b.il_read()}'
+            return f'DIV({self.ops[0].il_read()}, {self.ops[1].il_read()}'
         elif self.a_type == ArithmeticType.MOD:
-            return f'MOD({self.a.il_read()}, {self.b.il_read()}'
+            return f'MOD({self.ops[0].il_read()}, {self.ops[1].il_read()}'
         else:
             raise NotImplementedError('')
