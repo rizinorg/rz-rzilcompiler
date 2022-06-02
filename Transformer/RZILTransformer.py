@@ -42,9 +42,6 @@ class RZILTransformer(Transformer):
         print("\n// WRITE")
         for op in holder.write_ops.values():
             print(op.il_init_var())
-        #
-        # Wrap into LET(...SEQ(
-        #
 
     # Returned value replaces node in tree
     # Transformers/Visitors are called bottom up! First leaves then parents
@@ -57,24 +54,22 @@ class RZILTransformer(Transformer):
 
         if reg_type == RegisterAccessType.R or reg_type == RegisterAccessType.PR:
             # Should be read before use. Add to read list.
-            if name not in holder.read_ops:
-                v = Register(name, RegisterAccessType.R, v_type)
-                v.set_isa_name(v)
-                return v
-            return holder.read_ops[name]
+            if name in holder.read_ops:
+                return holder.read_ops[name]
+            v = Register(name, RegisterAccessType.R, v_type)
         elif reg_type == RegisterAccessType.W or reg_type == RegisterAccessType.PW:
             # Dest regs are passed as string to SETG(). Need no Pure variable.
-            if name not in holder.read_ops:
-                v = Register(name, RegisterAccessType.W, v_type)
-                v.set_isa_name(v)
-                return v
-            return holder.read_ops[name]
+            if name in holder.read_ops:
+                return holder.read_ops[name]
+            v = Register(name, RegisterAccessType.W, v_type)
         elif reg_type == RegisterAccessType.RW or reg_type == RegisterAccessType.PRW:
-            if name not in holder.read_ops:
-                v = Register(name, RegisterAccessType.RW, v_type)
-                v.set_isa_name(v)
-                return v
-            return holder.read_ops[name]
+            if name in holder.read_ops:
+                return holder.read_ops[name]
+            v = Register(name, RegisterAccessType.RW, v_type)
+        else:
+            raise NotImplementedError(f'Reg type "{reg_type.name}" not implemented.')
+        v.set_isa_name(name)
+        return v
 
     # SPECIFIC FOR: Hexagon
     def imm(self, items):
