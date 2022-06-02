@@ -49,11 +49,11 @@ class Pure:
         holder.add_pure(self)
 
     def get_name(self):
-        """ Returns the name of the pure. If it is defined in the ISA, this returns teh ISA name. """
+        """ Returns the name of the pure. If it is defined in the ISA, this returns the ISA name. """
         return self.name
 
     def get_isa_name(self):
-        """ Returns the name of the RzILOpPure variable. """
+        """ Returns the name of the RzILOpPure variable as in the ISA manual. """
         return self.name
 
     def get_assoc_name(self):
