@@ -3,6 +3,8 @@
 import re
 
 from lark import Transformer, Token
+
+from Transformer.Effects.MemStore import MemStore
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.BitOp import BitOperationType, BitOp
 from Transformer.Pures.Immediate import Immediate
@@ -151,12 +153,19 @@ class RZILTransformer(Transformer):
         return v
 
     def mem_store(self, items):
-        print(f'mem_write: {items}')
-        return f"{items[0]}{items[1]}"
+        va = items[2][0]
+        data: Pure = items[2][1]
+        print(va, data)
+        operation_value_type = ValueType('', items[0] != 'u', int(items[1]))
+        if not data.value_type == operation_value_type:
+            raise ValueError('Mismatch between memory access size and data size.\n'
+                             f'data: size: {data.value_type.bit_width} signed: {data.value_type.signed}\n'
+                             f'mem op: size: {operation_value_type.bit_width} signed: {operation_value_type.signed}')
+        return MemStore(f'ms_{data.get_name()}', va, data)
 
     # SPECIFIC FOR: Hexagon
     def mem_load(self, items):
-        vt = ValueType('unknown_t', items[0] == 'u', int(items[1]))
+        vt = ValueType('unknown_t', items[0] != 'u', int(items[1]))
         vt.c_type = get_c_type_by_value_type(vt)
         mem_acc_type = MemAccessType(vt, True)
         va = items[2]
