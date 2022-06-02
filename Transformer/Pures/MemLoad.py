@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from Transformer.Pures.Pure import Pure, PureType, ValueType
+from Transformer.Pures.PureExec import PureExec
 
 
 class MemAccessType:
@@ -12,12 +13,12 @@ class MemAccessType:
         self.writes = not reads_mem  # Flag: Memory is written
 
 
-class MemLoad(Pure):
+class MemLoad(PureExec):
 
     def __init__(self, name: str, va: Pure, acc_type: MemAccessType):
         self.acc_type = acc_type
         self.va = va
-        super().__init__(name, PureType.GLOBAL, acc_type.val_type)
+        super().__init__(name, [va], acc_type.val_type)
 
     def il_exec(self):
         return f'LOADW({self.acc_type.val_type.bit_width}, {self.va.il_read()})'

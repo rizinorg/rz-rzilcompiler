@@ -23,4 +23,4 @@ class LocalVar(Pure):
 
     def il_read(self):
         """ Returns the code to read the local variable for the VM. """
-        return f'VARL({self.get_name()})'
+        return f'VARL("{self.get_name()}")'
