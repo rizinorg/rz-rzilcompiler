@@ -41,3 +41,13 @@ class ILOpsHolder(object):
 
     def add_effect(self, effect: Effect):
         self.write_ops[effect.get_name()] = effect
+
+    def get_op_by_name(self, name: str):
+        if name in self.read_ops:
+            return self.read_ops[name]
+        elif name in self.exec_ops:
+            return self.exec_ops[name]
+        elif name in self.write_ops:
+            return self.write_ops[name]
+        else:
+            raise ValueError(f'Did not find op: "{name}"!')

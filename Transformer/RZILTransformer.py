@@ -8,13 +8,14 @@ from Transformer.Pures.BitOp import BitOperationType, BitOp
 from Transformer.Pures.Immediate import Immediate
 from Transformer.Pures.LetVar import LetVar
 from Transformer.Pures.LocalVar import LocalVar
+from Transformer.Pures.MemLoad import MemAccessType, MemLoad
 from Transformer.Pures.Number import Number
-from Transformer.Pures.Pure import Pure
+from Transformer.Pures.Pure import Pure, ValueType
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Pures.Register import Register, RegisterAccessType
 from Transformer.helper_hexagon import get_value_type_from_reg_type, get_value_type_by_c_type, \
-    get_value_type_by_c_number, get_num_base_by_token, get_value_type_by_isa_imm
+    get_value_type_by_c_number, get_num_base_by_token, get_value_type_by_isa_imm, get_c_type_by_value_type
 
 
 class RZILTransformer(Transformer):
@@ -153,9 +154,17 @@ class RZILTransformer(Transformer):
         print(f'mem_write: {items}')
         return f"{items[0]}{items[1]}"
 
+    # SPECIFIC FOR: Hexagon
     def mem_load(self, items):
-        print(f'mem_read: {items}')
-        return f"{items[0]}{items[1]}"
+        vt = ValueType('unknown_t', items[0] == 'u', int(items[1]))
+        vt.c_type = get_c_type_by_value_type(vt)
+        mem_acc_type = MemAccessType(vt, True)
+        va = items[2]
+        if not isinstance(va, Pure):
+            va = ILOpsHolder().get_op_by_name(va.value)
+            
+        return MemLoad(f'ml_{va.get_name()}', va, mem_acc_type)
 
     def argument_expr_list(self, items):
         return list(items)
+

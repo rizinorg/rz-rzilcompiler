@@ -5,7 +5,6 @@ import re
 from lark import Token
 
 from Transformer.Pures.Pure import ValueType
-from Transformer.Pures.Register import Register
 
 
 def get_value_type_from_reg_type(token_list: list) -> ValueType:
@@ -35,7 +34,19 @@ def get_value_type_by_c_type(c_type: str) -> ValueType:
     if c_type == 'short':
         return ValueType(c_type, True, 16)
     else:
-        raise NotImplementedError('')
+        raise NotImplementedError(f'Type {c_type} not implemented.')
+
+
+def get_c_type_by_value_type(val_type: ValueType) -> str:
+    """ Returns the value type for the given C integer type. """
+
+    res = ''
+    if val_type.signed:
+        res += 'uint'
+    else:
+        res += 'int'
+    res += str(val_type.bit_width) + '_t'
+    return res
 
 
 def get_num_base_by_token(token: Token):
