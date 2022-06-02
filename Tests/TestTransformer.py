@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
+from lark.exceptions import VisitError
 
 from Transformer.RZILTransformer import RZILTransformer
 from Tests.testcases import transform_test
@@ -18,8 +19,9 @@ class TestTransformer:
                 tree = parser.parse(beh)
                 print(tree.pretty())
                 RZILTransformer().transform(tree)
-            except Exception as e:
+            except VisitError as e:
                 print(e)
+                raise e.orig_exc
 
 
 if __name__ == "__main__":
