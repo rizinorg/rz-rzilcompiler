@@ -31,6 +31,7 @@ class ValueType:
 
 class Pure:
     name: str = ''  # Name of pure
+    isa_name = None
     name_assoc: str = ''  # Name associated with the ISA name. E.g. ISA: "Rs" Associated: "R3"
     type: PureType = None
     value_type: ValueType = None
@@ -50,7 +51,10 @@ class Pure:
 
     def get_name(self):
         """ Returns the name of the pure. If it is defined in the ISA, this returns the ISA name. """
-        return self.name
+        return self.isa_name if self.isa_name else self.name
+
+    def set_isa_name(self, isa_name: str):
+        self.isa_name = isa_name
 
     def get_isa_name(self):
         """ Returns the name of the RzILOpPure variable as in the ISA manual. """

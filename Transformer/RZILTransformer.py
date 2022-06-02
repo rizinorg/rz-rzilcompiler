@@ -59,17 +59,20 @@ class RZILTransformer(Transformer):
             # Should be read before use. Add to read list.
             if name not in holder.read_ops:
                 v = Register(name, RegisterAccessType.R, v_type)
+                v.set_isa_name(v)
                 return v
             return holder.read_ops[name]
         elif reg_type == RegisterAccessType.W or reg_type == RegisterAccessType.PW:
             # Dest regs are passed as string to SETG(). Need no Pure variable.
             if name not in holder.read_ops:
                 v = Register(name, RegisterAccessType.W, v_type)
+                v.set_isa_name(v)
                 return v
             return holder.read_ops[name]
         elif reg_type == RegisterAccessType.RW or reg_type == RegisterAccessType.PRW:
             if name not in holder.read_ops:
                 v = Register(name, RegisterAccessType.RW, v_type)
+                v.set_isa_name(v)
                 return v
             return holder.read_ops[name]
 
@@ -77,7 +80,9 @@ class RZILTransformer(Transformer):
     def imm(self, items):
         v_type = get_value_type_by_isa_imm(items)
         name = f'{items[0]}'
-        return Immediate(name, -1, v_type)
+        imm = Immediate(name, -1, v_type)
+        imm.set_isa_name(name)
+        return imm
 
     def number(self, items):
         v_type = get_value_type_by_c_number(items)
@@ -162,7 +167,7 @@ class RZILTransformer(Transformer):
         va = items[2]
         if not isinstance(va, Pure):
             va = ILOpsHolder().get_op_by_name(va.value)
-            
+
         return MemLoad(f'ml_{va.get_name()}', va, mem_acc_type)
 
     def argument_expr_list(self, items):
