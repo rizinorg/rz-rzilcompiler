@@ -25,6 +25,9 @@ class ValueType:
         s += f'({self.bit_width}, {value})'
         return s
 
+    def __eq__(self, other):
+        return (self.bit_width == other.bit_width) and (self.signed == other.signed)
+
 
 class Pure:
     name: str = ''  # Name of pure

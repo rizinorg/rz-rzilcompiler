@@ -4,6 +4,7 @@ from enum import StrEnum
 
 from Transformer.Pures.Pure import Pure
 from Transformer.Pures.PureExec import PureExec
+from Transformer.helper import exc_if_types_not_match
 
 
 class ArithmeticType(StrEnum):
@@ -17,9 +18,12 @@ class ArithmeticType(StrEnum):
 class ArithmeticOp(PureExec):
 
     def __init__(self, name: str, a: Pure, b: Pure, a_type: ArithmeticType):
+        if a_type != ArithmeticType.MOD:
+            # Modular operations don't need matching types.
+            exc_if_types_not_match(a.value_type, b.value_type)
         self.a_type = a_type
 
-        super().__init__(name, [a, b])
+        super().__init__(name, [a, b], a.value_type)
 
     def il_exec(self):
         if self.a_type == ArithmeticType.ADD:

@@ -4,6 +4,7 @@ from enum import StrEnum
 
 from Transformer.Pures.Pure import Pure
 from Transformer.Pures.PureExec import PureExec
+from Transformer.helper import exc_if_types_not_match
 
 
 class BitOperationType(StrEnum):
@@ -15,9 +16,15 @@ class BitOperationType(StrEnum):
 
 class BitOp(PureExec):
     def __init__(self, name: str, a: Pure, b: Pure, op_type: BitOperationType):
+        if a and b:
+            # No need to check for single operand operations.
+            exc_if_types_not_match(a.value_type, b.value_type)
         self.op_type = op_type
 
-        super().__init__(name, [a, b] if b else [a])
+        if b:
+            super().__init__(name, [a, b], a.value_type)
+        else:
+            super().__init__(name, [a], a.value_type)
 
     def il_exec(self):
         if self.op_type == BitOperationType.BIT_AND_OP:

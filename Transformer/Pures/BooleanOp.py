@@ -16,15 +16,12 @@ class BooleanType(StrEnum):
 
 class ArithmeticOp(PureExec):
 
-    def __init__(self, name: str, a: Pure, b: Pure, a_type: BooleanType):
+    def __init__(self, name: str, a: Pure, b: Pure, a_type: ArithmeticType):
         self.a = a
         self.b = b
         self.a_type = a_type
 
-        super().__init__(name,
-                         self.a.value_type
-                         if self.a.value_type.bit_width > self.b.value_type.bit_width
-                         else self.b.value_type)
+        super().__init__(name, max(self.avalue_type.bit_width, self.bvalue_type.bit_width))
 
     def il_exec(self):
         if self.a_type == ArithmeticType.ADD:
