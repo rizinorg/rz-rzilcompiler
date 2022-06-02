@@ -354,11 +354,15 @@ cancel_slot_expr: "cancel_slot" ";"
 	| declaration_list declaration
 
 ?op: reg "V"
+    | new_reg "N"
     | imm "iV"
     | number
     | IDENTIFIER
 
-reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
+new_reg: _reg
+reg: _reg
+
+_reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
     | REG_TYPE (SRC_REG_PAIR | DEST_REG_PAIR | SRC_DEST_REG_PAIR)
 
 ?number: [NUM_SIGN] (HEX_NUMBER | DEC_NUMBER) [INT_POST_TYPE]

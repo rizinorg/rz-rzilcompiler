@@ -45,9 +45,13 @@ class RZILTransformer(Transformer):
         for op in holder.write_ops.values():
             print(op.il_init_var())
 
-    # Returned value replaces node in tree
-    # Transformers/Visitors are called bottom up! First leaves then parents
+    def new_reg(self, items):
+        return self.hex_reg(items, True)
+
     def reg(self, items):
+        return self.hex_reg(items, False)
+
+    def hex_reg(self, items, is_new: bool):
         holder = ILOpsHolder()
         items: [Token]
         name = ''.join(items)
@@ -58,16 +62,16 @@ class RZILTransformer(Transformer):
             # Should be read before use. Add to read list.
             if name in holder.read_ops:
                 return holder.read_ops[name]
-            v = Register(name, RegisterAccessType.R, v_type)
+            v = Register(name, RegisterAccessType.R, v_type, is_new)
         elif reg_type == RegisterAccessType.W or reg_type == RegisterAccessType.PW:
             # Dest regs are passed as string to SETG(). Need no Pure variable.
             if name in holder.read_ops:
                 return holder.read_ops[name]
-            v = Register(name, RegisterAccessType.W, v_type)
+            v = Register(name, RegisterAccessType.W, v_type, is_new)
         elif reg_type == RegisterAccessType.RW or reg_type == RegisterAccessType.PRW:
             if name in holder.read_ops:
                 return holder.read_ops[name]
-            v = Register(name, RegisterAccessType.RW, v_type)
+            v = Register(name, RegisterAccessType.RW, v_type, is_new)
         else:
             raise NotImplementedError(f'Reg type "{reg_type.name}" not implemented.')
         v.set_isa_name(name)

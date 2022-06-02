@@ -19,9 +19,13 @@ class RegisterAccessType(StrEnum):
 
 class Register(GlobalVar):
 
-    def __init__(self, name: str, access: RegisterAccessType, v_type: ValueType):
+    def __init__(self, name: str, access: RegisterAccessType, v_type: ValueType, is_new: bool):
         self.access = access
-        super().__init__(name, v_type)
+        self.is_new = is_new
+        if self.is_new:
+            super().__init__(name + '_tmp', v_type)
+        else:
+            super().__init__(name, v_type)
 
     def il_init_var(self):
         if self.access == RegisterAccessType.W:  # Registers which are only written do not need an own RzILOpPure.
