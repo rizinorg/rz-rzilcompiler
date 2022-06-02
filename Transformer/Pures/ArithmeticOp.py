@@ -17,24 +17,24 @@ class ArithmeticType(StrEnum):
 
 class ArithmeticOp(PureExec):
 
-    def __init__(self, name: str, a: Pure, b: Pure, a_type: ArithmeticType):
-        if a_type != ArithmeticType.MOD:
+    def __init__(self, name: str, a: Pure, b: Pure, arith_type: ArithmeticType):
+        if arith_type != ArithmeticType.MOD:
             # Modular operations don't need matching types.
             exc_if_types_not_match(a.value_type, b.value_type)
-        self.a_type = a_type
+        self.arith_type = arith_type
 
         super().__init__(name, [a, b], a.value_type)
 
     def il_exec(self):
-        if self.a_type == ArithmeticType.ADD:
+        if self.arith_type == ArithmeticType.ADD:
             return f'ADD({self.ops[0].il_read()}, {self.ops[1].il_read()}'
-        elif self.a_type == ArithmeticType.SUB:
+        elif self.arith_type == ArithmeticType.SUB:
             return f'SUB({self.ops[0].il_read()}, {self.ops[1].il_read()}'
-        elif self.a_type == ArithmeticType.MUL:
+        elif self.arith_type == ArithmeticType.MUL:
             return f'MUL({self.ops[0].il_read()}, {self.ops[1].il_read()}'
-        elif self.a_type == ArithmeticType.DIV:
+        elif self.arith_type == ArithmeticType.DIV:
             return f'DIV({self.ops[0].il_read()}, {self.ops[1].il_read()}'
-        elif self.a_type == ArithmeticType.MOD:
+        elif self.arith_type == ArithmeticType.MOD:
             return f'MOD({self.ops[0].il_read()}, {self.ops[1].il_read()}'
         else:
             raise NotImplementedError('')
