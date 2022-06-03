@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
-import logging
+import argparse
+import sys
 from enum import Enum
 
 from lark.lark import Lark
@@ -57,7 +59,19 @@ class Compiler:
 
 
 if __name__ == '__main__':
-    c = Compiler(ArchEnum.HEXAGON, '/home/user/repos/rzil-hexagon/Resources/Hexagon/')
+    if len(sys.argv) < 2:
+        sys.argv += ['--help']
+
+    argp = argparse.ArgumentParser(
+        prog='RZIL Compiler',
+        description='Compiles RZIL instructions from varies architectures.')
+    argp.add_argument('-r', dest='resources', metavar='path', required=False,
+                      help='Path to resources. Defaults to: "./Resources/<Arch name>"')
+    argp.add_argument('-a', dest='arch', choices=['Hexagon'], required=True, help='Architecture to compile for.')
+
+    args = argp.parse_args(sys.argv[1:])
+    res_path = f'./Resources/{args.arch}/' if not args.resources else args.resources
+    c = Compiler(ArchEnum[args.arch.upper()], res_path)
     c.set_parser()
     c.set_preprocessor()
     c.run_preprocessor()
