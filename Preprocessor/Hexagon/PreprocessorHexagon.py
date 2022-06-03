@@ -15,6 +15,7 @@ class PreprocessorHexagon:
         self.macros_paths = macros_paths
         self.out_dir = out_dir
 
+    def run_preprocess_steps(self):
         self.preprocess_macros()
         self.preprocess_shortcode()
 
@@ -30,9 +31,11 @@ class PreprocessorHexagon:
                 with open(path) as g:
                     f.writelines(g.readlines())
         argv = ['script_name', combined_path, '-o', self.out_dir + '/Preprocessor/shortcode_resolved.h']
+        print('* Resolve macros of shortcode with pcpp...')
         pcpp.pcmd.CmdPreprocessor(argv)
 
     def load_insn_behavior(self):
+        print('* Load instruction/behavior pairs.')
         with open(self.out_dir + '/Preprocessor/shortcode_resolved.h') as f:
             for l in f.readlines():
                 if l[0] == '#':

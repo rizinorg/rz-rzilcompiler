@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
-import os
+import logging
 from enum import Enum
 
 from lark.lark import Lark
@@ -23,6 +23,7 @@ class Compiler:
         self.path_resources: str = path_resources
 
     def set_parser(self):
+        print('* Set up Lark parser.')
         with open(self.path_resources + '/grammar.lark') as f:
             grammar = ''.join(f.readlines())
 
@@ -32,18 +33,20 @@ class Compiler:
         self.transformer = RZILTransformer()
 
     def set_preprocessor(self):
+        print(f'* Set up preprocessor for: {self.arch.name}')
         if self.arch == ArchEnum.HEXAGON:
             shortcode = self.path_resources + '/Preprocessor/shortcode.h'
             macros = [self.path_resources + '/Preprocessor/macros.h',
                       self.path_resources + '/Preprocessor/mmve_macros.h']
             out_dir = self.path_resources
             self.preprocessor = PreprocessorHexagon(shortcode, macros, out_dir)
-            self.preprocessor.load_insn_behavior()
         else:
             raise NotImplemented(f'Preprocessor for arch: {self.arch.name} not known.')
 
     def run_preprocessor(self):
-        pass
+        print('* Run preprocessor...')
+        self.preprocessor.run_preprocess_steps()
+        self.preprocessor.load_insn_behavior()
 
     def compile_insn(self, insn_name: str):
         behavior = self.preprocessor.get_insn_behavior(insn_name)
@@ -57,3 +60,4 @@ if __name__ == '__main__':
     c = Compiler(ArchEnum.HEXAGON, '/home/user/repos/rzil-hexagon/Resources/Hexagon/')
     c.set_parser()
     c.set_preprocessor()
+    c.run_preprocessor()
