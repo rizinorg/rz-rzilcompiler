@@ -44,9 +44,9 @@ class PreprocessorHexagon:
                 self.behaviors[match.group(1)] = match.group(2)
 
     def get_insn_behavior(self, insn_name):
-        for id_beh in self.behaviors:
-            if id_beh['id'] == insn_name:
-                return id_beh['behavior']
+        for i in self.behaviors.keys():
+            if i == insn_name:
+                return self.behaviors[insn_name]
         return None
 
 

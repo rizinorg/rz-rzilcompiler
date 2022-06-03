@@ -3,9 +3,12 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 import argparse
 import sys
+import traceback
 from enum import Enum
 
+from lark import UnexpectedInput, UnexpectedToken, UnexpectedCharacters, UnexpectedEOF
 from lark.lark import Lark
+from tqdm import tqdm
 
 from Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
 from Transformer.RZILTransformer import RZILTransformer
@@ -25,6 +28,7 @@ class Compiler:
         self.path_resources: str = path_resources
 
         self.set_parser()
+        self.set_transformer()
         self.set_preprocessor()
 
     def set_parser(self):
@@ -32,7 +36,7 @@ class Compiler:
         with open(self.path_resources + '/grammar.lark') as f:
             grammar = ''.join(f.readlines())
 
-        self.parser = Lark(grammar, start="fbody")
+        self.parser = Lark(grammar, start="fbody", parser='lalr')
 
     def set_transformer(self):
         self.transformer = RZILTransformer()
@@ -51,12 +55,71 @@ class Compiler:
     def run_preprocessor(self):
         print('* Run preprocessor...')
         self.preprocessor.run_preprocess_steps()
-        self.preprocessor.load_insn_behavior()
+
+    def test_compile_all(self):
+        print('* Test: Compile all instructions.')
+        keys = ['no_term', 'no_char', 'eof', 'other', 'ok']
+        stats = {k: {'count': 0} for k in keys}
+        excs = dict()
+
+        for insn in tqdm(self.preprocessor.behaviors.keys(), desc='Compiling...'):
+            e = None
+            try:
+                self.compile_insn(insn)
+                exc_name = 'ok'
+            except UnexpectedToken as x:
+                # Parser got unexpected token
+                exc_name = 'no_term'
+                e = x
+            except UnexpectedCharacters as x:
+                # Lexer can not match character to token.
+                exc_name = 'no_char'
+                e = x
+            except UnexpectedEOF as x:
+                # Parser expected a token but got EOF
+                exc_name = 'eof'
+                e = x
+            except Exception as x:
+                exc_name = 'other'
+                e = x
+
+            stats[exc_name]['count'] += 1
+            if e:
+                e_name = type(e).__name__
+                if e_name in excs:
+                    excs[e_name].append(e)
+                else:
+                    excs[e_name] = [e]
+
+        for k, v in stats.items():
+            print(f'{k} = {v["count"]}')
+
+        self.fix_compile_exceptions(excs)
+
+    @staticmethod
+    def fix_compile_exceptions(exceptions: dict):
+        for i, k in enumerate(exceptions.keys()):
+            print(f'[{i}] {k}')
+        i = int(input('Choose exception type print\n > '))
+        for k, e in enumerate(exceptions.keys()):
+            if k != i:
+                continue
+            h = 0
+            while h != len(exceptions[e]):
+                ex: Exception = exceptions[e][h]
+                print(f'{ex}\n{traceback.print_tb(ex.__traceback__)}')
+                cmd = input('\n[n = next, q = quit] > ')
+                if cmd == 'n':
+                    h += 1
+                elif cmd == 'q':
+                    exit()
+
 
     def compile_insn(self, insn_name: str):
         behavior = self.preprocessor.get_insn_behavior(insn_name)
         if not behavior:
             raise NotImplemented(f'Behavior for instruction {insn_name} not known by the preprocessor.')
+
         parse_tree = self.parser.parse(behavior)
         return self.transformer.transform(parse_tree)
 
@@ -71,8 +134,18 @@ if __name__ == '__main__':
     argp.add_argument('-r', dest='resources', metavar='path', required=False,
                       help='Path to resources. Defaults to: "./Resources/<Arch name>"')
     argp.add_argument('-a', dest='arch', choices=['Hexagon'], required=True, help='Architecture to compile for.')
+    argp.add_argument('-t', dest='test_all', action='store_true',
+                      help='Try to compile all instructions from the resources and print a statistic about it.')
+    argp.add_argument('-s', dest='skip_pp', action='store_true',
+                      help='Skip file processing steps of the preprocessor.')
 
     args = argp.parse_args(sys.argv[1:])
     res_path = f'./Resources/{args.arch}/' if not args.resources else args.resources
     c = Compiler(ArchEnum[args.arch.upper()], res_path)
-    c.run_preprocessor()
+    if not args.skip_pp:
+        c.run_preprocessor()
+    c.preprocessor.load_insn_behavior()
+
+    if args.test_all:
+        c.test_compile_all()
+        exit()
