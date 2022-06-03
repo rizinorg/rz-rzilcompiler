@@ -6,7 +6,8 @@ import sys
 import traceback
 from enum import Enum
 
-from lark import UnexpectedInput, UnexpectedToken, UnexpectedCharacters, UnexpectedEOF
+from lark import UnexpectedToken, UnexpectedCharacters, UnexpectedEOF
+from lark.exceptions import VisitError
 from lark.lark import Lark
 from tqdm import tqdm
 
@@ -58,7 +59,7 @@ class Compiler:
 
     def test_compile_all(self):
         print('* Test: Compile all instructions.')
-        keys = ['no_term', 'no_char', 'eof', 'other', 'ok']
+        keys = ['no_term', 'no_char', 'eof', 'visit', 'other', 'ok']
         stats = {k: {'count': 0} for k in keys}
         excs = dict()
 
@@ -79,6 +80,10 @@ class Compiler:
                 # Parser expected a token but got EOF
                 exc_name = 'eof'
                 e = x
+            except VisitError as x:
+                # Something went wrong in the transformer
+                exc_name = 'visit'
+                e = x
             except Exception as x:
                 exc_name = 'other'
                 e = x
@@ -86,10 +91,11 @@ class Compiler:
             stats[exc_name]['count'] += 1
             if e:
                 e_name = type(e).__name__
+                tup = (insn, self.preprocessor.get_insn_behavior(insn), e)
                 if e_name in excs:
-                    excs[e_name].append(e)
+                    excs[e_name].append(tup)
                 else:
-                    excs[e_name] = [e]
+                    excs[e_name] = [tup]
 
         for k, v in stats.items():
             print(f'{k} = {v["count"]}')
@@ -106,14 +112,19 @@ class Compiler:
                 continue
             h = 0
             while h != len(exceptions[e]):
-                ex: Exception = exceptions[e][h]
-                print(f'{ex}\n{traceback.print_tb(ex.__traceback__)}')
+                insn: str = exceptions[e][h][0]
+                beh: str = exceptions[e][h][1]
+                ex = exceptions[e][h][2]
+                print(f'INSTRUCTION: {insn}\n\nBEHAVIOR: \n{beh}\n\nEXCEPTION: {type(ex)} : {ex}\n')
+                print(f'TRACE: \n{traceback.print_tb(ex.__traceback__)}')
+                if isinstance(ex, VisitError):
+                    print(f'ORIGINAL EXCEPTION: {ex.orig_exc}\n')
+                    print(f'TRACE:\n{traceback.print_tb(ex.orig_exc.__traceback__)}')
                 cmd = input('\n[n = next, q = quit] > ')
                 if cmd == 'n':
                     h += 1
                 elif cmd == 'q':
                     exit()
-
 
     def compile_insn(self, insn_name: str):
         behavior = self.preprocessor.get_insn_behavior(insn_name)

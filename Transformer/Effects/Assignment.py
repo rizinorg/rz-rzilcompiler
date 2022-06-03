@@ -38,7 +38,7 @@ class Assignment(Effect):
         elif dest.type == PureType.GLOBAL:
             super().init(name, EffectType.SETG)
         else:
-            raise NotImplementedError('')
+            raise NotImplementedError(f'Dest type {self.dest.type} not handled.')
         self.set_src()
 
     def set_src(self):

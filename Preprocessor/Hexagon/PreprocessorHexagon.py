@@ -40,7 +40,7 @@ class PreprocessorHexagon:
             for l in f.readlines():
                 if l[0] == '#':
                     continue
-                match = re.search(r'insn\((.*), (.*)\)', l)
+                match = re.search(r'insn\((\w+), (.+)\)$', l, re.ASCII)
                 self.behaviors[match.group(1)] = match.group(2)
 
     def get_insn_behavior(self, insn_name):
