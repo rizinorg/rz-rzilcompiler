@@ -24,6 +24,9 @@ class Compiler:
         self.arch: ArchEnum = arch
         self.path_resources: str = path_resources
 
+        self.set_parser()
+        self.set_preprocessor()
+
     def set_parser(self):
         print('* Set up Lark parser.')
         with open(self.path_resources + '/grammar.lark') as f:
@@ -72,6 +75,4 @@ if __name__ == '__main__':
     args = argp.parse_args(sys.argv[1:])
     res_path = f'./Resources/{args.arch}/' if not args.resources else args.resources
     c = Compiler(ArchEnum[args.arch.upper()], res_path)
-    c.set_parser()
-    c.set_preprocessor()
     c.run_preprocessor()
