@@ -93,7 +93,7 @@ class RZILTransformer(Transformer):
 
     def declaration(self, items):
         if len(items) != 2:
-            raise NotImplementedError('')
+            raise NotImplementedError(f'Declaration without exactly two tokens are not supproted.')
         t = get_value_type_by_c_type(items[0])
         if isinstance(items[1], Assignment):
             assg: Assignment = items[1]
@@ -104,7 +104,7 @@ class RZILTransformer(Transformer):
 
     def init_declarator(self, items):
         if len(items) != 2:
-            raise NotImplementedError('')
+            raise NotImplementedError(f'Can not initialize an Init declarator with {len(items)} tokens.')
         dest = LocalVar(items[0], None)  # Size is updated in declaration handler.
         op_type = AssignmentType.ASSIGN
         src: Pure = items[1]
@@ -141,7 +141,7 @@ class RZILTransformer(Transformer):
         if items[0] == '~':
             return self.bit_operations(items, BitOperationType.BIT_NOT_OP)
         else:
-            raise NotImplementedError('')
+            raise NotImplementedError(f'Unary expression {items[0]} not handler.')
 
     def bit_operations(self, items: list, op_type: BitOperationType):
         if len(items) < 3:

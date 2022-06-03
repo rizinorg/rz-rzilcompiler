@@ -37,7 +37,7 @@ class ILOpsHolder(object):
         elif pure.type == PureType.LET:
             self.read_ops[pure.get_name()] = pure
         else:
-            raise NotImplementedError('')
+            raise NotImplementedError(f'Can not add Pure of type {pure.type}')
 
     def add_effect(self, effect: Effect):
         self.write_ops[effect.get_name()] = effect

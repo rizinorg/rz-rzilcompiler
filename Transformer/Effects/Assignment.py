@@ -56,7 +56,7 @@ class Assignment(Effect):
         elif self.assign_type == AssignmentType.ASSIGN_DIV:
             self.src = ArithmeticOp(f'div{self.src.get_isa_name()}{self.dest.get_isa_name()}', self.src, self.dest, ArithmeticType.DIV)
         else:
-            raise NotImplementedError('')
+            raise NotImplementedError(f'Assign type {self.assign_type} not handled.')
 
     def il_write(self):
         """ Returns the RZIL ops to write the variable value.
@@ -67,4 +67,4 @@ class Assignment(Effect):
         elif self.type == EffectType.SETL:
             return f'SETL("{self.dest.get_isa_name()}", {self.src.get_isa_name()})'
         else:
-            raise NotImplementedError('')
+            raise NotImplementedError(f'Effect ype {self.type} not handled.')

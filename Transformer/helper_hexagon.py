@@ -21,7 +21,7 @@ def get_value_type_from_reg_type(token_list: list) -> ValueType:
     elif reg_type == 'Q':
         size = 128
     else:
-        raise NotImplementedError('')
+        raise NotImplementedError(f'Register of reg type {reg_type} not handled.')
 
     if 'PAIR' in reg_access:
         size *= 2

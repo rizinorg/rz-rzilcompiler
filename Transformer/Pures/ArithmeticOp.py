@@ -37,4 +37,4 @@ class ArithmeticOp(PureExec):
         elif self.arith_type == ArithmeticType.MOD:
             return f'MOD({self.ops[0].il_read()}, {self.ops[1].il_read()}'
         else:
-            raise NotImplementedError('')
+            raise NotImplementedError(f'Arithmethic type {self.arith_type} not handled.')
