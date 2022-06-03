@@ -18,7 +18,7 @@ class TestTransformer:
             try:
                 tree = parser.parse(beh)
                 print(tree.pretty())
-                RZILTransformer().transform(tree)
+                print(RZILTransformer().transform(tree))
             except VisitError as e:
                 print(e)
                 raise e.orig_exc

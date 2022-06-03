@@ -32,16 +32,18 @@ class RZILTransformer(Transformer):
 
     def fbody(self, items):
         holder = ILOpsHolder()
+        res = ''
         # We are at the top. Generate code.
-        print("// READ")
+        res += "// READ\n"
         for op in holder.read_ops.values():
-            print(op.il_init_var())
-        print('\n// EXEC')
+            res += op.il_init_var() + '\n'
+        res = '\n// EXEC\n'
         for op in holder.exec_ops.values():
-            print(op.il_init_var())
-        print("\n// WRITE")
+            res += op.il_init_var() + '\n'
+        res += "\n// WRITE\n"
         for op in holder.write_ops.values():
-            print(op.il_init_var())
+            res += op.il_init_var() + '\n'
+        return res
 
     def new_reg(self, items):
         return self.hex_reg(items, True)
