@@ -3,7 +3,6 @@
 
 from Exceptions import OverloadException
 from Transformer.Pures.LetVar import LetVar
-from Transformer.Pures.Pure import Pure, PureType
 from Transformer.Pures.Pure import Pure, PureType, ValueType
 
 

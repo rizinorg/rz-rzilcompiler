@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from Transformer.Effects.Effect import Effect, EffectType
-from Transformer.Pures.Pure import Pure, ValueType
+from Transformer.Pures.Pure import Pure
 
 
 class MemStore(Effect):
