@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
-import re
 
 from lark import Transformer, Token
 
@@ -8,7 +7,6 @@ from Transformer.Effects.MemStore import MemStore
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.BitOp import BitOperationType, BitOp
 from Transformer.Pures.Immediate import Immediate
-from Transformer.Pures.LetVar import LetVar
 from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.MemLoad import MemAccessType, MemLoad
 from Transformer.Pures.Number import Number

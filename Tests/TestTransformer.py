@@ -10,7 +10,7 @@ from lark import Lark
 class TestTransformer:
 
     def test_transformer(self):
-        with open("../Parser/Grammars/Hexagon/shortcode.lark") as f:
+        with open("/home/user/repos/rzil-hexagon/Resources/Hexagon/grammar.lark") as f:
             grammar = "".join(f.readlines())
         parser = Lark(grammar, start="fbody")
         for beh in transform_test:
