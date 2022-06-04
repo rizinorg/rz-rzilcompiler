@@ -23,7 +23,37 @@ class RZILTransformer(Transformer):
     Transforms the tree into Pures and Effects.
     The classes do the actual code generation.
     """
+    uses_new = False
+    writes_mem = False
+    reads_mem = False
+    is_sub_insn = False
+    is_conditional = False
+    branches = False
     op_count = 0
+
+    def set_uses_new(self):
+        if not self.uses_new:
+            self.uses_new = True
+
+    def set_writes_mem(self):
+        if not self.writes_mem:
+            self.writes_mem = True
+
+    def set_uses_new(self):
+        if not self.uses_new:
+            self.uses_new = True
+
+    def set_is_sub_insn(self):
+        if not self.is_sub_insn:
+            self.is_sub_insn = True
+
+    def set_is_conditional(self):
+        if not self.is_conditional:
+            self.is_conditional = True
+
+    def set_branches(self):
+        if not self.branches:
+            self.branches = True
 
     def get_op_id(self):
         op_id = self.op_count
