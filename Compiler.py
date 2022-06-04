@@ -128,13 +128,18 @@ class Compiler:
                 elif cmd == "q":
                     exit()
 
-    def compile_insn(self, insn_name: str):
-        behavior = self.preprocessor.get_insn_behavior(insn_name)
-        if not behavior:
+    def compile_insn(self, insn_name: str) -> [str]:
+        """ Compiles the instruction <insn_name> and returns the RZIL code.
+            An instruction of certain architectures can have multiple behaviors,
+            so this method returns a list of compiled behaviors.
+            For most instructions this list has a length of 1.
+        """
+        behaviors = self.preprocessor.get_insn_behavior(insn_name)
+        if not behaviors:
             raise NotImplementedError(f"Behavior for instruction {insn_name} not known by the preprocessor.")
 
-        parse_tree = self.parser.parse(behavior)
-        return self.transformer.transform(parse_tree)
+        parse_trees = [self.parser.parse(behavior) for behavior in behaviors]
+        return [self.transformer.transform(parse_tree) for parse_tree in parse_trees]
 
 
 if __name__ == "__main__":
@@ -168,6 +173,6 @@ if __name__ == "__main__":
     c.preprocessor.load_insn_behavior()
 
     if args.test_all:
-        # c.test_compile_all()
-        c.test_euclid()
+        c.test_compile_all()
+        # c.test_euclid()
         exit()

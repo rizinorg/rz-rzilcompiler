@@ -230,7 +230,7 @@
 #define fWRITE_P1(VAL) WRITE_PREG(1, VAL)
 #define fWRITE_P2(VAL) WRITE_PREG(2, VAL)
 #define fWRITE_P3(VAL) WRITE_PREG(3, VAL)
-#define fPART1(WORK) if (part1) { WORK; return; }
+#define fPART1(WORK) __COMPOUND_PART1__{ WORK; }__COMPOUND_PART1__
 #define fCAST4u(A) ((uint32_t)(A))
 #define fCAST4s(A) ((int32_t)(A))
 #define fCAST8u(A) ((uint64_t)(A))
