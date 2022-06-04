@@ -25,14 +25,14 @@ def get_value_type_from_reg_type(token_list: list) -> ValueType:
 
     if 'PAIR' in reg_access:
         size *= 2
-    return ValueType('register', False, size)
+    return ValueType(False, size)
 
 
 def get_value_type_by_c_type(c_type: str) -> ValueType:
     """ Returns the value type for the given C integer type. """
 
     if c_type == 'short':
-        return ValueType(c_type, True, 16)
+        return ValueType(True, 16)
     else:
         raise NotImplementedError(f'Type {c_type} not implemented.')
 
@@ -81,7 +81,7 @@ def get_value_type_by_c_number(items: [Token]) -> ValueType:
 
     if postfix == 'ULL' or postfix == 'LL':
         size = 64
-    return ValueType('unknown_t', signed, size)
+    return ValueType(signed, size)
 
 
 # SPECIFIC FOR: Hexagon
@@ -94,4 +94,4 @@ def get_value_type_by_isa_imm(items: Token) -> ValueType:
         signed = True
 
     # Immediate size is not encoded in the short code.
-    return ValueType('unknown_t', signed, -1)
+    return ValueType(signed, -1)

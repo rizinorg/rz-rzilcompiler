@@ -14,8 +14,7 @@ class PureType(Enum):
 
 class ValueType:
     """ Is used to match value against their UN() and SN() equivalence. """
-    def __init__(self, c_type: str, signed: bool, bit_width: int):
-        self.c_type = c_type
+    def __init__(self, signed: bool, bit_width: int):
         self.signed = signed
         self.bit_width = bit_width
 
