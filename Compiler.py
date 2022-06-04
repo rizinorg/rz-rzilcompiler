@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
+
 import argparse
 import sys
 import traceback
-from enum import Enum
 
 from lark import UnexpectedToken, UnexpectedCharacters, UnexpectedEOF
 from lark.exceptions import VisitError
 from lark.lark import Lark
 from tqdm import tqdm
 
+from ArchEnum import ArchEnum
 from Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
 from Transformer.RZILTransformer import RZILTransformer
-
-
-class ArchEnum(Enum):
-    HEXAGON = 0
 
 
 class Compiler:
@@ -41,7 +38,7 @@ class Compiler:
         self.parser = Lark(grammar, start="fbody", parser="lalr")
 
     def set_transformer(self):
-        self.transformer = RZILTransformer()
+        self.transformer = RZILTransformer(self.arch)
 
     def set_preprocessor(self):
         print(f"* Set up preprocessor for: {self.arch.name}")
@@ -149,9 +146,9 @@ class Compiler:
             raise NotImplementedError(f"Behavior for instruction {insn_name} not known by the preprocessor.")
 
         parse_trees = [self.parser.parse(behavior) for behavior in behaviors]
-        self.compiled_insns[insn_name] = {'meta': None,
-                                          'rzil': [self.transformer.transform(parse_tree) for parse_tree in parse_trees]
-                                          }
+        self.compiled_insns[insn_name]['rzil'] = [self.transformer.transform(parse_tree) for parse_tree in parse_trees]
+        self.compiled_insns[insn_name]['meta'] = self.transformer.ext.get_meta()
+
         return self.compiled_insns[insn_name]
 
     def get_insn_rzil(self, insn_name: str) -> [str]:
