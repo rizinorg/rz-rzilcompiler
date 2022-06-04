@@ -23,6 +23,7 @@ class Compiler:
     preprocessor = None
     parser = None
     transformer = None
+    compiled_insns = dict()
 
     def __init__(self, arch: ArchEnum, path_resources: str):
         self.arch: ArchEnum = arch
@@ -148,7 +149,20 @@ class Compiler:
             raise NotImplementedError(f"Behavior for instruction {insn_name} not known by the preprocessor.")
 
         parse_trees = [self.parser.parse(behavior) for behavior in behaviors]
-        return [self.transformer.transform(parse_tree) for parse_tree in parse_trees]
+        self.compiled_insns[insn_name] = {'meta': None,
+                                          'rzil': [self.transformer.transform(parse_tree) for parse_tree in parse_trees]
+                                          }
+        return self.compiled_insns[insn_name]
+
+    def get_insn_rzil(self, insn_name: str) -> [str]:
+        if insn_name in self.compiled_insns:
+            return self.compiled_insns[insn_name]['behavior']
+        raise ValueError(f'Instruction {insn_name} not found.')
+
+    def get_insn_meta(self, insn_name: str) -> str:
+        if insn_name in self.compiled_insns:
+            return self.compiled_insns[insn_name]['meta']
+        raise ValueError(f'Instruction {insn_name} not found.')
 
 
 if __name__ == "__main__":
