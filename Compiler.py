@@ -108,7 +108,16 @@ class Compiler:
     def fix_compile_exceptions(exceptions: dict):
         for i, k in enumerate(exceptions.keys()):
             print(f"[{i}] {k}")
-        i = int(input("Choose exception type print\n > "))
+        i = 0
+        while True:
+            inp = input("Choose exception type print (number or q: quit)\n > ")
+            if inp == 'q':
+                exit()
+            try:
+                i = int(inp)
+                break
+            except ValueError:
+                continue
         for k, e in enumerate(exceptions.keys()):
             if k != i:
                 continue
