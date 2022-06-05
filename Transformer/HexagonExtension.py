@@ -97,4 +97,4 @@ class HexagonExtension(TransformerExtension):
         if self.branches:
             flags.append('HEX_IL_INSN_ATTR_BRANCH')
 
-        return ' | '.join(flags)
+        return flags
