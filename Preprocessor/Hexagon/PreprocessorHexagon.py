@@ -8,9 +8,10 @@ import pcpp
 
 class PreprocessorHexagon:
 
-    behaviors = dict()  # dict(ID : Behavior)
+    behaviors = dict()
+    patched_macros = []
 
-    def __init__(self, shortcode_path: str, macros_paths: [str], out_dir: str):
+    def __init__(self, shortcode_path: str, macros_paths: {str: str}, out_dir: str):
         self.shortcode_path = shortcode_path
         self.macros_paths = macros_paths
         self.out_dir = out_dir
@@ -20,16 +21,92 @@ class PreprocessorHexagon:
         self.preprocess_shortcode()
 
     def preprocess_macros(self):
-        """ Remove includes. Decide between QEMU_GENERATE or not. """
-        pass
+        """ Remove includes. Decide between QEMU_GENERATE or not. Patch certain macros with ou version."""
+        m = self.cleanup_macros()
+        with open(self.out_dir + '/patched_macros.h', 'w') as f:
+            f.writelines('\n'.join(self.patch_macros(m)))
+
+    def cleanup_macros(self) -> [str]:
+        """ Removes all guards, includes and comments from the macro files."""
+        res = []
+        for mp in [self.macros_paths['standard'], self.macros_paths['vec']]:
+            if 'mmvec' in mp:
+                is_vec_macro_file = True
+            else:
+                is_vec_macro_file = False
+            with open(mp) as f:
+                in_qemu_gen = False
+                for line in f.readlines():
+                    if line == '\n':
+                        continue
+                    if re.match(r'#ifdef QEMU_GENERATE', line):
+                        in_qemu_gen = True
+                        continue
+                    if re.match(r'#ifndef|#ifdef', line):
+                        continue
+                    if re.match(r'#include', line):
+                        continue
+                    if re.match(r'(#else)|(#endif)', line):
+                        if in_qemu_gen:
+                            in_qemu_gen = False
+                        continue
+                    if in_qemu_gen and is_vec_macro_file:
+                        res.append(line.strip('\n'))
+                        continue
+                    elif in_qemu_gen:
+                        continue
+                    if re.match(r'(\s*//)|(/\*)|(\s*\*)', line):  # Ignore comments
+                        continue
+                    res.append(line.strip('\n'))
+        # Join lines with an \ at the end
+        i = 0
+        while i != len(res):
+            if not re.search(r'\\\s*$', res[i]):
+                # One line macro
+                i += 1
+                continue
+            try:
+                res[i] = re.sub(r'\\\s*$', ' ', res[i]).strip() + res.pop(i+1)
+            except IndexError:
+                raise IndexError(f'Last line in macro file ends with a "\\": {res[i]}.')
+
+        return res
+
+    def patch_macros(self, macros: [str]):
+        # Read macro patches
+        with open(self.macros_paths['patches']) as f:
+            cont = ''.join(f.readlines())
+            cont = re.sub(r'\\\s*\n', '', cont)
+
+        # Get macro names and store their lines.
+        patches = dict()
+        for line in cont.split('\n'):
+            if not re.search(r'^#define', line):
+                continue
+            match = re.search(r'^#define\s+([\w_]*).*', line)
+            if not match:
+                raise ValueError(f'Macro patch "{line}" not properly formatted.')
+            patches[match.group(1)] = line
+
+        # Patch
+        patched = []
+        for macro in macros:
+            m_name = re.search(r'^#define\s+([\w_]*).*', macro).group(1)
+            if m_name in patches.keys():
+                patched.append(patches[m_name])
+            else:
+                patched.append(macro)
+        return patched
 
     def preprocess_shortcode(self):
         """ Run pcpp on shortcode + macro files. """
         combined_path = self.out_dir + '/Preprocessor/combined.h'
         with open(combined_path, 'w') as f:
-            for path in self.macros_paths + [self.shortcode_path]:
-                with open(path) as g:
-                    f.writelines(g.readlines())
+            with open(self.out_dir + '/patched_macros.h') as g:
+                f.writelines(g.readlines())
+            f.write('\n')
+            with open(self.shortcode_path) as g:
+                f.writelines(g.readlines())
         argv = ['script_name', combined_path, '-o', self.out_dir + '/Preprocessor/shortcode_resolved.h']
         print('* Resolve macros of shortcode with pcpp...')
         pcpp.pcmd.CmdPreprocessor(argv)

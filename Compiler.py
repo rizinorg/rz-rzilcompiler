@@ -44,10 +44,11 @@ class Compiler:
         print(f"* Set up preprocessor for: {self.arch.name}")
         if self.arch == ArchEnum.HEXAGON:
             shortcode = self.path_resources + "/Preprocessor/shortcode.h"
-            macros = [
-                self.path_resources + "/Preprocessor/macros.h",
-                self.path_resources + "/Preprocessor/mmve_macros.h",
-            ]
+            macros = {
+                'standard': self.path_resources + "/Preprocessor/macros.h",
+                'vec': self.path_resources + "/Preprocessor/macros_mmvec.h",
+                'patches': self.path_resources + "/Preprocessor/macro_patches.h",
+            }
             out_dir = self.path_resources
             self.preprocessor = PreprocessorHexagon(shortcode, macros, out_dir)
         else:

@@ -1,3 +1,50 @@
+/*
+ *  Copyright(c) 2019-2022 Qualcomm Innovation Center, Inc. All Rights Reserved.
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef HEXAGON_MMVEC_MACROS_H
+#define HEXAGON_MMVEC_MACROS_H
+
+#include "qemu/osdep.h"
+#include "qemu/host-utils.h"
+#include "arch.h"
+#include "mmvec/system_ext_mmvec.h"
+
+#ifndef QEMU_GENERATE
+#define VdV      (*(MMVector *)(VdV_void))
+#define VsV      (*(MMVector *)(VsV_void))
+#define VuV      (*(MMVector *)(VuV_void))
+#define VvV      (*(MMVector *)(VvV_void))
+#define VwV      (*(MMVector *)(VwV_void))
+#define VxV      (*(MMVector *)(VxV_void))
+#define VyV      (*(MMVector *)(VyV_void))
+
+#define VddV     (*(MMVectorPair *)(VddV_void))
+#define VuuV     (*(MMVectorPair *)(VuuV_void))
+#define VvvV     (*(MMVectorPair *)(VvvV_void))
+#define VxxV     (*(MMVectorPair *)(VxxV_void))
+
+#define QeV      (*(MMQReg *)(QeV_void))
+#define QdV      (*(MMQReg *)(QdV_void))
+#define QsV      (*(MMQReg *)(QsV_void))
+#define QtV      (*(MMQReg *)(QtV_void))
+#define QuV      (*(MMQReg *)(QuV_void))
+#define QvV      (*(MMQReg *)(QvV_void))
+#define QxV      (*(MMQReg *)(QxV_void))
+#endif
 
 #define LOG_VTCM_BYTE(VA, MASK, VAL, IDX) \
     do { \
@@ -233,21 +280,28 @@
     do { \
         fV_AL_CHECK(EA, fVECSIZE() - 1); \
     } while (0)
+#ifdef QEMU_GENERATE
 #define fLOADMMV(EA, DST) gen_vreg_load(ctx, DST##_off, EA, true)
-
+#endif
+#ifdef QEMU_GENERATE
 #define fLOADMMVU(EA, DST) gen_vreg_load(ctx, DST##_off, EA, false)
+#endif
+#ifdef QEMU_GENERATE
 #define fSTOREMMV(EA, SRC) \
     gen_vreg_store(ctx, insn, pkt, EA, SRC##_off, insn->slot, true)
-
+#endif
+#ifdef QEMU_GENERATE
 #define fSTOREMMVQ(EA, SRC, MASK) \
     gen_vreg_masked_store(ctx, EA, SRC##_off, MASK##_off, insn->slot, false)
-
+#endif
+#ifdef QEMU_GENERATE
 #define fSTOREMMVNQ(EA, SRC, MASK) \
     gen_vreg_masked_store(ctx, EA, SRC##_off, MASK##_off, insn->slot, true)
-
+#endif
+#ifdef QEMU_GENERATE
 #define fSTOREMMVU(EA, SRC) \
     gen_vreg_store(ctx, insn, pkt, EA, SRC##_off, insn->slot, false)
-
+#endif
 #define fVFOREACH(WIDTH, VAR) for (VAR = 0; VAR < fVELEM(WIDTH); VAR++)
 #define fVARRAY_ELEMENT_ACCESS(ARRAY, TYPE, INDEX) \
     ARRAY.v[(INDEX) / (fVECSIZE() / (sizeof(ARRAY.TYPE[0])))].TYPE[(INDEX) % \
@@ -293,3 +347,4 @@
 #define fUARCH_NOTE_PUMP_2X()
 
 #define IV1DEAD()
+#endif
