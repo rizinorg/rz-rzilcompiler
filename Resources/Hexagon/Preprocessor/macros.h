@@ -15,12 +15,22 @@
  *  along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef HEXAGON_MACROS_H
+#define HEXAGON_MACROS_H
 
+#include "cpu.h"
+#include "hex_regs.h"
+#include "reg_fields.h"
+
+#ifdef QEMU_GENERATE
+#define READ_REG(dest, NUM)              gen_read_reg(dest, NUM)
+#else
 #define READ_REG(NUM)                    (env->gpr[(NUM)])
 #define READ_PREG(NUM)                   (env->pred[NUM])
 
 #define WRITE_RREG(NUM, VAL)             log_reg_write(env, NUM, VAL, slot)
 #define WRITE_PREG(NUM, VAL)             log_pred_write(env, NUM, VAL)
+#endif
 
 #define PCALIGN 4
 #define PCALIGN_MASK (PCALIGN - 1)
@@ -29,7 +39,24 @@
     fEXTRACTU_BITS(REGIN, reg_field_info[FIELD].width, \
                    reg_field_info[FIELD].offset)
 
+#ifdef QEMU_GENERATE
+#define GET_USR_FIELD(FIELD, DST) \
+    tcg_gen_extract_tl(DST, hex_gpr[HEX_REG_USR], \
+                       reg_field_info[FIELD].offset, \
+                       reg_field_info[FIELD].width)
 
+#define TYPE_INT(X)          __builtin_types_compatible_p(typeof(X), int)
+#define TYPE_TCGV(X)         __builtin_types_compatible_p(typeof(X), TCGv)
+#define TYPE_TCGV_I64(X)     __builtin_types_compatible_p(typeof(X), TCGv_i64)
+
+#define SET_USR_FIELD_FUNC(X) \
+    __builtin_choose_expr(TYPE_INT(X), \
+        gen_set_usr_fieldi, \
+        __builtin_choose_expr(TYPE_TCGV(X), \
+            gen_set_usr_field, (void)0))
+#define SET_USR_FIELD(FIELD, VAL) \
+    SET_USR_FIELD_FUNC(VAL)(FIELD, VAL)
+#else
 #define GET_USR_FIELD(FIELD) \
     fEXTRACTU_BITS(env->gpr[HEX_REG_USR], reg_field_info[FIELD].width, \
                    reg_field_info[FIELD].offset)
@@ -37,8 +64,107 @@
 #define SET_USR_FIELD(FIELD, VAL) \
     fINSERT_BITS(env->new_value[HEX_REG_USR], reg_field_info[FIELD].width, \
                  reg_field_info[FIELD].offset, (VAL))
+#endif
 
+#ifdef QEMU_GENERATE
+/*
+ * Section 5.5 of the Hexagon V67 Programmer's Reference Manual
+ *
+ * Slot 1 store with slot 0 load
+ * A slot 1 store operation with a slot 0 load operation can appear in a packet.
+ * The packet attribute :mem_noshuf inhibits the instruction reordering that
+ * would otherwise be done by the assembler. For example:
+ *     {
+ *         memw(R5) = R2 // slot 1 store
+ *         R3 = memh(R6) // slot 0 load
+ *     }:mem_noshuf
+ * Unlike most packetized operations, these memory operations are not executed
+ * in parallel (Section 3.3.1). Instead, the store instruction in Slot 1
+ * effectively executes first, followed by the load instruction in Slot 0. If
+ * the addresses of the two operations are overlapping, the load will receive
+ * the newly stored data. This feature is supported in processor versions
+ * V65 or greater.
+ *
+ *
+ * For qemu, we look for a load in slot 0 when there is  a store in slot 1
+ * in the same packet.  When we see this, we call a helper that merges the
+ * bytes from the store buffer with the value loaded from memory.
+ */
+#define CHECK_NOSHUF \
+    do { \
+        if (insn->slot == 0 && pkt->pkt_has_store_s1) { \
+            process_store(ctx, pkt, 1); \
+        } \
+    } while (0)
 
+#define MEM_LOAD1s(DST, VA) \
+    do { \
+        CHECK_NOSHUF; \
+        tcg_gen_qemu_ld8s(DST, VA, ctx->mem_idx); \
+    } while (0)
+#define MEM_LOAD1u(DST, VA) \
+    do { \
+        CHECK_NOSHUF; \
+        tcg_gen_qemu_ld8u(DST, VA, ctx->mem_idx); \
+    } while (0)
+#define MEM_LOAD2s(DST, VA) \
+    do { \
+        CHECK_NOSHUF; \
+        tcg_gen_qemu_ld16s(DST, VA, ctx->mem_idx); \
+    } while (0)
+#define MEM_LOAD2u(DST, VA) \
+    do { \
+        CHECK_NOSHUF; \
+        tcg_gen_qemu_ld16u(DST, VA, ctx->mem_idx); \
+    } while (0)
+#define MEM_LOAD4s(DST, VA) \
+    do { \
+        CHECK_NOSHUF; \
+        tcg_gen_qemu_ld32s(DST, VA, ctx->mem_idx); \
+    } while (0)
+#define MEM_LOAD4u(DST, VA) \
+    do { \
+        CHECK_NOSHUF; \
+        tcg_gen_qemu_ld32s(DST, VA, ctx->mem_idx); \
+    } while (0)
+#define MEM_LOAD8u(DST, VA) \
+    do { \
+        CHECK_NOSHUF; \
+        tcg_gen_qemu_ld64(DST, VA, ctx->mem_idx); \
+    } while (0)
+
+#define MEM_STORE1_FUNC(X) \
+    __builtin_choose_expr(TYPE_INT(X), \
+        gen_store1i, \
+        __builtin_choose_expr(TYPE_TCGV(X), \
+            gen_store1, (void)0))
+#define MEM_STORE1(VA, DATA, SLOT) \
+    MEM_STORE1_FUNC(DATA)(cpu_env, VA, DATA, ctx, SLOT)
+
+#define MEM_STORE2_FUNC(X) \
+    __builtin_choose_expr(TYPE_INT(X), \
+        gen_store2i, \
+        __builtin_choose_expr(TYPE_TCGV(X), \
+            gen_store2, (void)0))
+#define MEM_STORE2(VA, DATA, SLOT) \
+    MEM_STORE2_FUNC(DATA)(cpu_env, VA, DATA, ctx, SLOT)
+
+#define MEM_STORE4_FUNC(X) \
+    __builtin_choose_expr(TYPE_INT(X), \
+        gen_store4i, \
+        __builtin_choose_expr(TYPE_TCGV(X), \
+            gen_store4, (void)0))
+#define MEM_STORE4(VA, DATA, SLOT) \
+    MEM_STORE4_FUNC(DATA)(cpu_env, VA, DATA, ctx, SLOT)
+
+#define MEM_STORE8_FUNC(X) \
+    __builtin_choose_expr(TYPE_INT(X), \
+        gen_store8i, \
+        __builtin_choose_expr(TYPE_TCGV_I64(X), \
+            gen_store8, (void)0))
+#define MEM_STORE8(VA, DATA, SLOT) \
+    MEM_STORE8_FUNC(DATA)(cpu_env, VA, DATA, ctx, SLOT)
+#else
 #define MEM_LOAD1s(VA) ((int8_t)mem_load1(env, slot, VA))
 #define MEM_LOAD1u(VA) ((uint8_t)mem_load1(env, slot, VA))
 #define MEM_LOAD2s(VA) ((int16_t)mem_load2(env, slot, VA))
@@ -52,10 +178,28 @@
 #define MEM_STORE2(VA, DATA, SLOT) log_store32(env, VA, DATA, 2, SLOT)
 #define MEM_STORE4(VA, DATA, SLOT) log_store32(env, VA, DATA, 4, SLOT)
 #define MEM_STORE8(VA, DATA, SLOT) log_store64(env, VA, DATA, 8, SLOT)
+#endif
 
 #define CANCEL cancel_slot(env, slot)
 
 #define LOAD_CANCEL(EA) do { CANCEL; } while (0)
+
+#ifdef QEMU_GENERATE
+static inline void gen_pred_cancel(TCGv pred, int slot_num)
+ {
+    TCGv slot_mask = tcg_temp_new();
+    TCGv tmp = tcg_temp_new();
+    TCGv zero = tcg_constant_tl(0);
+    tcg_gen_ori_tl(slot_mask, hex_slot_cancelled, 1 << slot_num);
+    tcg_gen_andi_tl(tmp, pred, 1);
+    tcg_gen_movcond_tl(TCG_COND_EQ, hex_slot_cancelled, tmp, zero,
+                       slot_mask, hex_slot_cancelled);
+    tcg_temp_free(slot_mask);
+    tcg_temp_free(tmp);
+}
+#define PRED_LOAD_CANCEL(PRED, EA) \
+    gen_pred_cancel(PRED, insn->is_endloop ? 4 : insn->slot)
+#endif
 
 #define STORE_CANCEL(EA) { env->slot_cancelled |= (1 << slot); }
 
@@ -84,17 +228,39 @@
 
 #define f8BITSOF(VAL) ((VAL) ? 0xff : 0x00)
 
+#ifdef QEMU_GENERATE
+#define fLSBOLD(VAL) tcg_gen_andi_tl(LSB, (VAL), 1)
+#else
 #define fLSBOLD(VAL)  ((VAL) & 1)
+#endif
 
-
+#ifdef QEMU_GENERATE
+#define fLSBNEW(PVAL)   tcg_gen_andi_tl(LSB, (PVAL), 1)
+#define fLSBNEW0        tcg_gen_andi_tl(LSB, hex_new_pred_value[0], 1)
+#define fLSBNEW1        tcg_gen_andi_tl(LSB, hex_new_pred_value[1], 1)
+#else
 #define fLSBNEW(PVAL)   ((PVAL) & 1)
 #define fLSBNEW0        (env->new_pred_value[0] & 1)
 #define fLSBNEW1        (env->new_pred_value[1] & 1)
+#endif
 
+#ifdef QEMU_GENERATE
+#define fLSBOLDNOT(VAL) \
+    do { \
+        tcg_gen_andi_tl(LSB, (VAL), 1); \
+        tcg_gen_xori_tl(LSB, LSB, 1); \
+    } while (0)
+#define fLSBNEWNOT(PNUM) \
+    do { \
+        tcg_gen_andi_tl(LSB, (PNUM), 1); \
+        tcg_gen_xori_tl(LSB, LSB, 1); \
+    } while (0)
+#else
 #define fLSBNEWNOT(PNUM) (!fLSBNEW(PNUM))
 #define fLSBOLDNOT(VAL) (!fLSBOLD(VAL))
 #define fLSBNEW0NOT (!fLSBNEW0)
 #define fLSBNEW1NOT (!fLSBNEW1)
+#endif
 
 #define fNEWREG(VAL) ((int32_t)(VAL))
 
@@ -163,9 +329,38 @@
 
 #define fPCALIGN(IMM) IMM = (IMM & ~PCALIGN_MASK)
 
+#ifdef QEMU_GENERATE
+static inline TCGv gen_read_ireg(TCGv result, TCGv val, int shift)
+{
+    /*
+     * Section 2.2.4 of the Hexagon V67 Programmer's Reference Manual
+     *
+     *  The "I" value from a modifier register is divided into two pieces
+     *      LSB         bits 23:17
+     *      MSB         bits 31:28
+     * The value is signed
+     *
+     * At the end we shift the result according to the shift argument
+     */
+    TCGv msb = tcg_temp_new();
+    TCGv lsb = tcg_temp_new();
 
+    tcg_gen_extract_tl(lsb, val, 17, 7);
+    tcg_gen_sari_tl(msb, val, 21);
+    tcg_gen_deposit_tl(result, msb, lsb, 0, 7);
+
+    tcg_gen_shli_tl(result, result, shift);
+
+    tcg_temp_free(msb);
+    tcg_temp_free(lsb);
+
+    return result;
+}
+#define fREAD_IREG(VAL, SHIFT) gen_read_ireg(ireg, (VAL), (SHIFT))
+#else
 #define fREAD_IREG(VAL) \
     (fSXTN(11, 64, (((VAL) & 0xf0000000) >> 21) | ((VAL >> 17) & 0x7f)))
+#endif
 
 #define fREAD_LR() (READ_REG(HEX_REG_LR))
 
@@ -284,7 +479,21 @@
 #define fCAST8S_16S(A) (int128_exts64(A))
 #define fCAST16S_8S(A) (int128_getlo(A))
 
-
+#ifdef QEMU_GENERATE
+#define fEA_RI(REG, IMM) tcg_gen_addi_tl(EA, REG, IMM)
+#define fEA_RRs(REG, REG2, SCALE) \
+    do { \
+        TCGv tmp = tcg_temp_new(); \
+        tcg_gen_shli_tl(tmp, REG2, SCALE); \
+        tcg_gen_add_tl(EA, REG, tmp); \
+        tcg_temp_free(tmp); \
+    } while (0)
+#define fEA_IRs(IMM, REG, SCALE) \
+    do { \
+        tcg_gen_shli_tl(EA, REG, SCALE); \
+        tcg_gen_addi_tl(EA, EA, IMM); \
+    } while (0)
+#else
 #define fEA_RI(REG, IMM) \
     do { \
         EA = REG + IMM; \
@@ -297,13 +506,27 @@
     do { \
         EA = IMM + (REG << SCALE); \
     } while (0)
+#endif
 
-
+#ifdef QEMU_GENERATE
+#define fEA_IMM(IMM) tcg_gen_movi_tl(EA, IMM)
+#define fEA_REG(REG) tcg_gen_mov_tl(EA, REG)
+#define fEA_BREVR(REG)      gen_helper_fbrev(EA, REG)
+#define fPM_I(REG, IMM)     tcg_gen_addi_tl(REG, REG, IMM)
+#define fPM_M(REG, MVAL)    tcg_gen_add_tl(REG, REG, MVAL)
+#define fPM_CIRI(REG, IMM, MVAL) \
+    do { \
+        TCGv tcgv_siV = tcg_constant_tl(siV); \
+        gen_helper_fcircadd(REG, REG, tcgv_siV, MuV, \
+                            hex_gpr[HEX_REG_CS0 + MuN]); \
+    } while (0)
+#else
 #define fEA_IMM(IMM)        do { EA = (IMM); } while (0)
 #define fEA_REG(REG)        do { EA = (REG); } while (0)
 #define fEA_GPI(IMM)        do { EA = (fREAD_GP() + (IMM)); } while (0)
 #define fPM_I(REG, IMM)     do { REG = REG + (IMM); } while (0)
 #define fPM_M(REG, MVAL)    do { REG = REG + (MVAL); } while (0)
+#endif
 #define fSCALE(N, A) (((int64_t)(A)) << N)
 #define fVSATW(A) fVSATN(32, ((long long)A))
 #define fSATW(A) fSATN(32, ((long long)A))
@@ -350,8 +573,12 @@
 #define fASHIFTL(SRC, SHAMT, REGSTYPE) \
     (((SHAMT) >= (sizeof(SRC) * 8)) ? 0 : (fCAST##REGSTYPE##s(SRC) << (SHAMT)))
 
+#ifdef QEMU_GENERATE
+#define fLOAD(NUM, SIZE, SIGN, EA, DST) MEM_LOAD##SIZE##SIGN(DST, EA)
+#else
 #define fLOAD(NUM, SIZE, SIGN, EA, DST) \
     DST = (size##SIZE##SIGN##_t)MEM_LOAD##SIZE##SIGN(EA)
+#endif
 
 #define fMEMOP(NUM, SIZE, SIGN, EA, FNTYPE, VALUE)
 
@@ -366,16 +593,34 @@
 #define fFRAMECHECK(ADDR, EA)  g_assert_not_reached();
 #endif
 
+#ifdef QEMU_GENERATE
 #define fLOAD_LOCKED(NUM, SIZE, SIGN, EA, DST) \
     gen_load_locked##SIZE##SIGN(DST, EA, ctx->mem_idx);
+#endif
 
+#ifdef QEMU_GENERATE
+#define fSTORE(NUM, SIZE, EA, SRC) MEM_STORE##SIZE(EA, SRC, insn->slot)
+#else
 #define fSTORE(NUM, SIZE, EA, SRC) MEM_STORE##SIZE(EA, SRC, slot)
+#endif
 
+#ifdef QEMU_GENERATE
 #define fSTORE_LOCKED(NUM, SIZE, EA, SRC, PRED) \
     gen_store_conditional##SIZE(ctx, PRED, EA, SRC);
+#endif
 
+#ifdef QEMU_GENERATE
+#define GETBYTE_FUNC(X) \
+    __builtin_choose_expr(TYPE_TCGV(X), \
+        gen_get_byte, \
+        __builtin_choose_expr(TYPE_TCGV_I64(X), \
+            gen_get_byte_i64, (void)0))
+#define fGETBYTE(N, SRC) GETBYTE_FUNC(SRC)(BYTE, N, SRC, true)
+#define fGETUBYTE(N, SRC) GETBYTE_FUNC(SRC)(BYTE, N, SRC, false)
+#else
 #define fGETBYTE(N, SRC) ((int8_t)((SRC >> ((N) * 8)) & 0xff))
 #define fGETUBYTE(N, SRC) ((uint8_t)((SRC >> ((N) * 8)) & 0xff))
+#endif
 
 #define fSETBYTE(N, DST, VAL) \
     do { \
@@ -383,9 +628,13 @@
         (((uint64_t)((VAL) & 0x0ffLL)) << ((N) * 8)); \
     } while (0)
 
-
+#ifdef QEMU_GENERATE
+#define fGETHALF(N, SRC)  gen_get_half(HALF, N, SRC, true)
+#define fGETUHALF(N, SRC) gen_get_half(HALF, N, SRC, false)
+#else
 #define fGETHALF(N, SRC) ((int16_t)((SRC >> ((N) * 16)) & 0xffff))
 #define fGETUHALF(N, SRC) ((uint16_t)((SRC >> ((N) * 16)) & 0xffff))
+#endif
 #define fSETHALF(N, DST, VAL) \
     do { \
         DST = (DST & ~(0x0ffffLL << ((N) * 16))) | \
@@ -462,3 +711,6 @@
 
 #define fBRANCH_SPECULATE_STALL(DOTNEWVAL, JUMP_COND, SPEC_DIR, HINTBITNUM, \
                                 STRBITNUM) /* Nothing */
+
+
+#endif

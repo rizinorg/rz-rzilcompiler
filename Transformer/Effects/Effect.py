@@ -17,25 +17,24 @@ class Effect:
     type: EffectType = None
 
     def init(self, name: str, effect_type: EffectType):
+        from Transformer.ILOpsHolder import ILOpsHolder
+
         self.name = name
         self.type = effect_type
+
+        holder = ILOpsHolder()
+        if name in holder.write_ops:
+            return
+        holder.add_effect(self)
 
     def get_name(self):
         return self.name
 
-    def get_isa_name(self):
-        """ Returns the name of the RzILOpPure variable. """
-        return self.name
-
-    def code_get_vm_name(self):
-        """ Returns the name by which the VM knows this variable. """
-        return self.name
-
-    def code_write(self):
+    def il_write(self):
         """ Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
         """
         raise OverloadException('')
 
-    def code_init_var(self):
-        return f'RzIlOpEffect *{self.get_isa_name()} = {self.code_write()};'
+    def il_init_var(self):
+        return f'RzIlOpEffect *{self.get_name()} = {self.il_write()};'
