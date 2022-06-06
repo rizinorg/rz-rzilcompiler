@@ -96,5 +96,7 @@ class HexagonExtension(TransformerExtension):
             flags.append('HEX_IL_INSN_ATTR_MEM_READ')
         if self.branches:
             flags.append('HEX_IL_INSN_ATTR_BRANCH')
+        if len(flags) == 0:
+            flags.append('HEX_IL_INSN_ATTR_NONE')
 
         return flags
