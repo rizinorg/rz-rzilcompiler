@@ -25,3 +25,9 @@
 
 #define fREAD_GP() \
     (insn->extension_valid ? 0 : READ_REG(HEX_REG_GP))
+#define fWRITE_NPC(A) JUMP(A)
+
+#define READ_REG(NUM)                    R##NUM
+#define READ_PREG(NUM)                   P##NUM
+#define fREAD_GP() GP
+#define fREAD_PC() pc

@@ -12,6 +12,8 @@ mem_load: "mem_load_" SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")"
 
 mem_store: "mem_store_" SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")"
 
+jump: "JUMP(" expr ")"
+
 ?enumeration_constant: IDENTIFIER
 
 ?generic_selection: GENERIC "(" assignment_expr "," generic_assoc_list ")"
@@ -26,6 +28,7 @@ mem_store: "mem_store_" SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")"
 	| postfix_expr "[" expr "]"
 	| postfix_expr "(" ")"
 	| _mem_access
+	| jump
 	| postfix_expr "." IDENTIFIER
 	| postfix_expr PTR_OP IDENTIFIER
 	| postfix_expr INC_OP

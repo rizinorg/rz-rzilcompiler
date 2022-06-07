@@ -4,6 +4,7 @@
 from lark import Transformer
 
 from ArchEnum import ArchEnum
+from Transformer.Effects.Jump import Jump
 from Transformer.Effects.MemStore import MemStore
 from Transformer.HexagonExtension import HexagonExtension
 from Transformer.ILOpsHolder import ILOpsHolder
@@ -71,6 +72,11 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('imm')
 
         return self.ext.imm(items)
+
+    def jump(self, items):
+        self.ext.set_token_meta_data('jump')
+        ta: Pure = items[0]
+        return Jump(f'jump_{ta.name}', ta)
 
     def number(self, items):
         self.ext.set_token_meta_data('number')

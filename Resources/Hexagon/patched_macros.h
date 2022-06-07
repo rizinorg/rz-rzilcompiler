@@ -1,6 +1,6 @@
 #define HEXAGON_MACROS_H
-#define READ_REG(NUM)                    (env->gpr[(NUM)])
-#define READ_PREG(NUM)                   (env->pred[NUM])
+#define READ_REG(NUM)                    R##NUM
+#define READ_PREG(NUM)                   P##NUM
 #define WRITE_RREG(NUM, VAL)             log_reg_write(env, NUM, VAL, slot)
 #define WRITE_PREG(NUM, VAL)             log_pred_write(env, NUM, VAL)
 #define PCALIGN 4
@@ -82,7 +82,7 @@
 #define fREAD_P0() (READ_PREG(0))
 #define fREAD_P3() (READ_PREG(3))
 #define fCHECK_PCALIGN(A)
-#define fWRITE_NPC(A) write_new_pc(env, A)
+#define fWRITE_NPC(A) JUMP(A)
 #define fBRANCH(LOC, TYPE)          fWRITE_NPC(LOC)
 #define fJUMPR(REGNO, TARGET, TYPE) fBRANCH(TARGET, COF_TYPE_JUMPR)
 #define fHINTJR(TARGET) { /* Not modelled in qemu */}

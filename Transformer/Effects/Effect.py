@@ -10,6 +10,7 @@ class EffectType(Enum):
     SETL = 1
     STOREW = 2
     STORE = 3
+    JUMP = 4
 
 
 class Effect:

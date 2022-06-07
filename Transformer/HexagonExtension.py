@@ -44,6 +44,8 @@ class HexagonExtension(TransformerExtension):
             self.set_reads_mem()
         elif token == 'new_reg':
             self.set_uses_new()
+        elif token == 'jump':
+            self.set_branches()
 
     def reg(self, items):
         self.hex_reg(items, False)
