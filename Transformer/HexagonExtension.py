@@ -3,6 +3,7 @@
 
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.Immediate import Immediate
+from Transformer.Pures.Pure import ValueType
 from Transformer.Pures.Register import RegisterAccessType, Register
 from Transformer.TransformerExtension import TransformerExtension
 from Transformer.helper_hexagon import get_value_type_from_reg_type, get_value_type_by_isa_imm, get_value_type_by_c_type
@@ -47,6 +48,15 @@ class HexagonExtension(TransformerExtension):
         elif token == 'jump':
             self.set_branches()
 
+    def reg_alias(self, items):
+        alias = items[0]
+        if alias == 'UPCYCLE' or alias == 'PKTCOUNT' or alias == 'UTIMER':
+            size = 64
+        else:
+            size = 32
+        v_type = ValueType(False, size)
+        return Register(alias.lower(), RegisterAccessType.RW, v_type, is_reg_alias=True)
+
     def reg(self, items):
         self.hex_reg(items, False)
 
@@ -79,7 +89,7 @@ class HexagonExtension(TransformerExtension):
     def imm(self, items):
         v_type = get_value_type_by_isa_imm(items)
         name = f'{items[0]}'
-        imm = Immediate(name, 32, v_type)
+        imm = Immediate(name, v_type)
         imm.set_isa_name(name)
         return imm
 

@@ -34,3 +34,6 @@ class PureExec(Pure):
             init += f'LET("{let.get_name()}", {let.get_name()}, '
         init += self.il_exec() + ')' * len(self.lets) + ');'
         return init
+
+    def il_read(self):
+        return f'{self.name}'

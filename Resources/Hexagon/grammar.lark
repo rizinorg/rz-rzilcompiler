@@ -359,14 +359,22 @@ cancel_slot_expr: "cancel_slot" ";"
 ?op: reg "V"
     | new_reg "N"
     | imm "iV"
+    | explicit_reg
+    | reg_alias
     | number
-    | IDENTIFIER
+    | identifier
+
+identifier: IDENTIFIER
 
 new_reg: _reg
 reg: _reg
 
 _reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
     | REG_TYPE (SRC_REG_PAIR | DEST_REG_PAIR | SRC_DEST_REG_PAIR)
+
+explicit_reg: "R31" | "P0" | "P1" | "P2" | "P3"
+
+reg_alias: "HEX_REG_ALIAS_" /[A-Z0-9]+/
 
 ?number: [NUM_SIGN] (HEX_NUMBER | DEC_NUMBER) [INT_POST_TYPE]
 
