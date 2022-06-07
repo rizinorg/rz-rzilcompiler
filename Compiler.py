@@ -147,8 +147,7 @@ class Compiler:
             raise NotImplementedError(f"Behavior for instruction {insn_name} not known by the preprocessor.")
 
         parse_trees = [self.parser.parse(behavior) for behavior in behaviors]
-        self.compiled_insns[insn_name]['rzil'] = []
-        self.compiled_insns[insn_name]['meta'] = []
+        self.compiled_insns[insn_name] = {'rzil': [], 'meta': []}
         for pt in parse_trees:
             self.compiled_insns[insn_name]['rzil'].append(self.transformer.transform(pt))
             self.compiled_insns[insn_name]['meta'].append(self.transformer.ext.get_meta())
