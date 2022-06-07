@@ -13,7 +13,7 @@ class TestTransformer:
     def test_transformer(self):
         with open("/home/user/repos/rzil-compiler/Resources/Hexagon/grammar.lark") as f:
             grammar = "".join(f.readlines())
-        parser = Lark(grammar, start="fbody")
+        parser = Lark(grammar, start="fbody", parser="earley", debug=True)
         for beh in transform_test:
             print(f'Test behavior: f{beh}')
             try:

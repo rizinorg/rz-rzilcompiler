@@ -35,7 +35,7 @@ class Compiler:
         with open(self.path_resources + "/grammar.lark") as f:
             grammar = "".join(f.readlines())
 
-        self.parser = Lark(grammar, start="fbody", parser="lalr")
+        self.parser = Lark(grammar, start="fbody", parser="earley")
 
     def set_transformer(self):
         self.transformer = RZILTransformer(self.arch)

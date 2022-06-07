@@ -5,14 +5,11 @@ fbody: stmt* -> fbody
 	| "(" expr ")"
 	| generic_selection
 
-_mem_access: mem_load
-    | mem_store
-
 mem_load: "mem_load_" SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")"
 
-mem_store: "mem_store_" SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")"
+mem_store: "mem_store_" SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")" ";"
 
-jump: "JUMP(" expr ")"
+jump: "JUMP" "(" expr ")"
 
 ?enumeration_constant: IDENTIFIER
 
@@ -27,8 +24,7 @@ jump: "JUMP(" expr ")"
 ?postfix_expr: primary_expr
 	| postfix_expr "[" expr "]"
 	| postfix_expr "(" ")"
-	| _mem_access
-	| jump
+	| mem_load
 	| postfix_expr "." IDENTIFIER
 	| postfix_expr PTR_OP IDENTIFIER
 	| postfix_expr INC_OP
@@ -308,8 +304,9 @@ ASSIGN_OP: "="
 	| selection_stmt
 	| iteration_stmt
 	| jump_stmt
+	| mem_store
 
-cancel_slot_expr: "cancel_slot" ";"
+cancel_slot_expr: "cancel_slot"
 
 ?labeled_stmt: IDENTIFIER ":" stmt
 	| CASE constant_expr ":" stmt
@@ -338,7 +335,8 @@ cancel_slot_expr: "cancel_slot" ";"
 	| FOR "(" declaration expr_stmt ")" stmt
 	| FOR "(" declaration expr_stmt expr ")" stmt
 
-?jump_stmt: GOTO IDENTIFIER ";"
+?jump_stmt: jump ";"
+    | GOTO IDENTIFIER ";"
 	| CONTINUE ";"
 	| BREAK ";"
 	| RETURN ";"
