@@ -25,7 +25,7 @@ class ValueType:
         return s
 
     def __eq__(self, other):
-        return (self.bit_width == other.bit_width) and (self.signed == other.signed)
+        return self.bit_width == other.bit_width
 
 
 class Pure:

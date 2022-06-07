@@ -94,4 +94,4 @@ def get_value_type_by_isa_imm(items: Token) -> ValueType:
         signed = True
 
     # Immediate size is not encoded in the short code.
-    return ValueType(signed, -1)
+    return ValueType(signed, 32)

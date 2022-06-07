@@ -79,7 +79,7 @@ class HexagonExtension(TransformerExtension):
     def imm(self, items):
         v_type = get_value_type_by_isa_imm(items)
         name = f'{items[0]}'
-        imm = Immediate(name, -1, v_type)
+        imm = Immediate(name, 32, v_type)
         imm.set_isa_name(name)
         return imm
 
