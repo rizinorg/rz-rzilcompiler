@@ -13,17 +13,15 @@ class ShiftOpType(StrEnum):
 
 class ShiftOp(PureExec):
 
-    def __init__(self, name: str, a: Pure, b: Pure, shift_type: ShiftOpType):
-        self.a = a
-        self.b = b
-        self.shift_type = shift_type
+    def __init__(self, name: str, a: Pure, b: Pure, op_type: ShiftOpType):
+        self.op_type = op_type
 
-        super().__init__(name, [a, b], self.a.value_type)
+        super().__init__(name, [a, b], a.value_type)
 
     def il_exec(self):
-        if self.shift_type == ShiftOpType.RSHIFT:
-            return f'SHIFTR0({self.a.il_read()}, {self.b.il_read()}'
-        elif self.shift_type == ShiftOpType.LSHIFT:
-            return f'SHIFTL0({self.a.il_read()}, {self.b.il_read()}'
+        if self.op_type == ShiftOpType.RSHIFT:
+            return f'SHIFTR0({self.ops[0].il_read()}, {self.ops[1].il_read()}'
+        elif self.op_type == ShiftOpType.LSHIFT:
+            return f'SHIFTL0({self.ops[0].il_read()}, {self.ops[1].il_read()}'
         else:
-            raise NotImplementedError(f'Shift op {self.shift_type} not implemented.')
+            raise NotImplementedError(f'Shift op {self.op_type} not implemented.')
