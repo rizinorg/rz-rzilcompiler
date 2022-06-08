@@ -16,7 +16,6 @@ from Transformer.Pures.Number import Number
 from Transformer.Pures.Pure import Pure, ValueType
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
-from Transformer.Pures.ShiftOp import ShiftOp, ShiftOpType
 from Transformer.helper_hexagon import get_value_type_by_c_number, get_num_base_by_token, get_c_type_by_value_type
 
 
@@ -152,17 +151,17 @@ class RZILTransformer(Transformer):
     def and_expr(self, items):
         self.ext.set_token_meta_data('and_expr')
 
-        return self.bit_operations(items, BitOperationType.BIT_AND_OP)
+        return self.bit_operations(items, BitOperationType.AND_OP)
 
     def inclusive_or_expr(self, items):
         self.ext.set_token_meta_data('inclusive_or_expr')
 
-        return self.bit_operations(items, BitOperationType.BIT_OR_OP)
+        return self.bit_operations(items, BitOperationType.OR_OP)
 
     def exclusive_or_expr(self, items):
         self.ext.set_token_meta_data('exclusive_or_expr')
 
-        return self.bit_operations(items, BitOperationType.BIT_XOR_OP)
+        return self.bit_operations(items, BitOperationType.XOR_OP)
 
     def logical_and_expr(self, items):
         self.ext.set_token_meta_data('logical_and_expr')
@@ -186,16 +185,13 @@ class RZILTransformer(Transformer):
 
     def shift_expr(self, items):
         self.ext.set_token_meta_data('shift_expr')
-        a = items[0]
-        t = items[1]
-        b = items[2]
-        return ShiftOp(f'op_{ShiftOpType(t)}_{self.get_op_id()}', a, b, ShiftOpType(t))
+        return self.bit_operations(items, BitOperationType(items[1]))
 
     def unary_expr(self, items):
         self.ext.set_token_meta_data('unary_expr')
 
         if items[0] == '~':
-            return self.bit_operations(items, BitOperationType.BIT_NOT_OP)
+            return self.bit_operations(items, BitOperationType.NOT_OP)
         else:
             raise NotImplementedError(f'Unary expression {items[0]} not handler.')
 

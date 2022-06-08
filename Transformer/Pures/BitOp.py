@@ -8,15 +8,17 @@ from Transformer.helper import exc_if_types_not_match
 
 
 class BitOperationType(StrEnum):
-    BIT_OR_OP = "|"
-    BIT_AND_OP = "&"
-    BIT_XOR_OP = "^"
-    BIT_NOT_OP = "~"
+    OR_OP = "|"
+    AND_OP = "&"
+    XOR_OP = "^"
+    NOT_OP = "~"
+    RSHIFT = '>>'
+    LSHIFT = '<<'
 
 
 class BitOp(PureExec):
     def __init__(self, name: str, a: Pure, b: Pure, op_type: BitOperationType):
-        if a and b:
+        if (a and b) and not (op_type == BitOperationType.RSHIFT or op_type == BitOperationType.LSHIFT):
             # No need to check for single operand operations.
             exc_if_types_not_match(a.value_type, b.value_type)
         self.op_type = op_type
@@ -27,13 +29,17 @@ class BitOp(PureExec):
             super().__init__(name, [a], a.value_type)
 
     def il_exec(self):
-        if self.op_type == BitOperationType.BIT_AND_OP:
+        if self.op_type == BitOperationType.AND_OP:
             return f"LOGAND({self.ops[0].il_read()}, {self.ops[1].il_read()}"
-        elif self.op_type == BitOperationType.BIT_OR_OP:
+        elif self.op_type == BitOperationType.OR_OP:
             return f"LOGOR({self.ops[0].il_read()}, {self.ops[1].il_read()}"
-        elif self.op_type == BitOperationType.BIT_XOR_OP:
+        elif self.op_type == BitOperationType.XOR_OP:
             return f"LOGXOR({self.ops[0].il_read()}, {self.ops[1].il_read()}"
-        elif self.op_type == BitOperationType.BIT_NOT_OP:
+        elif self.op_type == BitOperationType.NOT_OP:
             return f"LOGNOT({self.ops[0].il_read()}"
+        elif self.op_type == BitOperationType.RSHIFT:
+            return f'SHIFTR0({self.ops[0].il_read()}, {self.ops[1].il_read()}'
+        elif self.op_type == BitOperationType.LSHIFT:
+            return f'SHIFTL0({self.ops[0].il_read()}, {self.ops[1].il_read()}'
         else:
             raise NotImplementedError("")
