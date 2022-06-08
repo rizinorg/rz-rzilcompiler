@@ -161,6 +161,7 @@ ASSIGN_OP: "="
 	| atomic_type_specifier
 	| struct_or_union_specifier
 	| enum_specifier
+	| _c_type
 
 ?struct_or_union_specifier: struct_or_union "{" struct_declaration_list "}"
 	| struct_or_union IDENTIFIER "{" struct_declaration_list "}"
@@ -381,6 +382,12 @@ reg_alias: "HEX_REG_ALIAS_" /[A-Z0-9]+/
 
 ?number: [NUM_SIGN] (HEX_NUMBER | DEC_NUMBER) [INT_POST_TYPE]
 
+c_size_type: "size" BIT_WIDTH SIGN_TYPE "_t"
+c_int_type: SIGN_TYPE_INT BIT_WIDTH "_t"
+
+_c_type: c_size_type
+    | c_int_type
+
 imm: IMMEDIATE
 // Patterns from:
 // https://github.com/quic/qemu/blob/9d66a1fe6b1f83bc27ce78c1d56bece967340052/target/hexagon/hex_common.py#L39
@@ -403,6 +410,7 @@ NUM_SIGN: /[-+]/i
 
 SIGN_TYPE: /[su]/
 BIT_WIDTH: "8" | "16" | "32" | "64"
+SIGN_TYPE_INT: "uint" | "int"
 
 AUTO: "auto" 
 BREAK: "break" 
