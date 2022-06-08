@@ -1,6 +1,29 @@
+#define HEX_REG_UTIMERHI   HEX_REG_ALIAS_UTIMERHI
+#define HEX_REG_UTIMERLO   HEX_REG_ALIAS_UTIMERLO
+#define HEX_REG_PKTCNTHI   HEX_REG_ALIAS_PKTCNTHI
+#define HEX_REG_PKTCNTLO   HEX_REG_ALIAS_PKTCNTLO
+#define HEX_REG_FRAMEKEY   HEX_REG_ALIAS_FRAMEKEY
+#define HEX_REG_FRAMELIMIT   HEX_REG_ALIAS_FRAMELIMIT
+#define HEX_REG_UPCYCLEHI   HEX_REG_ALIAS_UPCYCLEHI
+#define HEX_REG_UPCYCLELO   HEX_REG_ALIAS_UPCYCLELO
+#define HEX_REG_CS1   HEX_REG_ALIAS_CS1
+#define HEX_REG_CS0   HEX_REG_ALIAS_CS0
+#define HEX_REG_GP   HEX_REG_ALIAS_GP
+#define HEX_REG_UGP   HEX_REG_ALIAS_UGP
+#define HEX_REG_PC   HEX_REG_ALIAS_PC
+#define HEX_REG_USR   HEX_REG_ALIAS_USR
+#define HEX_REG_M1   HEX_REG_ALIAS_M1
+#define HEX_REG_M0   HEX_REG_ALIAS_M0
+#define HEX_REG_P3_0   HEX_REG_ALIAS_P3_0
+#define HEX_REG_LC1   HEX_REG_ALIAS_LC1
+#define HEX_REG_SA1   HEX_REG_ALIAS_SA1
+#define HEX_REG_LC0   HEX_REG_ALIAS_LC0
+#define HEX_REG_SA0   HEX_REG_ALIAS_SA0
+#define HEX_REG_R31   HEX_REG_ALIAS_R31
+#define HEX_REG_LR   HEX_REG_ALIAS_LR
 #define HEXAGON_MACROS_H
-#define READ_REG(NUM)                    (env->gpr[(NUM)])
-#define READ_PREG(NUM)                   (env->pred[NUM])
+#define READ_REG(NUM)                    NUM
+#define READ_PREG(NUM)                   P##NUM
 #define WRITE_RREG(NUM, VAL)             log_reg_write(env, NUM, VAL, slot)
 #define WRITE_PREG(NUM, VAL)             log_pred_write(env, NUM, VAL)
 #define PCALIGN 4
@@ -76,13 +99,13 @@
 #define fREAD_SA1 (READ_REG(HEX_REG_SA1))
 #define fREAD_FP() (READ_REG(HEX_REG_FP))
 #define fREAD_GP()     (insn->extension_valid ? 0 : READ_REG(HEX_REG_GP))
-#define fREAD_GP()     (insn->extension_valid ? 0 : READ_REG(HEX_REG_GP))
+#define fREAD_GP() READ_REG(HEX_REG_GP)
 #define fREAD_PC() (READ_REG(HEX_REG_PC))
 #define fREAD_NPC() (env->next_PC & (0xfffffffe))
 #define fREAD_P0() (READ_PREG(0))
 #define fREAD_P3() (READ_PREG(3))
 #define fCHECK_PCALIGN(A)
-#define fWRITE_NPC(A) write_new_pc(env, A)
+#define fWRITE_NPC(A) JUMP(A)
 #define fBRANCH(LOC, TYPE)          fWRITE_NPC(LOC)
 #define fJUMPR(REGNO, TARGET, TYPE) fBRANCH(TARGET, COF_TYPE_JUMPR)
 #define fHINTJR(TARGET) { /* Not modelled in qemu */}

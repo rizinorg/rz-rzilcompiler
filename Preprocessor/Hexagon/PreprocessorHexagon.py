@@ -93,9 +93,12 @@ class PreprocessorHexagon:
         for macro in macros:
             m_name = re.search(r'^#define\s+([\w_]*).*', macro).group(1)
             if m_name in patches.keys():
-                patched.append(patches[m_name])
+                patched.append(patches.pop(m_name))
             else:
                 patched.append(macro)
+        # Prepend macros which don't replace any (user defined once)
+        for m in patches.values():
+            patched.insert(0, m)
         return patched
 
     def preprocess_shortcode(self):

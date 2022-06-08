@@ -4,6 +4,7 @@
 from lark import Transformer
 
 from ArchEnum import ArchEnum
+from Transformer.Effects.Jump import Jump
 from Transformer.Effects.MemStore import MemStore
 from Transformer.HexagonExtension import HexagonExtension
 from Transformer.ILOpsHolder import ILOpsHolder
@@ -48,13 +49,18 @@ class RZILTransformer(Transformer):
         res += "// READ\n"
         for op in holder.read_ops.values():
             res += op.il_init_var() + '\n'
-        res = '\n// EXEC\n'
+        res += '\n// EXEC\n'
         for op in holder.exec_ops.values():
             res += op.il_init_var() + '\n'
         res += "\n// WRITE\n"
         for op in holder.write_ops.values():
             res += op.il_init_var() + '\n'
         return res
+
+    def reg_alias(self, items):
+        self.ext.set_token_meta_data('reg')
+
+        return self.ext.reg_alias(items)
 
     # SPECIFIC FOR: Hexagon
     def new_reg(self, items):
@@ -72,7 +78,13 @@ class RZILTransformer(Transformer):
 
         return self.ext.imm(items)
 
+    def jump(self, items):
+        self.ext.set_token_meta_data('jump')
+        ta: Pure = items[0]
+        return Jump(f'jump_{ta.name}', ta)
+
     def number(self, items):
+        # Numbers of the form -10ULL
         self.ext.set_token_meta_data('number')
 
         v_type = get_value_type_by_c_number(items)
