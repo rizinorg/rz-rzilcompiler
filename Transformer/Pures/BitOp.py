@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from enum import StrEnum
 
+from Transformer.Pures.Number import Number
 from Transformer.Pures.Pure import Pure
 from Transformer.Pures.PureExec import PureExec
 from Transformer.helper import exc_if_types_not_match
@@ -18,13 +19,21 @@ class BitOperationType(StrEnum):
 
 class BitOp(PureExec):
     def __init__(self, name: str, a: Pure, b: Pure, op_type: BitOperationType):
-        if (a and b) and not (op_type == BitOperationType.RSHIFT or op_type == BitOperationType.LSHIFT):
-            # No need to check for single operand operations.
-            exc_if_types_not_match(a.value_type, b.value_type)
+        # if (a and b) and not (op_type == BitOperationType.RSHIFT or op_type == BitOperationType.LSHIFT):
+        #     # No need to check for single operand operations.
+        #     exc_if_types_not_match(a.value_type, b.value_type)
         self.op_type = op_type
 
         if b:
-            super().__init__(name, [a, b], a.value_type)
+            if a.value_type.bit_width >= b.value_type.bit_width:
+                if isinstance(b, Number):
+                    b.value_type.bit_width = a.value_type.bit_width
+                val_type = a.value_type
+            else:
+                if isinstance(a, Number):
+                    a.value_type.bit_width = b.value_type.bit_width
+                val_type = b.value_type
+            super().__init__(name, [a, b], val_type)
         else:
             super().__init__(name, [a], a.value_type)
 
