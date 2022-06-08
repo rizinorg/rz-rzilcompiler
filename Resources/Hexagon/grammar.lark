@@ -368,6 +368,7 @@ cancel_slot_expr: "cancel_slot"
 identifier: IDENTIFIER
 
 new_reg: _reg
+new_alias: reg_alias "_NEW"
 reg: _reg
 
 _reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)

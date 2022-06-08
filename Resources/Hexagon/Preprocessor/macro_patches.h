@@ -60,3 +60,9 @@
 // HEX_REG_QEMU_PKT_CNT      = 52,
 // HEX_REG_QEMU_INSN_CNT     = 53,
 // HEX_REG_QEMU_HVX_CNT      = 54,
+
+#define ALIAS_NEW_VAL(A) A##_NEW
+
+#define SET_USR_FIELD(FIELD, VAL) \
+    fINSERT_BITS(ALIAS_NEW_VAL(HEX_REG_USR), reg_field_info[FIELD].width, \
+                 reg_field_info[FIELD].offset, (VAL))
