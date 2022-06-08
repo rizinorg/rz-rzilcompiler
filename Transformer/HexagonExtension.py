@@ -58,7 +58,7 @@ class HexagonExtension(TransformerExtension):
         return Register(alias.lower(), RegisterAccessType.RW, v_type, is_reg_alias=True)
 
     def reg(self, items):
-        self.hex_reg(items, False)
+        return self.hex_reg(items, False)
 
     def hex_reg(self, items, is_new: bool):
         holder = ILOpsHolder()

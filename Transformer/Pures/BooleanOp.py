@@ -7,15 +7,15 @@ from Transformer.Pures.PureExec import PureExec
 from Transformer.helper import exc_if_types_not_match
 
 
-class BooleanType(StrEnum):
+class BooleanOpType(StrEnum):
     AND = '&&'
     OR = '||'
     INV = '~'
 
 
-class ArithmeticOp(PureExec):
+class BooleanOp(PureExec):
 
-    def __init__(self, name: str, a: Pure, b: Pure, op_type: BooleanType):
+    def __init__(self, name: str, a: Pure, b: Pure, op_type: BooleanOpType):
         if a and b:
             # No need to check for single operand operations.
             exc_if_types_not_match(a.value_type, b.value_type)
@@ -27,11 +27,11 @@ class ArithmeticOp(PureExec):
             super().__init__(name, [a], a.value_type)
 
     def il_exec(self):
-        if self.op_type == BooleanType.AND:
+        if self.op_type == BooleanOpType.AND:
             return f'ADD({self.ops[0].il_read()}, {self.ops[1].il_read()})'
-        elif self.op_type == BooleanType.OR:
+        elif self.op_type == BooleanOpType.OR:
             return f'OR({self.ops[0].il_read()}, {self.ops[1].il_read()})'
-        elif self.op_type == BooleanType.INV:
+        elif self.op_type == BooleanOpType.INV:
             return f'INV({self.ops[0].il_read()})'
         else:
             raise NotImplementedError(f'Boolean operation {self.op_type} not implemented.')

@@ -9,6 +9,7 @@ from Transformer.Effects.MemStore import MemStore
 from Transformer.HexagonExtension import HexagonExtension
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.BitOp import BitOperationType, BitOp
+from Transformer.Pures.BooleanOp import BooleanOpType, BooleanOp
 from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.MemLoad import MemAccessType, MemLoad
 from Transformer.Pures.Number import Number
@@ -163,13 +164,32 @@ class RZILTransformer(Transformer):
 
         return self.bit_operations(items, BitOperationType.BIT_XOR_OP)
 
+    def logical_and_expr(self, items):
+        self.ext.set_token_meta_data('logical_and_expr')
+        return self.boolean_expr(items)
+
+    def logical_or_expr(self, items):
+        self.ext.set_token_meta_data('logical_or_expr')
+        return self.boolean_expr(items)
+
+    def logical_not_expr(self, items):
+        self.ext.set_token_meta_data('logical_not_expr')
+        return self.boolean_expr(items)
+
+    def boolean_expr(self, items):
+        a = items[0]
+        t = BooleanOpType(items[1])
+        b = items[2] if len(items) == 3 else None
+        name = f'op_{t}_{self.get_op_id()}'
+        v = BooleanOp(name, a, b, t)
+        return v
+
     def shift_expr(self, items):
         self.ext.set_token_meta_data('shift_expr')
-        print(items)
         a = items[0]
         t = items[1]
         b = items[2]
-        return ShiftOp(f'shift_{a.get_isa_name()}_{b.get_isa_name()}', a, b, ShiftOpType(t))
+        return ShiftOp(f'op_{ShiftOpType(t)}_{self.get_op_id()}', a, b, ShiftOpType(t))
 
     def unary_expr(self, items):
         self.ext.set_token_meta_data('unary_expr')
