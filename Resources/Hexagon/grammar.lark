@@ -26,6 +26,7 @@ jump: "JUMP" "(" expr ")"
 ?postfix_expr: primary_expr
 	| postfix_expr "[" expr "]"
 	| postfix_expr "(" ")"
+	| postfix_expr "(" argument_expr_list ")"
 	| mem_load
 	| postfix_expr "." IDENTIFIER
 	| postfix_expr PTR_OP IDENTIFIER
