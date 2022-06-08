@@ -409,7 +409,7 @@ DEC_NUMBER: /0|[1-9][\d_]*/i
 NUM_SIGN: /[-+]/i
 
 SIGN_TYPE: /[su]/
-BIT_WIDTH: "8" | "16" | "32" | "64"
+BIT_WIDTH: "1" | "2" | "4" | "8" | "16" | "32" | "64"
 SIGN_TYPE_INT: "uint" | "int"
 
 AUTO: "auto" 
