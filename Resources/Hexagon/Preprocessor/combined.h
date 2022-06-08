@@ -1,3 +1,4 @@
+#define ALIAS_NEW_VAL(A) A##_NEW
 #define HEX_REG_UTIMERHI   HEX_REG_ALIAS_UTIMERHI
 #define HEX_REG_UTIMERLO   HEX_REG_ALIAS_UTIMERLO
 #define HEX_REG_PKTCNTHI   HEX_REG_ALIAS_PKTCNTHI
@@ -24,13 +25,13 @@
 #define HEXAGON_MACROS_H
 #define READ_REG(NUM)                    NUM
 #define READ_PREG(NUM)                   P##NUM
-#define WRITE_RREG(NUM, VAL)             log_reg_write(env, NUM, VAL, slot)
-#define WRITE_PREG(NUM, VAL)             log_pred_write(env, NUM, VAL)
+#define WRITE_RREG(NUM, VAL)             (NUM = VAL);
+#define WRITE_PREG(NUM, VAL)             WRITE_PRED(READ_PREG(NUM), VAL)
 #define PCALIGN 4
 #define PCALIGN_MASK (PCALIGN - 1)
 #define GET_FIELD(FIELD, REGIN)    fEXTRACTU_BITS(REGIN, reg_field_info[FIELD].width,                   reg_field_info[FIELD].offset)
 #define GET_USR_FIELD(FIELD)    fEXTRACTU_BITS(env->gpr[HEX_REG_USR], reg_field_info[FIELD].width,                   reg_field_info[FIELD].offset)
-#define SET_USR_FIELD(FIELD, VAL)    fINSERT_BITS(env->new_value[HEX_REG_USR], reg_field_info[FIELD].width,                 reg_field_info[FIELD].offset, (VAL))
+#define SET_USR_FIELD(FIELD, VAL)     fINSERT_BITS(ALIAS_NEW_VAL(HEX_REG_USR), reg_field_info[FIELD].width,                  reg_field_info[FIELD].offset, (VAL))
 #define MEM_LOAD1s(VA) (mem_load_s8(VA))
 #define MEM_LOAD1u(VA) (mem_load_u8(VA))
 #define MEM_LOAD2s(VA) (mem_load_s16(VA))
