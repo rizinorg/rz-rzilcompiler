@@ -15,6 +15,7 @@ from Transformer.Pures.Number import Number
 from Transformer.Pures.Pure import Pure, ValueType
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
+from Transformer.Pures.ShiftOp import ShiftOp, ShiftOpType
 from Transformer.helper_hexagon import get_value_type_by_c_number, get_num_base_by_token, get_c_type_by_value_type
 
 
@@ -137,6 +138,16 @@ class RZILTransformer(Transformer):
         v = ArithmeticOp(name, a, b, op_type)
         return v
 
+    def multiplicative_expr(self, items):
+        self.ext.set_token_meta_data('additive_expr')
+
+        a = items[0]
+        b = items[2]
+        op_type = ArithmeticType(items[1])
+        name = f'op_{op_type.name}_{self.get_op_id()}'
+        v = ArithmeticOp(name, a, b, op_type)
+        return v
+
     def and_expr(self, items):
         self.ext.set_token_meta_data('and_expr')
 
@@ -151,6 +162,14 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('exclusive_or_expr')
 
         return self.bit_operations(items, BitOperationType.BIT_XOR_OP)
+
+    def shift_expr(self, items):
+        self.ext.set_token_meta_data('shift_expr')
+        print(items)
+        a = items[0]
+        t = items[1]
+        b = items[2]
+        return ShiftOp(f'shift_{a.get_isa_name()}_{b.get_isa_name()}', a, b, ShiftOpType(t))
 
     def unary_expr(self, items):
         self.ext.set_token_meta_data('unary_expr')
