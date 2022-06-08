@@ -30,6 +30,8 @@
 
 #define READ_REG(NUM)                    NUM
 #define READ_PREG(NUM)                   P##NUM
+#define WRITE_RREG(NUM, VAL)             (NUM = VAL);
+#define WRITE_PREG(NUM, VAL)             WRITE_PRED(READ_PREG(NUM), VAL)
 
 #define HEX_REG_LR   HEX_REG_ALIAS_LR
 #define HEX_REG_R31   HEX_REG_ALIAS_R31

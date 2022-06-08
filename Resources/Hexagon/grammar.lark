@@ -9,6 +9,8 @@ mem_load: "mem_load_" SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")"
 
 mem_store: "mem_store_" SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")" ";"
 
+pred_write: "WRITE_PRED" "(" (reg_alias | explicit_reg) "," expr ")"
+
 jump: "JUMP" "(" expr ")"
 
 ?enumeration_constant: IDENTIFIER
@@ -305,6 +307,7 @@ ASSIGN_OP: "="
 	| iteration_stmt
 	| jump_stmt
 	| mem_store
+	| pred_write
 
 cancel_slot_expr: "cancel_slot"
 
