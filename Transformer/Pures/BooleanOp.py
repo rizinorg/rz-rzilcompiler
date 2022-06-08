@@ -4,35 +4,34 @@ from enum import StrEnum
 
 from Transformer.Pures.Pure import Pure
 from Transformer.Pures.PureExec import PureExec
+from Transformer.helper import exc_if_types_not_match
 
 
 class BooleanType(StrEnum):
-    ADD = '+'
-    SUB = '-'
-    MUL = '*'
-    DIV = '/'
-    MOD = '%'
+    AND = '&&'
+    OR = '||'
+    INV = '~'
 
 
 class ArithmeticOp(PureExec):
 
-    def __init__(self, name: str, a: Pure, b: Pure, a_type: ArithmeticType):
-        self.a = a
-        self.b = b
-        self.a_type = a_type
+    def __init__(self, name: str, a: Pure, b: Pure, op_type: BooleanType):
+        if a and b:
+            # No need to check for single operand operations.
+            exc_if_types_not_match(a.value_type, b.value_type)
+        self.op_type = op_type
 
-        super().__init__(name, max(self.avalue_type.bit_width, self.bvalue_type.bit_width))
+        if b:
+            super().__init__(name, [a, b], a.value_type)
+        else:
+            super().__init__(name, [a], a.value_type)
 
     def il_exec(self):
-        if self.a_type == ArithmeticType.ADD:
-            return f'ADD({self.a.il_read()}, {self.b.il_read()}'
-        elif self.a_type == ArithmeticType.SUB:
-            return f'SUB({self.a.il_read()}, {self.b.il_read()}'
-        elif self.a_type == ArithmeticType.MUL:
-            return f'MUL({self.a.il_read()}, {self.b.il_read()}'
-        elif self.a_type == ArithmeticType.DIV:
-            return f'DIV({self.a.il_read()}, {self.b.il_read()}'
-        elif self.a_type == ArithmeticType.MOD:
-            return f'MOD({self.a.il_read()}, {self.b.il_read()}'
+        if self.op_type == BooleanType.AND:
+            return f'ADD({self.ops[0].il_read()}, {self.ops[1].il_read()})'
+        elif self.op_type == BooleanType.OR:
+            return f'OR({self.ops[0].il_read()}, {self.ops[1].il_read()})'
+        elif self.op_type == BooleanType.INV:
+            return f'INV({self.ops[0].il_read()})'
         else:
-            raise NotImplementedError(f'')
+            raise NotImplementedError(f'Boolean operation {self.op_type} not implemented.')
