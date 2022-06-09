@@ -213,9 +213,9 @@ class RZILTransformer(Transformer):
 
     def mem_store(self, items):
         self.ext.set_token_meta_data('mem_store')
-        va = items[2][0]
-        data: Pure = items[2][1]
-        operation_value_type = ValueType(items[0] != 'u', int(items[1]))
+        va = items[3][0]
+        data: Pure = items[3][1]
+        operation_value_type = ValueType(items[1] != 'u', int(items[2]))
         if not data.value_type == operation_value_type:
             raise ValueError('Mismatch between memory access size and data size.\n'
                              f'data: size: {data.value_type.bit_width} signed: {data.value_type.signed}\n'
@@ -225,20 +225,19 @@ class RZILTransformer(Transformer):
     # SPECIFIC FOR: Hexagon
     def mem_load(self, items):
         self.ext.set_token_meta_data('mem_load')
-        vt = ValueType(items[0] != 'u', int(items[1]))
+        vt = ValueType(items[1] != 'u', int(items[2]))
         vt.c_type = get_c_type_by_value_type(vt)
         mem_acc_type = MemAccessType(vt, True)
-        va = items[2]
+        va = items[3]
         if not isinstance(va, Pure):
             va = ILOpsHolder().get_op_by_name(va.value)
 
         return MemLoad(f'ml_{va.get_name()}', va, mem_acc_type)
 
     def c_call(self, items):
-        if items[0] == 'JUMP':
-            return self.jump(items)
+        prefix = items[0]
         self.ext.set_token_meta_data('c_call')
-        val_type = self.ext.get_val_type_by_fcn(items[0])
+        val_type = self.ext.get_val_type_by_fcn(prefix)
         return CCall(f'c_call_{self.get_op_id()}', val_type, items)
 
     def argument_expr_list(self, items):
