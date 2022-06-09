@@ -4,7 +4,7 @@ from enum import StrEnum
 
 from Transformer.Pures.Pure import Pure
 from Transformer.Pures.PureExec import PureExec
-from Transformer.helper import check_and_convert_types
+from Transformer.helper import exc_if_types_not_match
 
 
 class BooleanOpType(StrEnum):
@@ -18,7 +18,7 @@ class BooleanOp(PureExec):
     def __init__(self, name: str, a: Pure, b: Pure, op_type: BooleanOpType):
         if a and b:
             # No need to check for single operand operations.
-            a.value_type, b.value_type = check_and_convert_types(a.value_type, b.value_type)
+            exc_if_types_not_match(a.value_type, b.value_type)
         self.op_type = op_type
 
         if b:

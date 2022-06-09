@@ -5,7 +5,7 @@ from enum import StrEnum
 from Transformer.Pures.Number import Number
 from Transformer.Pures.Pure import Pure
 from Transformer.Pures.PureExec import PureExec
-from Transformer.helper import exc_if_types_not_match
+from Transformer.helper import check_and_convert_types
 
 
 class BitOperationType(StrEnum):
@@ -19,9 +19,9 @@ class BitOperationType(StrEnum):
 
 class BitOp(PureExec):
     def __init__(self, name: str, a: Pure, b: Pure, op_type: BitOperationType):
-        # if (a and b) and not (op_type == BitOperationType.RSHIFT or op_type == BitOperationType.LSHIFT):
-        #     # No need to check for single operand operations.
-        #     exc_if_types_not_match(a.value_type, b.value_type)
+        if (a and b) and not (op_type == BitOperationType.RSHIFT or op_type == BitOperationType.LSHIFT):
+            # No need to check for single operand operations.
+            a.value_type, b.value_type = check_and_convert_types(a.value_type, b.value_type)
         self.op_type = op_type
 
         if b:
