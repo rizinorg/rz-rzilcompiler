@@ -4,6 +4,25 @@
 from Transformer.Pures.Pure import ValueType
 
 
+def get_smalles_val_type_for_number(num: int) -> int:
+    if num & 0xffffffffffffff00 == 0:
+        size = 8
+    elif num & 0xffffffffffff0000 == 0:
+        size = 16
+    elif num & 0xffffffff00000000 == 0:
+        size = 32
+    else:
+        size = 64
+    return size
+
+
+def exc_if_types_not_match(a: ValueType, b: ValueType):
+    if a != b:
+        raise ValueError("Value types don't match.\n"
+                         f"a size: {a.bit_width} signed: {a.signed}\n"
+                         f"b size: {b.bit_width} signed: {b.signed}")
+
+
 def check_and_convert_types(a: ValueType, b: ValueType) -> (ValueType, ValueType):
     """ Compares both value types against each other and converts them according to
         Chapter 6.3.1.8 of ISO/IEC 9899:201x (C11 Standard).
