@@ -112,3 +112,9 @@ class HexagonExtension(TransformerExtension):
             flags.append('HEX_IL_INSN_ATTR_NONE')
 
         return flags
+
+    def get_val_type_by_fcn(self, fcn_name: str):
+        if fcn_name == 'hex_next_pc':
+            return ValueType(False, 32)
+        else:
+            raise NotImplementedError(f'No value type for function {fcn_name} defined.')

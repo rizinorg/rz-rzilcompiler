@@ -10,6 +10,7 @@ from Transformer.HexagonExtension import HexagonExtension
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.BitOp import BitOperationType, BitOp
 from Transformer.Pures.BooleanOp import BooleanOpType, BooleanOp
+from Transformer.Pures.CCode import CCall
 from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.MemLoad import MemAccessType, MemLoad
 from Transformer.Pures.Number import Number
@@ -81,8 +82,8 @@ class RZILTransformer(Transformer):
 
     def jump(self, items):
         self.ext.set_token_meta_data('jump')
-        ta: Pure = items[0]
-        return Jump(f'jump_{ta.name}', ta)
+        ta: Pure = items[1]
+        return Jump(f'jump_{ta.get_name()}', ta)
 
     def number(self, items):
         # Numbers of the form -10ULL
@@ -233,6 +234,16 @@ class RZILTransformer(Transformer):
 
         return MemLoad(f'ml_{va.get_name()}', va, mem_acc_type)
 
+    def c_call(self, items):
+        if items[0] == 'JUMP':
+            return self.jump(items)
+        self.ext.set_token_meta_data('c_call')
+        val_type = self.ext.get_val_type_by_fcn(items[0])
+        return CCall(f'c_call_{self.get_op_id()}', val_type, items)
+
     def argument_expr_list(self, items):
         self.ext.set_token_meta_data('argument_expr_list')
         return list(items)
+
+    def identifier(self, items):
+        return items[0].value

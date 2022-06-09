@@ -66,3 +66,5 @@
 #define SET_USR_FIELD(FIELD, VAL) \
     fINSERT_BITS(ALIAS_NEW_VAL(HEX_REG_USR), reg_field_info[FIELD].width, \
                  reg_field_info[FIELD].offset, (VAL))
+
+#define fREAD_NPC() (hex_get_npc(pkt) & (0xfffffffe))

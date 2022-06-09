@@ -36,6 +36,9 @@ class ILOpsHolder(object):
             self.exec_ops[pure.get_name()] = pure
         elif pure.type == PureType.LET:
             self.read_ops[pure.get_name()] = pure
+        elif pure.type == PureType.C_CODE:
+            # C code used only inline
+            pass
         else:
             raise NotImplementedError(f'Can not add Pure of type {pure.type}')
 

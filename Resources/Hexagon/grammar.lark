@@ -11,8 +11,6 @@ mem_store: "mem_store_" SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")" ";"
 
 pred_write: "WRITE_PRED" "(" (reg_alias | explicit_reg) "," expr ")"
 
-jump: "JUMP" "(" expr ")"
-
 ?enumeration_constant: IDENTIFIER
 
 ?generic_selection: GENERIC "(" assignment_expr "," generic_assoc_list ")"
@@ -23,10 +21,12 @@ jump: "JUMP" "(" expr ")"
 ?generic_association: type_name ":" assignment_expr
 	| DEFAULT ":" assignment_expr
 
+?c_call: identifier "(" [argument_expr_list] ")"
+
 ?postfix_expr: primary_expr
 	| postfix_expr "[" expr "]"
 	| postfix_expr "(" ")"
-	| postfix_expr "(" argument_expr_list ")"
+	| c_call
 	| mem_load
 	| postfix_expr "." IDENTIFIER
 	| postfix_expr PTR_OP IDENTIFIER
@@ -38,10 +38,13 @@ jump: "JUMP" "(" expr ")"
 ?argument_expr_list: assignment_expr
 	| argument_expr_list "," assignment_expr
 
+?logical_not_expr: "!" cast_expr
+
 ?unary_expr: postfix_expr
 	| INC_OP unary_expr
 	| DEC_OP unary_expr
 	| UNARY_OPERATOR cast_expr
+	| logical_not_expr
 	| SIZEOF unary_expr
 	| SIZEOF "(" type_name ")"
 	| ALIGNOF "(" type_name ")"
@@ -51,7 +54,6 @@ UNARY_OPERATOR: "&"
 	| "+"
 	| "-"
 	| "~"
-	| "!"
 
 ?cast_expr: unary_expr
 	| "(" type_name ")" cast_expr
@@ -340,8 +342,7 @@ cancel_slot_expr: "cancel_slot"
 	| FOR "(" declaration expr_stmt ")" stmt
 	| FOR "(" declaration expr_stmt expr ")" stmt
 
-?jump_stmt: jump ";"
-    | GOTO IDENTIFIER ";"
+?jump_stmt: GOTO IDENTIFIER ";"
 	| CONTINUE ";"
 	| BREAK ";"
 	| RETURN ";"

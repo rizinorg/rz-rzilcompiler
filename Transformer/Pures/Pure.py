@@ -9,7 +9,8 @@ class PureType(Enum):
     GLOBAL = 0  # Registers
     LOCAL = 1  # Local variables
     LET = 2  # Let variables
-    EXEC = 3  # Read memory access
+    EXEC = 3  # Read memory access, math ops etc.
+    C_CODE = 4  # Anything Pure returned by a C code call
 
 
 class ValueType:
