@@ -19,6 +19,7 @@ from Transformer.Pures.Number import Number
 from Transformer.Pures.Pure import Pure, ValueType
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
+from Transformer.Pures.Ternary import Ternary
 from Transformer.helper_hexagon import get_value_type_by_c_number, get_num_base_by_token, get_c_type_by_value_type
 
 
@@ -136,6 +137,9 @@ class RZILTransformer(Transformer):
         name = f'op_{op_type.name}_{self.get_op_id()}'
         v = Assignment(name, op_type, dest, src)
         return v
+
+    def conditional_expr(self, items):
+        return Ternary(f'cond_{self.get_op_id()}', items[0], items[1], items[2])
 
     def assignment_expr(self, items):
         self.ext.set_token_meta_data('assignment_expr')
