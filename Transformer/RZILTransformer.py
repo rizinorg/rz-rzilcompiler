@@ -246,4 +246,10 @@ class RZILTransformer(Transformer):
         return list(items)
 
     def identifier(self, items):
-        return items[0].value
+        # Hexagon shortcode can initialize certain variables without type.
+        # Those are converted to a local var here.
+        identifier = items[0].value
+        if identifier in self.ext.special_identifiers:
+            return self.ext.special_identifier_to_local_var(identifier)
+        # Return string
+        return identifier

@@ -3,6 +3,7 @@
 
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.Immediate import Immediate
+from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.Pure import ValueType
 from Transformer.Pures.Register import RegisterAccessType, Register
 from Transformer.TransformerExtension import TransformerExtension
@@ -17,6 +18,9 @@ class HexagonExtension(TransformerExtension):
     reads_mem = False
     is_conditional = False
     branches = False
+
+    def __init__(self):
+        self.special_identifiers = ['EA']
 
     def set_uses_new(self):
         if not self.uses_new:
@@ -118,3 +122,7 @@ class HexagonExtension(TransformerExtension):
             return ValueType(False, 32)
         else:
             raise NotImplementedError(f'No value type for function {fcn_name} defined.')
+
+    def special_identifier_to_local_var(self, identifier):
+        if identifier == 'EA':
+            return LocalVar('EA', ValueType(False, 32))
