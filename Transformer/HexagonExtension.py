@@ -101,7 +101,6 @@ class HexagonExtension(TransformerExtension):
         items: Tree = items[0]
         rule = items.data
         tokens = items.children
-        print(tokens)
         if rule == 'c_size_type':
             return ValueType(tokens[1] == 's', int(tokens[0]))
         elif rule == 'c_int_type':

@@ -11,6 +11,7 @@ from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.BitOp import BitOperationType, BitOp
 from Transformer.Pures.BooleanOp import BooleanOpType, BooleanOp
 from Transformer.Pures.CCode import CCall
+from Transformer.Pures.Cast import Cast
 from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.MemLoad import MemAccessType, MemLoad
 from Transformer.Pures.Number import Number
@@ -91,6 +92,9 @@ class RZILTransformer(Transformer):
 
     def cast_expr(self, items):
         self.ext.set_token_meta_data('cast_expr')
+        val_type = items[0]
+        data = items[1]
+        return Cast(f'cast_{val_type}_{self.get_op_id()}', val_type, data)
 
     def number(self, items):
         # Numbers of the form -10ULL
