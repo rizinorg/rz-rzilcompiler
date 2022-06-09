@@ -12,6 +12,7 @@ from Transformer.Pures.BitOp import BitOperationType, BitOp
 from Transformer.Pures.BooleanOp import BooleanOpType, BooleanOp
 from Transformer.Pures.CCode import CCall
 from Transformer.Pures.Cast import Cast
+from Transformer.Pures.CompareOp import CompareOp, CompareOpType
 from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.MemLoad import MemAccessType, MemLoad
 from Transformer.Pures.Number import Number
@@ -59,6 +60,12 @@ class RZILTransformer(Transformer):
         for op in holder.write_ops.values():
             res += op.il_init_var() + '\n'
         return res
+
+    def relational_expr(self, items):
+        return self.compare_op(items)
+
+    def equality_expr_expr(self, items):
+        return self.compare_op(items)
 
     def reg_alias(self, items):
         self.ext.set_token_meta_data('reg')
@@ -262,3 +269,7 @@ class RZILTransformer(Transformer):
             return self.ext.special_identifier_to_local_var(identifier)
         # Return string
         return identifier
+
+    def compare_op(self, items):
+        op_type = CompareOpType(items[1])
+        return CompareOp(f'op_{op_type.name}', items[0], items[2], op_type)
