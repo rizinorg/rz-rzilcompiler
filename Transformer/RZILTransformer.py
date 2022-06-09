@@ -226,7 +226,6 @@ class RZILTransformer(Transformer):
     def mem_load(self, items):
         self.ext.set_token_meta_data('mem_load')
         vt = ValueType(items[1] != 'u', int(items[2]))
-        vt.c_type = get_c_type_by_value_type(vt)
         mem_acc_type = MemAccessType(vt, True)
         va = items[3]
         if not isinstance(va, Pure):

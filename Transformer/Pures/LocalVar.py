@@ -19,7 +19,7 @@ class LocalVar(Pure):
 
     def il_init_var(self):
         # Local vars are not initialized like global vars. They are initialized when an assignment to them happens.
-        return f'// Declare: {self.value_type.c_type} {self.get_isa_name()};'
+        return f'// Declare: {self.value_type} {self.get_isa_name()};'
 
     def il_read(self):
         """ Returns the code to read the local variable for the VM. """
