@@ -7,8 +7,8 @@ from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.Pure import ValueType
 from Transformer.Pures.Register import RegisterAccessType, Register
 from Transformer.TransformerExtension import TransformerExtension
-from Transformer.helper_hexagon import get_value_type_from_reg_type, get_value_type_by_isa_imm, get_value_type_by_c_type
-from lark import Token
+from Transformer.helper_hexagon import get_value_type_from_reg_type, get_value_type_by_isa_imm
+from lark import Token, Tree
 
 
 class HexagonExtension(TransformerExtension):
@@ -97,8 +97,17 @@ class HexagonExtension(TransformerExtension):
         imm.set_isa_name(name)
         return imm
 
-    def get_value_type_by_resource_type(self, t):
-        return get_value_type_by_c_type(t)
+    def get_value_type_by_resource_type(self, items):
+        items: Tree = items[0]
+        rule = items.data
+        tokens = items.children
+        print(tokens)
+        if rule == 'c_size_type':
+            return ValueType(tokens[1] == 's', int(tokens[0]))
+        elif rule == 'c_int_type':
+            return ValueType(tokens[0] == 'int', int(tokens[1]))
+        else:
+            raise NotImplementedError(f'Data type {rule} is not handled.')
 
     def get_meta(self):
         flags = []

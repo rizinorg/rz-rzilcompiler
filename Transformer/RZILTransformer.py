@@ -85,6 +85,13 @@ class RZILTransformer(Transformer):
         ta: Pure = items[1]
         return Jump(f'jump_{ta.get_name()}', ta)
 
+    def data_type(self, items):
+        self.ext.set_token_meta_data('data_type')
+        return self.ext.get_value_type_by_resource_type(items)
+
+    def cast_expr(self, items):
+        self.ext.set_token_meta_data('cast_expr')
+
     def number(self, items):
         # Numbers of the form -10ULL
         self.ext.set_token_meta_data('number')

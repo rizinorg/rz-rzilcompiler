@@ -28,15 +28,6 @@ def get_value_type_from_reg_type(token_list: list) -> ValueType:
     return ValueType(False, size)
 
 
-def get_value_type_by_c_type(c_type: str) -> ValueType:
-    """ Returns the value type for the given C integer type. """
-
-    if c_type == 'short':
-        return ValueType(True, 16)
-    else:
-        raise NotImplementedError(f'Type {c_type} not implemented.')
-
-
 def get_c_type_by_value_type(val_type: ValueType) -> str:
     """ Returns the value type for the given C integer type. """
 

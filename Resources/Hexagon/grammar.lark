@@ -170,7 +170,7 @@ ASSIGN_OP: "="
 	| atomic_type_specifier
 	| struct_or_union_specifier
 	| enum_specifier
-	| _c_type
+	| data_type
 
 ?struct_or_union_specifier: struct_or_union "{" struct_declaration_list "}"
 	| struct_or_union IDENTIFIER "{" struct_declaration_list "}"
@@ -394,7 +394,7 @@ reg_alias: "HEX_REG_ALIAS_" /[A-Z0-9]+/
 c_size_type: "size" BIT_WIDTH SIGN_TYPE "_t"
 c_int_type: SIGN_TYPE_INT BIT_WIDTH "_t"
 
-_c_type: c_size_type
+data_type: c_size_type
     | c_int_type
 
 imm: IMMEDIATE
