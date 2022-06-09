@@ -68,25 +68,22 @@ class HexagonExtension(TransformerExtension):
         holder = ILOpsHolder()
         items: [Token]
         name = ''.join(items)
-        reg_type = items[1].type  # src, dest, both
+        reg_type = RegisterAccessType(items[1].type)  # src, dest, both
         v_type = get_value_type_from_reg_type(items)
 
-        if reg_type == RegisterAccessType.R or reg_type == RegisterAccessType.PR:
-            # Should be read before use. Add to read list.
+        if reg_type in [RegisterAccessType.R, RegisterAccessType.PR]:
             if name in holder.read_ops:
                 return holder.read_ops[name]
-            v = Register(name, RegisterAccessType.R, v_type, is_new)
-        elif reg_type == RegisterAccessType.W or reg_type == RegisterAccessType.PW:
-            # Dest regs are passed as string to SETG(). Need no Pure variable.
+        elif reg_type in [RegisterAccessType.W, RegisterAccessType.PW]:
             if name in holder.read_ops:
                 return holder.read_ops[name]
-            v = Register(name, RegisterAccessType.W, v_type, is_new)
-        elif reg_type == RegisterAccessType.RW or reg_type == RegisterAccessType.PRW:
+        elif reg_type in [RegisterAccessType.RW, RegisterAccessType.PRW]:
             if name in holder.read_ops:
                 return holder.read_ops[name]
-            v = Register(name, RegisterAccessType.RW, v_type, is_new)
         else:
             raise NotImplementedError(f'Reg type "{reg_type.name}" not implemented.')
+
+        v = Register(name, reg_type, v_type, is_new)
         v.set_isa_name(name)
         return v
 

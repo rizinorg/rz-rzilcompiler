@@ -20,6 +20,7 @@ from Transformer.Pures.Pure import Pure, ValueType
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Pures.Ternary import Ternary
+from Transformer.helper import exc_if_types_not_match
 from Transformer.helper_hexagon import get_value_type_by_c_number, get_num_base_by_token, get_c_type_by_value_type
 
 
@@ -238,10 +239,7 @@ class RZILTransformer(Transformer):
         va = items[3][0]
         data: Pure = items[3][1]
         operation_value_type = ValueType(items[1] != 'u', int(items[2]))
-        if not data.value_type == operation_value_type:
-            raise ValueError('Mismatch between memory access size and data size.\n'
-                             f'data: size: {data.value_type.bit_width} signed: {data.value_type.signed}\n'
-                             f'mem op: size: {operation_value_type.bit_width} signed: {operation_value_type.signed}')
+        exc_if_types_not_match(operation_value_type, data.value_type)
         return MemStore(f'ms_{data.get_name()}', va, data)
 
     # SPECIFIC FOR: Hexagon
