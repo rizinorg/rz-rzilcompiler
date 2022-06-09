@@ -6,6 +6,7 @@ from lark import Transformer
 from ArchEnum import ArchEnum
 from Transformer.Effects.Jump import Jump
 from Transformer.Effects.MemStore import MemStore
+from Transformer.Effects.NOP import NOP
 from Transformer.HexagonExtension import HexagonExtension
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.BitOp import BitOperationType, BitOp
@@ -275,3 +276,6 @@ class RZILTransformer(Transformer):
     def compare_op(self, items):
         op_type = CompareOpType(items[1])
         return CompareOp(f'op_{op_type.name}', items[0], items[2], op_type)
+
+    def cancel_slot_expr(self, items):
+        return NOP(f'nop_{self.get_op_id()}')
