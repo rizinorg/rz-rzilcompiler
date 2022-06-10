@@ -121,7 +121,7 @@ class RZILTransformer(Transformer):
 
         if len(items) != 2:
             raise NotImplementedError(f'Declaration without exactly two tokens are not supported.')
-        t = self.ext.get_value_type_by_resource_type(items[0])
+        t: ValueType = items[0]
         if isinstance(items[1], Assignment):
             assg: Assignment = items[1]
             assg.dest.set_value_type(t)
@@ -269,6 +269,9 @@ class RZILTransformer(Transformer):
         # Hexagon shortcode can initialize certain variables without type.
         # Those are converted to a local var here.
         identifier = items[0].value
+        holder = ILOpsHolder()
+        if identifier in holder.read_ops:
+            return holder.read_ops[identifier]
         if identifier in self.ext.special_identifiers:
             return self.ext.special_identifier_to_local_var(identifier)
         # Return string
