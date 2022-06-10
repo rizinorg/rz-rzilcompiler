@@ -126,8 +126,14 @@ class HexagonExtension(TransformerExtension):
         if fcn_name == 'hex_next_pc':
             return ValueType(False, 32)
         elif fcn_name == 'clo32':
-            # Count leading ones in 32 bit value (QEMU functions).
+            # QEMU function -- uint32_t clo32(uint32_t val)
+            # Count leading ones in 32 bit value.
             return ValueType(False, 32)
+        elif fcn_name == 'deposit64':
+            # QEMU function
+            # uint64_t deposit64(uint64_t value, int start, int length, uint64_t fieldval)
+            # Sets the bits from 'start' to 'start+length' in 'value' with 'fieldvar'
+            return ValueType(False, 64)
         else:
             raise NotImplementedError(f'No value type for function {fcn_name} defined.')
 
