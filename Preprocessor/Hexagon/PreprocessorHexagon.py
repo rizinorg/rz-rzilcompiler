@@ -19,6 +19,7 @@ class PreprocessorHexagon:
     def run_preprocess_steps(self):
         self.preprocess_macros()
         self.preprocess_shortcode()
+        self.postprocess_shortcode()
 
     def preprocess_macros(self):
         """ Remove includes. Decide between QEMU_GENERATE or not. Patch certain macros with ou version."""
@@ -157,6 +158,26 @@ class PreprocessorHexagon:
         if not match:
             raise ValueError(f'Could not split shrtcode line: {line}')
         return match.group(1), match.group(2)
+
+    @staticmethod
+    def replace_do_while_0(code: str) -> str:
+        m = re.search(r'(.*)do\s*\{(.*)}\s*while\s*\(0\)(.*)', code)
+        if m:
+            return m.group(1) + m.group(2) + m.group(3)
+        return code
+
+    def postprocess_shortcode(self):
+        self.remove_onetime_do_whiles()
+
+    def remove_onetime_do_whiles(self):
+        """ Rmoves the `do {...} while(0)` pattern from the shortcode. """
+        path = self.out_dir + '/Preprocessor/shortcode_resolved.h'
+        res = []
+        with open(path) as f:
+            for line in f.readlines():
+                res.append(self.replace_do_while_0(line))
+        with open(path, 'w') as f:
+            f.writelines(res)
 
 
 if __name__ == '__main__':
