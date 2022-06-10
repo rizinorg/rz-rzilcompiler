@@ -13,6 +13,7 @@ from tqdm import tqdm
 
 from ArchEnum import ArchEnum
 from Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
+from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.RZILTransformer import RZILTransformer
 
 
@@ -152,7 +153,7 @@ class Compiler:
             self.compiled_insns[insn_name]['rzil'].append(self.transformer.transform(pt))
             self.compiled_insns[insn_name]['meta'].append(self.transformer.ext.get_meta())
             self.compiled_insns[insn_name]['parse_trees'].append(pt.pretty())
-
+        ILOpsHolder().clear()
         return self.compiled_insns[insn_name]
 
     def get_insn_rzil(self, insn_name: str) -> [str]:

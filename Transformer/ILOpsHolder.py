@@ -18,16 +18,10 @@ def singleton(cls, *args, **kw):
 
 @singleton
 class ILOpsHolder(object):
-    read_ops: dict
-    exec_ops: dict
-    write_ops: dict
-    let_ops: dict  # immutable LET vars.
-
-    def __init__(self):
-        self.read_ops = dict()
-        self.exec_ops = dict()
-        self.write_ops = dict()
-        self.let_ops = dict()
+    read_ops = dict()
+    exec_ops = dict()
+    write_ops = dict()
+    let_ops = dict()  # immutable LET vars.
 
     def add_pure(self, pure: Pure):
         if pure.type == PureType.GLOBAL or pure.type == PureType.LOCAL:
@@ -54,3 +48,10 @@ class ILOpsHolder(object):
             return self.write_ops[name]
         else:
             raise ValueError(f'Did not find op: "{name}"!')
+
+    def clear(self):
+        """ Removes all previously added ops. """
+        self.read_ops.clear()
+        self.exec_ops.clear()
+        self.write_ops.clear()
+        self.let_ops.clear()

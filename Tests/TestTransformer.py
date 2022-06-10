@@ -1,5 +1,10 @@
+#!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
+
+import traceback
+from Transformer.ILOpsHolder import ILOpsHolder
+
 from lark.exceptions import VisitError
 
 from ArchEnum import ArchEnum
@@ -20,6 +25,7 @@ class TestTransformer:
                 tree = parser.parse(beh)
                 print(tree.pretty())
                 print(RZILTransformer(ArchEnum.HEXAGON).transform(tree))
+                ILOpsHolder().clear()
             except VisitError as e:
                 print(e)
                 raise e.orig_exc
