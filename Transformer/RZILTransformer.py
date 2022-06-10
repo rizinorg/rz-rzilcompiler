@@ -53,7 +53,7 @@ class RZILTransformer(Transformer):
         holder = ILOpsHolder()
         res = ''
         # We are at the top. Generate code.
-        res += "// READ\n"
+        res += "\n// READ\n"
         for op in holder.read_ops.values():
             res += op.il_init_var() + '\n'
         res += '\n// EXEC\n'

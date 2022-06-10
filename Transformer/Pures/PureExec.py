@@ -32,7 +32,7 @@ class PureExec(Pure):
         init = f'RzIlOpPure *{self.get_name()} = '
         for let in self.lets:
             init += f'LET("{let.get_name()}", {let.get_name()}, '
-        init += self.il_exec() + ')' * len(self.lets) + ');'
+        init += self.il_exec() + ')' * len(self.lets) + ';'
         return init
 
     def il_read(self):
