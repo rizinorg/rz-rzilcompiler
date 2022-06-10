@@ -176,17 +176,17 @@ class RZILTransformer(Transformer):
     def and_expr(self, items):
         self.ext.set_token_meta_data('and_expr')
 
-        return self.bit_operations(items, BitOperationType.AND_OP)
+        return self.bit_operations(items, BitOperationType.AND)
 
     def inclusive_or_expr(self, items):
         self.ext.set_token_meta_data('inclusive_or_expr')
 
-        return self.bit_operations(items, BitOperationType.OR_OP)
+        return self.bit_operations(items, BitOperationType.OR)
 
     def exclusive_or_expr(self, items):
         self.ext.set_token_meta_data('exclusive_or_expr')
 
-        return self.bit_operations(items, BitOperationType.XOR_OP)
+        return self.bit_operations(items, BitOperationType.XOR)
 
     def logical_and_expr(self, items):
         self.ext.set_token_meta_data('logical_and_expr')
@@ -216,7 +216,7 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('unary_expr')
 
         if items[0] == '~':
-            return self.bit_operations(items, BitOperationType.NOT_OP)
+            return self.bit_operations(items, BitOperationType.NOT)
         else:
             raise NotImplementedError(f'Unary expression {items[0]} not handler.')
 

@@ -9,10 +9,10 @@ from Transformer.helper import check_and_convert_types
 
 
 class BitOperationType(StrEnum):
-    OR_OP = "|"
-    AND_OP = "&"
-    XOR_OP = "^"
-    NOT_OP = "~"
+    OR = "|"
+    AND = "&"
+    XOR = "^"
+    NOT = "~"
     RSHIFT = '>>'
     LSHIFT = '<<'
 
@@ -38,13 +38,13 @@ class BitOp(PureExec):
             super().__init__(name, [a], a.value_type)
 
     def il_exec(self):
-        if self.op_type == BitOperationType.AND_OP:
+        if self.op_type == BitOperationType.AND:
             return f"LOGAND({self.ops[0].il_read()}, {self.ops[1].il_read()}"
-        elif self.op_type == BitOperationType.OR_OP:
+        elif self.op_type == BitOperationType.OR:
             return f"LOGOR({self.ops[0].il_read()}, {self.ops[1].il_read()}"
-        elif self.op_type == BitOperationType.XOR_OP:
+        elif self.op_type == BitOperationType.XOR:
             return f"LOGXOR({self.ops[0].il_read()}, {self.ops[1].il_read()}"
-        elif self.op_type == BitOperationType.NOT_OP:
+        elif self.op_type == BitOperationType.NOT:
             return f"LOGNOT({self.ops[0].il_read()}"
         elif self.op_type == BitOperationType.RSHIFT:
             return f'SHIFTR0({self.ops[0].il_read()}, {self.ops[1].il_read()}'
