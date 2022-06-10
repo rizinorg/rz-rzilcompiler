@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from Transformer.Effects.Effect import Effect, EffectType
+from Transformer.Pures.BitOp import BitOp, BitOperationType
 from Transformer.Pures.Pure import Pure, PureType
 from enum import StrEnum
 
@@ -60,6 +61,21 @@ class Assignment(Effect):
         elif self.assign_type == AssignmentType.ASSIGN_DIV:
             self.src = ArithmeticOp(f'div{self.src.get_isa_name()}{self.dest.get_isa_name()}',
                                     self.src, self.dest, ArithmeticType.DIV)
+        elif self.assign_type == AssignmentType.ASSIGN_RIGHT:
+            self.src = BitOp(f'shiftr{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+                                    self.src, self.dest, BitOperationType.RSHIFT)
+        elif self.assign_type == AssignmentType.ASSIGN_LEFT:
+            self.src = BitOp(f'shiftl{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+                             self.src, self.dest, BitOperationType.LSHIFT)
+        elif self.assign_type == AssignmentType.ASSIGN_AND:
+            self.src = BitOp(f'and{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+                             self.src, self.dest, BitOperationType.AND)
+        elif self.assign_type == AssignmentType.ASSIGN_OR:
+            self.src = BitOp(f'or{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+                             self.src, self.dest, BitOperationType.OR)
+        elif self.assign_type == AssignmentType.ASSIGN_XOR:
+            self.src = BitOp(f'xor{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+                             self.src, self.dest, BitOperationType.XOR)
         else:
             raise NotImplementedError(f'Assign type {self.assign_type} not handled.')
 
