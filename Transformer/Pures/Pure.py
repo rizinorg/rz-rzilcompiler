@@ -29,7 +29,7 @@ class ValueType:
         return self.bit_width == other.bit_width
 
     def __str__(self):
-        return f'{"st" if self.signed else "ut"}{self.bit_width}_t'
+        return f'{"st" if self.signed else "ut"}{self.bit_width}'
 
 
 class Pure:
