@@ -62,6 +62,7 @@ class RZILTransformer(Transformer):
         res += "\n// WRITE\n"
         for op in holder.write_ops.values():
             res += op.il_init_var() + '\n'
+        res += f'\nreturn SEQN({", ".join([op.get_name() for op in holder.write_ops.values()])});'
         return res
 
     def relational_expr(self, items):
