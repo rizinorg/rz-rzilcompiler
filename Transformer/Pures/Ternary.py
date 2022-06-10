@@ -13,8 +13,4 @@ class Ternary(PureExec):
         super().__init__(name, [cond, then_p, else_p], then_p.value_type)
 
     def il_exec(self):
-        if self.value_type.signed:
-            fill_bit = f'MSB({self.ops[0].il_read()})'
-        else:
-            fill_bit = 'IL_FALSE'
-        return f'CAST({self.value_type.bit_width}, {fill_bit}, {self.ops[0].il_read()})'
+        return f'ITE({self.ops[0].il_read()}, {self.ops[1].il_read()}, {self.ops[2].il_read()})'
