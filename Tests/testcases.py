@@ -19,7 +19,7 @@ transform_test = [
 '{if((!((PuN) & 1))){RdV=RsV+RtV;} else {cancel_slot;}}',
 '{;         EA = RsV + siV;     RddV = (size8u_t)(mem_load_u64(EA)); }',
 '{        EA = (HEX_REG_ALIAS_SP) + siV;     mem_store_u64(EA, RttV);}',
-'{         EA = (HEX_REG_ALIAS_SP) + -8;     mem_store_u64(EA, (((((uint64_t)((HEX_REG_ALIAS_LR))) << 32) | ((uint32_t)((HEX_REG_FP)))) ^ (((uint64_t)(HEX_REG_ALIAS_FRAMEKEY)) << 32))); (HEX_REG_FP = EA);; g_assert_not_reached();; (HEX_REG_ALIAS_SP = EA-uiV);; }',
+'{         EA = (HEX_REG_ALIAS_SP) + -8;     mem_store_u64(EA, (((((uint64_t)((HEX_REG_ALIAS_LR))) << 32) | ((uint32_t)((HEX_REG_ALIAS_FP)))) ^ (((uint64_t)(HEX_REG_ALIAS_FRAMEKEY)) << 32))); (HEX_REG_ALIAS_FP = EA);; g_assert_not_reached();; (HEX_REG_ALIAS_SP = EA-uiV);; }',
 '{;         EA = RsV + siV;     mem_store_u32(EA, RtV); }',
 '{ size8u_t tmp;  EA = (RsV);  tmp = (size8u_t)(mem_load_u64(EA)); RddV = ((tmp) ^ (((uint64_t)(HEX_REG_ALIAS_FRAMEKEY)) << 32)); (HEX_REG_ALIAS_SP = EA+8);; JUMP(((int64_t)((int32_t)((RddV >> ((1) * 32)) & 0x0ffffffffLL))));}',
 '{ ; riV = (riV & ~(4 - 1));         (HEX_REG_ALIAS_LC0 = RsV);;        (HEX_REG_ALIAS_SA0 = (HEX_REG_ALIAS_PC)+riV);;     HEX_REG_USR_NEW = ((reg_field_info[USR_LPCFG].width) ? deposit64(HEX_REG_USR_NEW, (reg_field_info[USR_LPCFG].offset), (reg_field_info[USR_LPCFG].width), (((0)))) : HEX_REG_USR_NEW); }',
