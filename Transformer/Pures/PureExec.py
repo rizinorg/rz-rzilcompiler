@@ -27,7 +27,7 @@ class PureExec(Pure):
 
     def il_init_var(self):
         if len(self.lets) == 0:
-            init = f'RzIlOpPure *{self.get_name()} = {self.il_exec()});'
+            init = f'RzIlOpPure *{self.get_name()} = {self.il_exec()};'
             return init
         init = f'RzIlOpPure *{self.get_name()} = '
         for let in self.lets:
