@@ -4,6 +4,7 @@
 from lark import Transformer, Token
 
 from ArchEnum import ArchEnum
+from Transformer.Effects.ForLoop import ForLoop
 from Transformer.Effects.Jump import Jump
 from Transformer.Effects.MemStore import MemStore
 from Transformer.Effects.NOP import NOP
@@ -290,6 +291,19 @@ class RZILTransformer(Transformer):
     def compare_op(self, items):
         op_type = CompareOpType(items[1])
         return CompareOp(f'op_{op_type.name}', items[0], items[2], op_type)
+
+    def for_loop(self, items):
+        if len(items) != 5:
+            raise NotImplementedError(f'For loops with {len(items)} elements is not supported yet.')
+        holder = ILOpsHolder()
+        return ForLoop(f'for_{self.get_op_id()}', items[1], items[2], items[3], holder.consume_compound())
+
+    def iteration_stmt(self, items):
+        self.ext.set_token_meta_data('iteration_stmt')
+        if items[0] == 'for':
+            return self.for_loop(items)
+        else:
+            raise NotImplementedError(f'{items[0]} loop not supported.')
 
     def block_item_list(self, items):
         self.ext.set_token_meta_data('block_item_list')

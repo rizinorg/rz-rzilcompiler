@@ -12,6 +12,7 @@ class EffectType(Enum):
     STORE = 3
     JUMP = 4
     NOP = 5
+    LOOP = 6
 
 
 class Effect:

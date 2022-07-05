@@ -342,7 +342,7 @@ block_item_list: block_item
 	| IF "(" expr ")" stmt
 	| SWITCH "(" expr ")" stmt
 
-?iteration_stmt: WHILE "(" expr ")" stmt
+iteration_stmt: WHILE "(" expr ")" stmt
 	| DO stmt WHILE "(" expr ")" ";"
 	| FOR "(" expr_stmt expr_stmt ")" stmt
 	| FOR "(" expr_stmt expr_stmt expr ")" stmt
