@@ -162,15 +162,19 @@ class PreprocessorHexagon:
     @staticmethod
     def replace_do_while_0(code: str) -> str:
         m = re.search(r'(.*)do\s*\{(.*)}\s*while\s*\(0\)(.*)', code)
-        if m:
-            return m.group(1) + m.group(2) + m.group(3)
-        return code
+        if not m:
+            return code
+        tmp = ''
+        while m:
+            tmp = m.group(1) + m.group(2) + m.group(3)
+            m = re.search(r'(.*)do\s*\{(.*)}\s*while\s*\(0\)(.*)', tmp)
+        return tmp + '\n'
 
     def postprocess_shortcode(self):
         self.remove_onetime_do_whiles()
 
     def remove_onetime_do_whiles(self):
-        """ Rmoves the `do {...} while(0)` pattern from the shortcode. """
+        """ Removes the `do {...} while(0)` pattern from the shortcode. """
         path = self.out_dir + '/Preprocessor/shortcode_resolved.h'
         res = []
         with open(path) as f:
