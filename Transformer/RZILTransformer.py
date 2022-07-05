@@ -256,14 +256,10 @@ class RZILTransformer(Transformer):
         return MemLoad(f'ml_{va.get_name()}', va, mem_acc_type)
 
     def c_call(self, items):
-        prefix = items[0]
         self.ext.set_token_meta_data('c_call')
+        prefix = items[0]
         val_type = self.ext.get_val_type_by_fcn(prefix)
         return CCall(f'c_call_{self.get_op_id()}', val_type, items)
-
-    def argument_expr_list(self, items):
-        self.ext.set_token_meta_data('argument_expr_list')
-        return list(items)
 
     def identifier(self, items):
         # Hexagon shortcode can initialize certain variables without type.

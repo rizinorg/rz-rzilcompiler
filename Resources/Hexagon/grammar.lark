@@ -12,9 +12,9 @@ JUMP.10: "JUMP"
 
 jump: JUMP "(" expr ")"
 
-mem_load: MEM_LOAD SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")"
+mem_load: MEM_LOAD SIGN_TYPE BIT_WIDTH "(" _argument_expr_list ")"
 
-mem_store: MEM_STORE SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")" ";"
+mem_store: MEM_STORE SIGN_TYPE BIT_WIDTH "(" _argument_expr_list ")" ";"
 
 pred_write: WRITE_PRED "(" (reg_alias | reg) "," expr ")"
 
@@ -28,7 +28,7 @@ pred_write: WRITE_PRED "(" (reg_alias | reg) "," expr ")"
 ?generic_association: type_name ":" assignment_expr
 	| DEFAULT ":" assignment_expr
 
-?c_call: identifier "(" [argument_expr_list] ")"
+?c_call: identifier "(" [_argument_expr_list] ")"
 
 ?postfix_expr: primary_expr
 	| postfix_expr "[" expr "]"
@@ -42,8 +42,8 @@ pred_write: WRITE_PRED "(" (reg_alias | reg) "," expr ")"
 	| "(" type_name ")" "{" initializer_list "}"
 	| "(" type_name ")" "{" initializer_list "," "}"
 
-?argument_expr_list: assignment_expr
-	| argument_expr_list "," assignment_expr
+_argument_expr_list: assignment_expr
+	| _argument_expr_list "," assignment_expr
 
 ?logical_not_expr: "!" cast_expr
 
