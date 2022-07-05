@@ -12,7 +12,7 @@ def get_value_type_from_reg_type(token_list: list) -> ValueType:
     reg_type: Token = token_list[0].value  # R, P, V, Q etc.
     reg_access = token_list[1].type  # SRC/DEST/DEST_PAIR etc.
 
-    if reg_type in ['R', 'C']:
+    if reg_type in ['R', 'C', 'M']:
         size = 32
     elif reg_type == 'P':
         size = 8
