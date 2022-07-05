@@ -23,6 +23,11 @@ class ILOpsHolder(object):
     write_ops = dict()
     let_ops = dict()  # immutable LET vars.
 
+    # This list holds all statements/effects inside a compound statement { stmt0, stmt1 }
+    # The compound can be consumed (e.g. by a for/while loop, function or fbody).
+    # Consumed means that the list is emptied.
+    compound = list()
+
     def add_pure(self, pure: Pure):
         if pure.type == PureType.GLOBAL or pure.type == PureType.LOCAL:
             self.read_ops[pure.get_name()] = pure
@@ -38,6 +43,15 @@ class ILOpsHolder(object):
 
     def add_effect(self, effect: Effect):
         self.write_ops[effect.get_name()] = effect
+
+    def add_to_compound(self, effect: Effect):
+        """ Adds an effect to the compound list. """
+        self.compound.append(effect)
+
+    def consume_compound(self) -> list[Effect]:
+        ret = self.compound.copy()
+        self.compound = list()
+        return ret
 
     def get_op_by_name(self, name: str):
         if name in self.read_ops:

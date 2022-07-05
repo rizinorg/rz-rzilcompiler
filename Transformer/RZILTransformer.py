@@ -62,7 +62,7 @@ class RZILTransformer(Transformer):
         res += "\n// WRITE\n"
         for op in holder.write_ops.values():
             res += op.il_init_var() + '\n'
-        res += f'\nreturn SEQN({", ".join([op.get_name() for op in holder.write_ops.values()])});'
+        res += f'\nreturn SEQN({", ".join([op.get_name() for op in holder.consume_compound()])});'
         return res
 
     def relational_expr(self, items):
@@ -290,6 +290,12 @@ class RZILTransformer(Transformer):
     def compare_op(self, items):
         op_type = CompareOpType(items[1])
         return CompareOp(f'op_{op_type.name}', items[0], items[2], op_type)
+
+    def block_item_list(self, items):
+        self.ext.set_token_meta_data('block_item_list')
+        holder = ILOpsHolder()
+        holder.add_to_compound(items[0])
+        return items[0]
 
     def cancel_slot_expr(self, items):
         return NOP(f'nop_{self.get_op_id()}')
