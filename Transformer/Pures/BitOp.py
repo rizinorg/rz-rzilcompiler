@@ -13,6 +13,7 @@ class BitOperationType(StrEnum):
     AND = "&"
     XOR = "^"
     NOT = "~"
+    NEG = "-"
     RSHIFT = '>>'
     LSHIFT = '<<'
 
@@ -46,6 +47,8 @@ class BitOp(PureExec):
             return f"LOGXOR({self.ops[0].il_read()}, {self.ops[1].il_read()}"
         elif self.op_type == BitOperationType.NOT:
             return f"LOGNOT({self.ops[0].il_read()}"
+        elif self.op_type == BitOperationType.NEG:
+            return f"NEG({self.ops[0].il_read()}"
         elif self.op_type == BitOperationType.RSHIFT:
             return f'SHIFTR0({self.ops[0].il_read()}, {self.ops[1].il_read()}'
         elif self.op_type == BitOperationType.LSHIFT:

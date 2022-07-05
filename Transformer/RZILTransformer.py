@@ -218,6 +218,8 @@ class RZILTransformer(Transformer):
 
         if items[0] == '~':
             return self.bit_operations(items, BitOperationType.NOT)
+        elif items[0] == '-':
+            return self.bit_operations(items, BitOperationType.NEG)
         else:
             raise NotImplementedError(f'Unary expression {items[0]} not handler.')
 
