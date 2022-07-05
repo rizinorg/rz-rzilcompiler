@@ -16,7 +16,7 @@ mem_load: MEM_LOAD SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")"
 
 mem_store: MEM_STORE SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")" ";"
 
-pred_write: WRITE_PRED "(" (reg_alias | explicit_reg) "," expr ")"
+pred_write: WRITE_PRED "(" (reg_alias | reg) "," expr ")"
 
 ?enumeration_constant: IDENTIFIER
 
@@ -368,26 +368,27 @@ cancel_slot_expr: "cancel_slot"
 ?declaration_list: declaration
 	| declaration_list declaration
 
-?op: reg "V"
-    | new_reg "N"
+?op: _reg
     | imm "iV"
-    | explicit_reg
-    | reg_alias
     | number
     | identifier
 
 identifier: IDENTIFIER
 
 new_reg: _reg
-new_alias: reg_alias "_NEW"
-reg: _reg
 
-_reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
+_reg: "HEX_REG_ALIAS_" reg_alias
+    | new_reg "N"
+    | reg "V"
+    | EXPLICIT_REG
+
+reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
     | REG_TYPE (SRC_REG_PAIR | DEST_REG_PAIR | SRC_DEST_REG_PAIR)
 
-explicit_reg: "R31" | "P0" | "P1" | "P2" | "P3"
+EXPLICIT_REG: "R31" | "P0" | "P1" | "P2" | "P3"
 
-reg_alias: "HEX_REG_ALIAS_" /[A-Z0-9]+/
+reg_alias: /[A-Z0-9]+/ [_reg_alias_new]
+_reg_alias_new: "_NEW"
 
 ?number: [NUM_SIGN] (HEX_NUMBER | DEC_NUMBER) [INT_POST_TYPE]
 
