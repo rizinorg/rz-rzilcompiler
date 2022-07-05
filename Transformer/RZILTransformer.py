@@ -282,7 +282,7 @@ class RZILTransformer(Transformer):
         holder = ILOpsHolder()
         if identifier in holder.read_ops:
             return holder.read_ops[identifier]
-        if identifier in self.ext.special_identifiers:
+        if identifier in self.ext.special_identifiers.values():
             return self.ext.special_identifier_to_local_var(identifier)
         # Return string
         return identifier
