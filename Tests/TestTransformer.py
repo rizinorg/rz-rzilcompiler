@@ -21,6 +21,7 @@ class TestTransformer:
         parser = Lark(grammar, start="fbody", parser="earley", debug=True)
         for beh in transform_test:
             print(f'Test behavior: f{beh}')
+            tree = '########'
             try:
                 tree = parser.parse(beh)
                 print(tree.pretty())
@@ -28,7 +29,11 @@ class TestTransformer:
                 ILOpsHolder().clear()
             except VisitError as e:
                 print(e)
+                print(e.orig_exc)
+                print(beh)
+                input('Raise original exc')
                 raise e.orig_exc
+                exit()
 
 
 if __name__ == "__main__":
