@@ -67,10 +67,15 @@ class HexagonExtension(TransformerExtension):
     def reg(self, items):
         return self.hex_reg(items, False)
 
-    def hex_reg(self, items, is_new: bool):
+    def hex_reg(self, items, is_new: bool, is_explicit: bool = False):
         holder = ILOpsHolder()
         items: [Token]
-        name = ''.join(items)
+        if is_explicit:
+            # If the register is explicitly given (R31, P1, P2 etc.)
+            # The name is always the last in the list.
+            name = items[-1]
+        else:
+            name = ''.join(items)
         reg_type = RegisterAccessType(items[1].type)  # src, dest, both
         v_type = get_value_type_from_reg_type(items)
 

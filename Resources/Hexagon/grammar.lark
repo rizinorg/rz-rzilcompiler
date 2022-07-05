@@ -378,9 +378,9 @@ identifier: IDENTIFIER
 _reg_variant: "HEX_REG_ALIAS_" reg_alias
     | new_reg "N"
     | reg "V"
-    | EXPLICIT_REG
+    | explicit_reg
 
-EXPLICIT_REG: "R31" | "P0" | "P1" | "P2" | "P3"
+!explicit_reg: ("R31" | "P0" | "P1" | "P2" | "P3") ["_NEW"]
 
 new_reg: _reg
 reg: _reg

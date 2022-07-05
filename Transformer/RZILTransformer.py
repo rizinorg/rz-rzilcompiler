@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from lark import Transformer
+from lark import Transformer, Token
 
 from ArchEnum import ArchEnum
 from Transformer.Effects.Jump import Jump
@@ -81,6 +81,18 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('new_reg')
 
         return self.ext.hex_reg(items, True)
+
+    def explicit_reg(self, items):
+        self.ext.set_token_meta_data('explicit_reg')
+        name = items[0]
+        new = items[1] is not None
+        if name == 'R31':
+            # We don't know whether R31 is used as dest or src. Hence: SRC_DEST_REG.
+            return self.ext.hex_reg([Token('REG_TYPE', 'R'), Token('SRC_DEST_REG', '31'), name], is_new=new)
+        elif name[0] == 'P':
+            return self.ext.hex_reg([Token('REG_TYPE', 'P'), Token('SRC_DEST_REG', str(name[1])), name], is_new=new)
+        else:
+            raise NotImplementedError(f'Explicit register {items} not handled.')
 
     def reg(self, items):
         self.ext.set_token_meta_data('reg')
