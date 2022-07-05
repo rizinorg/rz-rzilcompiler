@@ -9,7 +9,6 @@ from Transformer.helper import exc_if_types_not_match
 class Ternary(PureExec):
 
     def __init__(self, name: str, cond: Pure, then_p: Pure, else_p: Pure):
-        exc_if_types_not_match(then_p.value_type, else_p.value_type)
         super().__init__(name, [cond, then_p, else_p], then_p.value_type)
 
     def il_exec(self):
