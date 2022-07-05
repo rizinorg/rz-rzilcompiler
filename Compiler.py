@@ -16,6 +16,8 @@ from Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.RZILTransformer import RZILTransformer
 
+from Tests.testcases import euclid_instructions
+
 
 class Compiler:
     preprocessor = None
@@ -65,7 +67,8 @@ class Compiler:
         stats = {k: {"count": 0} for k in keys}
         excs = dict()
 
-        for insn in tqdm(self.preprocessor.behaviors.keys(), desc="Compiling..."):
+        # for insn in tqdm(self.preprocessor.behaviors.keys(), desc="Compiling..."):
+        for insn in euclid_instructions:
             e = None
             try:
                 self.compile_insn(insn)
@@ -93,7 +96,12 @@ class Compiler:
             stats[exc_name]["count"] += 1
             if e:
                 e_name = type(e).__name__
-                tup = (insn, self.preprocessor.get_insn_behavior(insn), e)
+                behavior = self.preprocessor.get_insn_behavior(insn)
+                try:
+                    tree = self.parser.parse(behavior[0]).pretty()
+                except Exception:
+                    tree = 'No tree present'
+                tup = (insn, behavior, e, tree)
                 if e_name in excs:
                     excs[e_name].append(tup)
                 else:
@@ -126,11 +134,14 @@ class Compiler:
                 insn: str = exceptions[e][h][0]
                 beh: str = exceptions[e][h][1]
                 ex = exceptions[e][h][2]
-                print(f"INSTRUCTION: {insn}\n\nBEHAVIOR: \n{beh}\n\nEXCEPTION: {type(ex)} : {ex}\n")
+                tree = exceptions[e][h][3]
+                print(f"\nTree: {tree}\n")
+                print(f"EXCEPTION: {type(ex)} : {ex}\n")
                 print(f"TRACE: \n{traceback.print_tb(ex.__traceback__)}")
                 if isinstance(ex, VisitError):
                     print(f"ORIGINAL EXCEPTION: {ex.orig_exc}\n")
                     print(f"TRACE:\n{traceback.print_tb(ex.orig_exc.__traceback__)}")
+                print(f"INSTRUCTION: {insn}\n\nBEHAVIOR: \n{beh}\n")
                 cmd = input("\n[n = next, q = quit] > ")
                 if cmd == "n":
                     h += 1
@@ -199,5 +210,3 @@ if __name__ == "__main__":
 
     if args.test_all:
         c.test_compile_all()
-        # c.test_euclid()
-        exit()
