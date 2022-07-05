@@ -368,24 +368,25 @@ cancel_slot_expr: "cancel_slot"
 ?declaration_list: declaration
 	| declaration_list declaration
 
-?op: _reg
+?op: _reg_variant
     | imm "iV"
     | number
     | identifier
 
 identifier: IDENTIFIER
 
-new_reg: _reg
-
-_reg: "HEX_REG_ALIAS_" reg_alias
+_reg_variant: "HEX_REG_ALIAS_" reg_alias
     | new_reg "N"
     | reg "V"
     | EXPLICIT_REG
 
-reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
-    | REG_TYPE (SRC_REG_PAIR | DEST_REG_PAIR | SRC_DEST_REG_PAIR)
-
 EXPLICIT_REG: "R31" | "P0" | "P1" | "P2" | "P3"
+
+new_reg: _reg
+reg: _reg
+
+_reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
+    | REG_TYPE (SRC_REG_PAIR | DEST_REG_PAIR | SRC_DEST_REG_PAIR)
 
 reg_alias: /[A-Z0-9]+/ [_reg_alias_new]
 _reg_alias_new: "_NEW"
