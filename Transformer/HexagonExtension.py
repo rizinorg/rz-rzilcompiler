@@ -125,6 +125,10 @@ class HexagonExtension(TransformerExtension):
     def get_val_type_by_fcn(self, fcn_name: str):
         if fcn_name == 'hex_next_pc':
             return ValueType(False, 32)
+        elif fcn_name == 'REGFIELD':
+            # Register field macros. Calls a function which returns the width or
+            # offset into the register of the field.
+            return ValueType(False, 32)
         elif fcn_name == 'clo32':
             # QEMU function -- uint32_t clo32(uint32_t val)
             # Count leading ones in 32 bit value.

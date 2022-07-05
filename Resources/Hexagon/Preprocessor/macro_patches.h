@@ -65,8 +65,29 @@
 
 #define ALIAS_NEW_VAL(A) A##_NEW
 
-#define SET_USR_FIELD(FIELD, VAL) \
-    fINSERT_BITS(ALIAS_NEW_VAL(HEX_REG_USR), reg_field_info[FIELD].width, \
-                 reg_field_info[FIELD].offset, (VAL))
-
 #define fREAD_NPC() (hex_get_npc(pkt) & (0xfffffffe))
+
+// Set/get register fields
+
+#define GET_USR_FIELD(FIELD) \
+    fEXTRACTU_BITS(env->gpr[HEX_REG_USR], REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD), \
+                   REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
+
+#define GET_FIELD(FIELD, REGIN) \
+    fEXTRACTU_BITS(REGIN, REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD), \
+                   REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
+
+#define SET_USR_FIELD(FIELD, VAL) \
+    fINSERT_BITS(env->new_value[HEX_REG_USR], REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD), \
+                 REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD), (VAL))
+
+#define fALIGN_REG_FIELD_VALUE(FIELD, VAL) \
+    ((VAL) << REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
+
+#define fGET_REG_FIELD_MASK(FIELD) \
+    (((1 << REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD)) - 1) << REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
+
+#define fREAD_REG_FIELD(REG, FIELD) \
+    fEXTRACTU_BITS(env->gpr[HEX_REG_##REG], \
+                   REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD), \
+                   REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
