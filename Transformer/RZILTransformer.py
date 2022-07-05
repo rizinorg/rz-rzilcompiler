@@ -238,8 +238,8 @@ class RZILTransformer(Transformer):
 
     def mem_store(self, items):
         self.ext.set_token_meta_data('mem_store')
-        va = items[3][0]
-        data: Pure = items[3][1]
+        va = items[3]
+        data: Pure = items[4]
         operation_value_type = ValueType(items[1] != 'u', int(items[2]))
         exc_if_types_not_match(operation_value_type, data.value_type)
         return MemStore(f'ms_{data.get_name()}', va, data)
