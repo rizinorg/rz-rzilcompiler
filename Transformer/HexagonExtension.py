@@ -147,6 +147,12 @@ class HexagonExtension(TransformerExtension):
             # uint64_t deposit64(uint64_t value, int start, int length, uint64_t fieldval)
             # Sets the bits from 'start' to 'start+length' in 'value' with 'fieldvar'
             return ValueType(False, 64)
+        elif fcn_name == 'sextract64':
+            # QEMU function
+            # "Extract from the 64 bit input @value the bit field specified by the
+            # @start and @length parameters, and return it, sign extended to
+            # an int64_t".
+            return ValueType(True, 64)
         else:
             raise NotImplementedError(f'No value type for function {fcn_name} defined.')
 
