@@ -16,7 +16,7 @@ class ForLoop(Effect):
         self.control = control  # Condition
         self.after = after_cycle  # After loop expression
         self.compound = compound
-        super().init(name, EffectType.LOOP)
+        super().__init__(name, EffectType.LOOP)
 
     def il_write(self):
         """ Returns the RZIL ops to write the variable value.
