@@ -82,7 +82,7 @@ class RZILTransformer(Transformer):
     def relational_expr(self, items):
         return self.compare_op(items)
 
-    def equality_expr(self, items):
+    def equality_expr_expr(self, items):
         return self.compare_op(items)
 
     def reg_alias(self, items):
