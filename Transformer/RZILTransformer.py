@@ -4,6 +4,7 @@
 from lark import Transformer, Token
 
 from ArchEnum import ArchEnum
+from Transformer.Effects.Branch import Branch
 from Transformer.Effects.Empty import Empty
 from Transformer.Effects.ForLoop import ForLoop
 from Transformer.Effects.Jump import Jump
@@ -27,7 +28,7 @@ from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Pures.PureExec import PureExec
 from Transformer.Pures.Ternary import Ternary
-from Transformer.helper import exc_if_types_not_match
+from Transformer.helper import exc_if_types_not_match, flatten_list
 from Transformer.helper_hexagon import get_value_type_by_c_number, get_num_base_by_token, get_c_type_by_value_type
 
 
@@ -167,6 +168,18 @@ class RZILTransformer(Transformer):
         name = f'op_{op_type.name}_{self.get_op_id()}'
         v = Assignment(name, op_type, dest, src)
         return v
+
+    def selection_stmt(self, items):
+        cond = items[1]
+        then_seq = Sequence(f'seq_then_{self.get_op_id()}', flatten_list(items[2]))
+        name = f'branch_{self.get_op_id()}'
+        if items[0] == 'if' and len(items) == 3:
+            return Branch(name, cond, then_seq, Empty(f'empty_{self.get_op_id()}'))
+        elif items[0] == 'if' and len(items) > 3 and items[3] == 'else':
+            else_seq = Sequence(f'seq_else_{self.get_op_id()}', flatten_list(items[4]))
+            return Branch(name, cond, then_seq, else_seq)
+        else:
+            raise NotImplementedError(f'"{items[0]}" branch not implemented.')
 
     def conditional_expr(self, items):
         return self.resolve_hybrid_ops(Ternary(f'cond_{self.get_op_id()}', items[0], items[1], items[2]))
@@ -339,10 +352,14 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('cancel_slot_expr')
         return NOP(f'nop_{self.get_op_id()}')
 
+    def block_item_list(self, items):
+        self.ext.set_token_meta_data('block_item_list')
+        return items
+
     def block_item(self, items):
         self.ext.set_token_meta_data('block_item')
-        holder = ILOpsHolder()
-        holder.add_to_compound(items[0])
+        # holder = ILOpsHolder()
+        # holder.add_to_compound(items[0])
         return items[0]
 
     def cancel_slot_expr(self, items):

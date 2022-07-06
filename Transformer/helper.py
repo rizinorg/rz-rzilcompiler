@@ -54,3 +54,13 @@ def check_and_convert_types(a: ValueType, b: ValueType) -> (ValueType, ValueType
         unsigned.bit_width = signed.bit_width
         unsigned.signed = True
         return (signed, unsigned) if a_is_signed else (b, a)
+
+
+def flatten_list(ls: list) -> list:
+    result = []
+    for el in ls:
+        if hasattr(el, "__iter__") and not isinstance(el, str):
+            result.extend(flatten_list(el))
+        else:
+            result.append(el)
+    return result
