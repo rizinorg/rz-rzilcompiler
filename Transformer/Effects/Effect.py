@@ -8,11 +8,13 @@ from Exceptions import OverloadException
 class EffectType(Enum):
     SETG = 0
     SETL = 1
-    STOREW = 2
-    STORE = 3
-    JUMP = 4
-    NOP = 5
-    LOOP = 6
+    SET = 2  # Hybrids are SETG and SETL
+    STOREW = 3
+    STORE = 4
+    JUMP = 5
+    NOP = 6
+    LOOP = 7
+    SEQUENCE = 8
 
 
 class Effect:

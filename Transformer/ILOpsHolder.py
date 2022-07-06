@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from Transformer.Effects.Effect import Effect
+from Transformer.Hybrids.Hybrid import Hybrid
 from Transformer.Pures.Pure import Pure, PureType
 
 

@@ -8,7 +8,10 @@ from Transformer.Effects.ForLoop import ForLoop
 from Transformer.Effects.Jump import Jump
 from Transformer.Effects.MemStore import MemStore
 from Transformer.Effects.NOP import NOP
+from Transformer.Effects.Sequence import Sequence
 from Transformer.HexagonExtension import HexagonExtension
+from Transformer.Hybrids.Hybrid import Hybrid, PostfixExpr
+from Transformer.Hybrids.PostfixIncDec import PostfixIncDec
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.BitOp import BitOperationType, BitOp
 from Transformer.Pures.BooleanOp import BooleanOpType, BooleanOp
@@ -21,6 +24,7 @@ from Transformer.Pures.Number import Number
 from Transformer.Pures.Pure import Pure, ValueType
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
+from Transformer.Pures.PureExec import PureExec
 from Transformer.Pures.Ternary import Ternary
 from Transformer.helper import exc_if_types_not_match
 from Transformer.helper_hexagon import get_value_type_by_c_number, get_num_base_by_token, get_c_type_by_value_type
@@ -32,6 +36,7 @@ class RZILTransformer(Transformer):
     The classes do the actual code generation.
     """
     op_count = 0
+    hybrid_op_count = 0
 
     def __init__(self, arch: ArchEnum):
 
@@ -57,12 +62,20 @@ class RZILTransformer(Transformer):
         res += "\n// READ\n"
         for op in holder.read_ops.values():
             res += op.il_init_var() + '\n'
+
         res += '\n// EXEC\n'
         for op in holder.exec_ops.values():
+            if isinstance(op, Hybrid):
+                continue
             res += op.il_init_var() + '\n'
+
         res += "\n// WRITE\n"
         for op in holder.write_ops.values():
+            if isinstance(op, Hybrid):
+                res += op.il_init_var() + '\n'
+                continue
             res += op.il_init_var() + '\n'
+
         res += f'\nreturn SEQN({", ".join([op.get_name() for op in holder.consume_compound()])});'
         return res
 
@@ -155,7 +168,7 @@ class RZILTransformer(Transformer):
         return v
 
     def conditional_expr(self, items):
-        return Ternary(f'cond_{self.get_op_id()}', items[0], items[1], items[2])
+        return self.resolve_hybrid_ops(Ternary(f'cond_{self.get_op_id()}', items[0], items[1], items[2]))
 
     def assignment_expr(self, items):
         self.ext.set_token_meta_data('assignment_expr')
@@ -175,7 +188,7 @@ class RZILTransformer(Transformer):
         op_type = ArithmeticType(items[1])
         name = f'op_{op_type.name}_{self.get_op_id()}'
         v = ArithmeticOp(name, a, b, op_type)
-        return v
+        return self.resolve_hybrid_ops(v)
 
     def multiplicative_expr(self, items):
         self.ext.set_token_meta_data('additive_expr')
@@ -185,34 +198,34 @@ class RZILTransformer(Transformer):
         op_type = ArithmeticType(items[1])
         name = f'op_{op_type.name}_{self.get_op_id()}'
         v = ArithmeticOp(name, a, b, op_type)
-        return v
+        return self.resolve_hybrid_ops(v)
 
     def and_expr(self, items):
         self.ext.set_token_meta_data('and_expr')
 
-        return self.bit_operations(items, BitOperationType.AND)
+        return self.resolve_hybrid_ops(self.bit_operations(items, BitOperationType.AND))
 
     def inclusive_or_expr(self, items):
         self.ext.set_token_meta_data('inclusive_or_expr')
 
-        return self.bit_operations(items, BitOperationType.OR)
+        return self.resolve_hybrid_ops(self.bit_operations(items, BitOperationType.OR))
 
     def exclusive_or_expr(self, items):
         self.ext.set_token_meta_data('exclusive_or_expr')
 
-        return self.bit_operations(items, BitOperationType.XOR)
+        return self.resolve_hybrid_ops(self.bit_operations(items, BitOperationType.XOR))
 
     def logical_and_expr(self, items):
         self.ext.set_token_meta_data('logical_and_expr')
-        return self.boolean_expr(items)
+        return self.resolve_hybrid_ops(self.boolean_expr(items))
 
     def logical_or_expr(self, items):
         self.ext.set_token_meta_data('logical_or_expr')
-        return self.boolean_expr(items)
+        return self.resolve_hybrid_ops(self.boolean_expr(items))
 
     def logical_not_expr(self, items):
         self.ext.set_token_meta_data('logical_not_expr')
-        return self.boolean_expr(items)
+        return self.resolve_hybrid_ops(self.boolean_expr(items))
 
     def boolean_expr(self, items):
         a = items[0]
@@ -220,21 +233,22 @@ class RZILTransformer(Transformer):
         b = items[2] if len(items) == 3 else None
         name = f'op_{t}_{self.get_op_id()}'
         v = BooleanOp(name, a, b, t)
-        return v
+        return self.resolve_hybrid_ops(v)
 
     def shift_expr(self, items):
         self.ext.set_token_meta_data('shift_expr')
-        return self.bit_operations(items, BitOperationType(items[1]))
+        return self.resolve_hybrid_ops(self.bit_operations(items, BitOperationType(items[1])))
 
     def unary_expr(self, items):
         self.ext.set_token_meta_data('unary_expr')
 
         if items[0] == '~':
-            return self.bit_operations(items, BitOperationType.NOT)
+            v = self.bit_operations(items, BitOperationType.NOT)
         elif items[0] == '-':
-            return self.bit_operations(items, BitOperationType.NEG)
+            v = self.bit_operations(items, BitOperationType.NEG)
         else:
             raise NotImplementedError(f'Unary expression {items[0]} not handler.')
+        return self.resolve_hybrid_ops(v)
 
     def bit_operations(self, items: list, op_type: BitOperationType):
         self.ext.set_token_meta_data('bit_operations')
@@ -249,7 +263,7 @@ class RZILTransformer(Transformer):
         b = items[2]
         name = f'op_{op_type.name}_{self.get_op_id()}'
         v = BitOp(name, a, b, op_type)
-        return v
+        return self.resolve_hybrid_ops(v)
 
     def mem_store(self, items):
         self.ext.set_token_meta_data('mem_store')
@@ -268,7 +282,7 @@ class RZILTransformer(Transformer):
         if not isinstance(va, Pure):
             va = ILOpsHolder().get_op_by_name(va.value)
 
-        return MemLoad(f'ml_{va.get_name()}', va, mem_acc_type)
+        return self.resolve_hybrid_ops(MemLoad(f'ml_{va.get_name()}', va, mem_acc_type))
 
     def c_call(self, items):
         self.ext.set_token_meta_data('c_call')
@@ -290,7 +304,7 @@ class RZILTransformer(Transformer):
 
     def compare_op(self, items):
         op_type = CompareOpType(items[1])
-        return CompareOp(f'op_{op_type.name}', items[0], items[2], op_type)
+        return self.resolve_hybrid_ops(CompareOp(f'op_{op_type.name}', items[0], items[2], op_type))
 
     def for_loop(self, items):
         if len(items) != 5:
@@ -313,3 +327,26 @@ class RZILTransformer(Transformer):
 
     def cancel_slot_expr(self, items):
         return NOP(f'nop_{self.get_op_id()}')
+
+    def resolve_hybrid_ops(self, operation: PureExec):
+        hybrids = list()
+        for h in operation.ops:
+            if isinstance(h, Hybrid):
+                hybrids.append(h)
+        if len(hybrids) == 0:
+            return operation
+
+        tx_name = f't{self.hybrid_op_count}'
+        tx = LocalVar(tx_name, operation.value_type)
+        self.hybrid_op_count += 1
+
+        # tx = <operation>
+        name = f'op_{AssignmentType.ASSIGN.name}_{self.get_op_id()}'
+        set_tx = Assignment(name, AssignmentType.ASSIGN, tx, operation)
+        hybrids.insert(0, set_tx)
+
+        # The Effect will be added to the ILOpHolder in the Effect constructor
+        Sequence(f'seq_{self.get_op_id()}', hybrids)
+
+        # Return local tX
+        return tx
