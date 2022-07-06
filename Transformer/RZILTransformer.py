@@ -346,7 +346,7 @@ class RZILTransformer(Transformer):
     def expr_stmt(self, items):
         self.ext.set_token_meta_data('expr_stmt')
         # These are empty expression statements.
-        return Empty(f'empy_{self.get_op_id()}')
+        return Empty(f'empty_{self.get_op_id()}')
 
     def cancel_slot_stmt(self, items):
         self.ext.set_token_meta_data('cancel_slot_expr')
