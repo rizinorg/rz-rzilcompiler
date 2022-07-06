@@ -22,7 +22,7 @@ class CompareOp(PureExec):
         a.value_type, b.value_type = check_and_convert_types(a.value_type, b.value_type)
         self.op_type = op_type
 
-        super().__init__(name, [a, b], a.value_type)
+        PureExec.__init__(self, name, [a, b], a.value_type)
 
     def il_exec(self):
         sl = 'S' if self.ops[0].value_type.signed else 'U'

@@ -9,7 +9,7 @@ class Jump(Effect):
 
     def __init__(self, name: str, target: Pure):
         self.target = target
-        super().__init__(name, EffectType.JUMP)
+        Effect.__init__(self, name, EffectType.JUMP)
 
     def il_write(self):
         """ Returns the RZIL ops to write the variable value.

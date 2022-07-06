@@ -34,9 +34,9 @@ class BitOp(PureExec):
                 if isinstance(a, Number):
                     a.value_type.bit_width = b.value_type.bit_width
                 val_type = b.value_type
-            super().__init__(name, [a, b], val_type)
+            PureExec.__init__(self, name, [a, b], val_type)
         else:
-            super().__init__(name, [a], a.value_type)
+            PureExec.__init__(self, name, [a], a.value_type)
 
     def il_exec(self):
         if self.op_type == BitOperationType.AND:

@@ -9,7 +9,7 @@ class GlobalVar(Pure):
 
     def __init__(self, name: str, v_type: ValueType):
         self.reads = 0
-        super().__init__(name, PureType.GLOBAL, v_type)
+        Pure.__init__(self, name, PureType.GLOBAL, v_type)
 
     def il_init_var(self):
         init = self.il_isa_to_assoc_name()

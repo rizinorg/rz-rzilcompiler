@@ -8,7 +8,7 @@ from Transformer.Pures.PureExec import PureExec
 class Cast(PureExec):
 
     def __init__(self, name: str, type_specifier: ValueType, val: Pure):
-        super().__init__(name, [val], type_specifier)
+        PureExec.__init__(self, name, [val], type_specifier)
 
     def il_exec(self):
         if self.value_type.signed:

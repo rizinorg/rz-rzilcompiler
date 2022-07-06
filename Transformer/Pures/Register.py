@@ -25,9 +25,9 @@ class Register(GlobalVar):
         self.is_explicit = is_explicit  # Register number is predefined by instruction.
         self.is_reg_alias = is_reg_alias
         if self.is_new:
-            super().__init__(name + '_tmp', v_type)
+            GlobalVar.__init__(self, name + '_tmp', v_type)
         else:
-            super().__init__(name, v_type)
+            GlobalVar.__init__(self, name, v_type)
 
     def il_init_var(self):
         if self.is_explicit:

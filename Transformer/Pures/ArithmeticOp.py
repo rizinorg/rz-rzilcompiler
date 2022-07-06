@@ -23,7 +23,7 @@ class ArithmeticOp(PureExec):
             a.value_type, b.value_type = check_and_convert_types(a.value_type, b.value_type)
         self.arith_type = arith_type
 
-        super().__init__(name, [a, b], a.value_type)
+        PureExec.__init__(self, name, [a, b], a.value_type)
 
     def il_exec(self):
         if self.arith_type == ArithmeticType.ADD:

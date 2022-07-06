@@ -22,9 +22,9 @@ class BooleanOp(PureExec):
         self.op_type = op_type
 
         if b:
-            super().__init__(name, [a, b], a.value_type)
+            PureExec.__init__(self, name, [a, b], a.value_type)
         else:
-            super().__init__(name, [a], a.value_type)
+            PureExec.__init__(self, name, [a], a.value_type)
 
     def il_exec(self):
         if self.op_type == BooleanOpType.AND:

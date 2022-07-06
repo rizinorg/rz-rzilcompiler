@@ -8,7 +8,7 @@ from Transformer.Pures.Pure import Pure
 class NOP(Effect):
 
     def __init__(self, name):
-        super().__init__(name, EffectType.NOP)
+        Effect.__init__(self, name, EffectType.NOP)
 
     def il_write(self):
         """ Returns the RZIL ops to write the variable value.

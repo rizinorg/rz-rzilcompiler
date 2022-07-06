@@ -35,9 +35,9 @@ class Assignment(Effect):
         self.src = src
 
         if dest.type == PureType.LOCAL:
-            super().__init__(name, EffectType.SETL)
+            Effect.__init__(self, name, EffectType.SETL)
         elif dest.type == PureType.GLOBAL:
-            super().__init__(name, EffectType.SETG)
+            Effect.__init__(self, name, EffectType.SETG)
         else:
             raise NotImplementedError(f'Dest type {self.dest.type} not handled.')
         self.set_src()

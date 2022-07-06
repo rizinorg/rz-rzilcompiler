@@ -10,7 +10,7 @@ class MemStore(Effect):
     def __init__(self, name: str, va: Pure, data_var: Pure):
         self.va = va
         self.data_var = data_var
-        super().__init__(name, EffectType.STOREW)
+        Effect.__init__(self, name, EffectType.STOREW)
 
     def il_write(self):
         """ Returns the RZIL ops to write the variable value.
