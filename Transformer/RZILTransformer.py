@@ -4,6 +4,7 @@
 from lark import Transformer, Token
 
 from ArchEnum import ArchEnum
+from Transformer.Effects.Empty import Empty
 from Transformer.Effects.ForLoop import ForLoop
 from Transformer.Effects.Jump import Jump
 from Transformer.Effects.MemStore import MemStore
@@ -328,6 +329,11 @@ class RZILTransformer(Transformer):
             return self.for_loop(items)
         else:
             raise NotImplementedError(f'{items[0]} loop not supported.')
+
+    def expr_stmt(self, items):
+        self.ext.set_token_meta_data('expr_stmt')
+        # These are empty expression statements.
+        return Empty(f'empy_{self.get_op_id()}')
 
     def block_item(self, items):
         self.ext.set_token_meta_data('block_item')

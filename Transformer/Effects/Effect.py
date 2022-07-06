@@ -15,6 +15,7 @@ class EffectType(Enum):
     NOP = 6
     LOOP = 7
     SEQUENCE = 8
+    EMPTY = 9
 
 
 class Effect:
