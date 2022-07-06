@@ -57,6 +57,8 @@ def check_and_convert_types(a: ValueType, b: ValueType) -> (ValueType, ValueType
 
 
 def flatten_list(ls: list) -> list:
+    if not hasattr(ls, "__iter__") or isinstance(ls, str):
+        return [ls]
     result = []
     for el in ls:
         if hasattr(el, "__iter__") and not isinstance(el, str):
