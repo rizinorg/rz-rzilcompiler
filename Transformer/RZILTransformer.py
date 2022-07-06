@@ -158,7 +158,7 @@ class RZILTransformer(Transformer):
             assg.dest.set_value_type(t)
         elif isinstance(items[1], str):
             return LocalVar(items[1], t)
-        return
+        raise NotImplementedError(f'Declaration with items {items} not implemented.')
 
     def init_declarator(self, items):
         self.ext.set_token_meta_data('init_declarator')
