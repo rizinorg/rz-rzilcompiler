@@ -123,7 +123,6 @@ ASSIGN_OP: "="
 
 ?expr: assignment_expr
 	| expr "," assignment_expr
-	| cancel_slot_expr
 
 ?constant_expr: conditional_expr
 
@@ -319,8 +318,9 @@ ASSIGN_OP: "="
 	| jump_stmt
 	| mem_store
 	| pred_write
+	| cancel_slot_stmt ";"
 
-cancel_slot_expr: "cancel_slot"
+cancel_slot_stmt: "cancel_slot"
 
 ?labeled_stmt: IDENTIFIER ":" stmt
 	| CASE constant_expr ":" stmt

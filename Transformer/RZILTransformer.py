@@ -335,6 +335,10 @@ class RZILTransformer(Transformer):
         # These are empty expression statements.
         return Empty(f'empy_{self.get_op_id()}')
 
+    def cancel_slot_stmt(self, items):
+        self.ext.set_token_meta_data('cancel_slot_expr')
+        return NOP(f'nop_{self.get_op_id()}')
+
     def block_item(self, items):
         self.ext.set_token_meta_data('block_item')
         holder = ILOpsHolder()
