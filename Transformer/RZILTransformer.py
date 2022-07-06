@@ -149,6 +149,9 @@ class RZILTransformer(Transformer):
 
         if len(items) != 2:
             raise NotImplementedError(f'Declaration without exactly two tokens are not supported.')
+        if hasattr(items[0], 'type') and items[0].type != 'IDENTIFIER':
+            # Declarations like: "TYPE <id>;" are ignored. They get initialize when they first get set.
+            return Empty(f'empty_{self.get_op_id()}')
         t: ValueType = items[0]
         if isinstance(items[1], Assignment):
             assg: Assignment = items[1]
