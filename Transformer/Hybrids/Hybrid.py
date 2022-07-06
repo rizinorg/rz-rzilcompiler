@@ -3,6 +3,7 @@
 
 from enum import StrEnum
 
+from Exceptions import DoNotUsException
 from Transformer.Effects.Effect import Effect, EffectType
 from Transformer.Pures.Pure import ValueType, Pure
 from Transformer.Pures.PureExec import PureExec
@@ -18,3 +19,6 @@ class Hybrid(PureExec, Effect):
     def __init__(self, name: str, operands: [Pure], value_type: ValueType):
         PureExec.__init__(self, name, operands, value_type)
         Effect.__init__(self, name, EffectType.SET)
+
+    def il_init_var(self):
+        return Effect.il_init_var(self)
