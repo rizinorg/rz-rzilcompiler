@@ -133,7 +133,7 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('cast_expr')
         val_type = items[0]
         data = items[1]
-        return Cast(f'cast_{val_type}_{self.get_op_id()}', val_type, data)
+        return self.resolve_hybrid_ops(Cast(f'cast_{val_type}_{self.get_op_id()}', val_type, data))
 
     def number(self, items):
         # Numbers of the form -10ULL
