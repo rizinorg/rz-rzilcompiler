@@ -250,6 +250,16 @@ class RZILTransformer(Transformer):
             raise NotImplementedError(f'Unary expression {items[0]} not handler.')
         return self.resolve_hybrid_ops(v)
 
+    def postfix_expr(self, items):
+        self.ext.set_token_meta_data('postfix_expr')
+        t = PostfixExpr(items[1])
+        name = f'op_{PostfixExpr(items[1]).name}_{self.get_op_id()}'
+        if t == PostfixExpr.INC or t == PostfixExpr.DEC:
+            op: LocalVar = items[0]
+            return PostfixIncDec(name, op, op.value_type, t)
+        else:
+            raise NotImplementedError(f'Postfix expression {t} not handled.')
+
     def bit_operations(self, items: list, op_type: BitOperationType):
         self.ext.set_token_meta_data('bit_operations')
 
