@@ -82,7 +82,7 @@ class RZILTransformer(Transformer):
     def relational_expr(self, items):
         return self.compare_op(items)
 
-    def equality_expr_expr(self, items):
+    def equality_expr(self, items):
         return self.compare_op(items)
 
     def reg_alias(self, items):
@@ -329,7 +329,7 @@ class RZILTransformer(Transformer):
         else:
             raise NotImplementedError(f'{items[0]} loop not supported.')
 
-    def block_item_list(self, items):
+    def block_item(self, items):
         self.ext.set_token_meta_data('block_item_list')
         holder = ILOpsHolder()
         holder.add_to_compound(items[0])
