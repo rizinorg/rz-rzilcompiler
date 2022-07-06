@@ -6,9 +6,3 @@ class OverloadException(BaseException):
     def __init__(self, message):
         message = "\nPlease overload this method.\n" + message
         super().__init__(message)
-
-
-class DoNotUsException(BaseException):
-    def __init__(self, message):
-        message = "\nDo not use this method.\n" + message
-        super().__init__(message)

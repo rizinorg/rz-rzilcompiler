@@ -3,7 +3,6 @@
 
 from enum import StrEnum
 
-from Exceptions import DoNotUsException
 from Transformer.Effects.Effect import Effect, EffectType
 from Transformer.Pures.Pure import ValueType, Pure
 from Transformer.Pures.PureExec import PureExec
