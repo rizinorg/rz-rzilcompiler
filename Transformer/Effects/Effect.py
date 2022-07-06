@@ -19,7 +19,7 @@ class Effect:
     name: str = ''
     type: EffectType = None
 
-    def init(self, name: str, effect_type: EffectType):
+    def __init__(self, name: str, effect_type: EffectType):
         from Transformer.ILOpsHolder import ILOpsHolder
 
         self.name = name

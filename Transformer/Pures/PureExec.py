@@ -17,7 +17,7 @@ class PureExec(Pure):
         # Add LETs to a list for use during initialization.
         self.lets = [op for op in operands if isinstance(op, LetVar)]
         self.ops = operands
-        super().__init__(name, PureType.EXEC, val_type)
+        Pure.__init__(self, name, PureType.EXEC, val_type)
 
     def il_exec(self):
         """ Returns the RZIL ops to execute the operation.

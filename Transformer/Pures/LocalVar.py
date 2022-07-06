@@ -11,7 +11,7 @@ class LocalVar(Pure):
     """
 
     def __init__(self, name: str, value_type: ValueType):
-        super().__init__(name, PureType.LOCAL, value_type)
+        Pure.__init__(self, name, PureType.LOCAL, value_type)
 
     def get_val(self):
         """ Returns the value of the variable. """

@@ -9,7 +9,7 @@ class LetVar(Pure):
 
     def __init__(self, name: str, value: int, value_type: ValueType):
         self.value = value
-        super().__init__(name, PureType.LET, value_type)
+        Pure.__init__(self, name, PureType.LET, value_type)
 
     def get_val(self):
         """ Returns the value of the variable. """
