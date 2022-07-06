@@ -329,10 +329,10 @@ cancel_slot_expr: "cancel_slot"
 ?compound_stmt: "{" "}"
 	| "{"  block_item_list "}"
 
-block_item_list: block_item
+?block_item_list: block_item
 	| block_item_list block_item
 
-?block_item: declaration
+block_item: declaration
 	| stmt
 
 ?expr_stmt: ";"

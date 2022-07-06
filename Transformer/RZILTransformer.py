@@ -330,7 +330,7 @@ class RZILTransformer(Transformer):
             raise NotImplementedError(f'{items[0]} loop not supported.')
 
     def block_item(self, items):
-        self.ext.set_token_meta_data('block_item_list')
+        self.ext.set_token_meta_data('block_item')
         holder = ILOpsHolder()
         holder.add_to_compound(items[0])
         return items[0]
