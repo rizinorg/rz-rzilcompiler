@@ -78,7 +78,7 @@ class RZILTransformer(Transformer):
                 continue
             res += op.il_init_var() + '\n'
 
-        res += f'\nreturn SEQN({", ".join([op.get_name() for op in holder.consume_compound()])});'
+        res += f'\nreturn SEQN({", ".join([op.get_name() for op in flatten_list(items)])});'
         return res
 
     def relational_expr(self, items):
