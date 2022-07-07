@@ -346,6 +346,11 @@ class RZILTransformer(Transformer):
         else:
             raise NotImplementedError(f'{items[0]} loop not supported.')
 
+    def compound_stmt(self, items):
+        self.ext.set_token_meta_data('compound_stmt')
+        # These are empty compound statements.
+        return Empty(f'empty_{self.get_op_id()}')
+
     def expr_stmt(self, items):
         self.ext.set_token_meta_data('expr_stmt')
         # These are empty expression statements.
