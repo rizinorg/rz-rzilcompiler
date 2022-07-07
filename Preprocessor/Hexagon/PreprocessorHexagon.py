@@ -111,8 +111,11 @@ class PreprocessorHexagon:
             f.write('\n')
             with open(self.shortcode_path) as g:
                 f.writelines(g.readlines())
-        argv = ['script_name', combined_path, '-o', self.out_dir + '/Preprocessor/shortcode_resolved.h']
+        argv = ['script_name', combined_path, '-o', self.out_dir + '/Preprocessor/shortcode_resolved_tmp.h']
         print('* Resolve macros of shortcode with pcpp...')
+        pcpp.pcmd.CmdPreprocessor(argv)
+        print('* Do it again due to https://github.com/ned14/pcpp/issues/71')
+        argv = ['script_name', self.out_dir + '/patched_macros.h', self.out_dir + '/Preprocessor/shortcode_resolved_tmp.h', '-o', self.out_dir + '/Preprocessor/shortcode_resolved.h']
         pcpp.pcmd.CmdPreprocessor(argv)
 
     def load_insn_behavior(self):
