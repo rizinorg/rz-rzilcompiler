@@ -93,14 +93,12 @@ class HexagonExtension(TransformerExtension):
             raise NotImplementedError(f'Reg type "{reg_type.name}" not implemented.')
 
         v = Register(name, reg_type, v_type, is_new)
-        v.set_isa_name(name)
         return v
 
     def imm(self, items):
         v_type = get_value_type_by_isa_imm(items)
         name = f'{items[0]}'
         imm = Immediate(name, v_type)
-        imm.set_isa_name(name)
         return imm
 
     def get_value_type_by_resource_type(self, items):

@@ -29,6 +29,7 @@ class Register(GlobalVar):
             GlobalVar.__init__(self, name + '_tmp', v_type)
         else:
             GlobalVar.__init__(self, name, v_type)
+        self.set_isa_name(name)
 
     def il_init_var(self):
         if self.is_explicit:

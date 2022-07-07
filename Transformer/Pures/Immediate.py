@@ -12,6 +12,7 @@ class Immediate(LocalVar):
         self.name = name
         self.v_type = v_type
         LocalVar.__init__(self, name, v_type)
+        self.set_isa_name(name)
 
     def il_init_var(self, isa_to_imm_fcn=None):
         return f'RzILOpPure *{self.get_isa_name()} = {isa_to_imm_fnc}({", ".join(isa_to_imm_args)}, "{self.name}");'
