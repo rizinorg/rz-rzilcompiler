@@ -142,11 +142,13 @@ class Compiler:
                     print(f"ORIGINAL EXCEPTION: {ex.orig_exc}\n")
                     print(f"TRACE:\n{traceback.print_tb(ex.orig_exc.__traceback__)}")
                 print(f"INSTRUCTION: {insn}\n\nBEHAVIOR: \n{beh}\n")
-                cmd = input("\n[n = next, q = quit] > ")
+                cmd = input("\n[n = next, b = back, q = quit] > ")
                 if cmd == "n":
                     h += 1
                 elif cmd == "q":
                     exit()
+                elif cmd == 'b':
+                    Compiler.fix_compile_exceptions(exceptions)
 
     def compile_insn(self, insn_name: str) -> [str]:
         """ Compiles the instruction <insn_name> and returns the RZIL code.
