@@ -1,3 +1,6 @@
+#define fSTORE_LOCKED(NUM, SIZE, EA, SRC, PRED)     gen_store_conditional##SIZE(ctx, PRED, EA, SRC);
+#define fLOAD_LOCKED(NUM, SIZE, SIGN, EA, DST)     gen_load_locked##SIZE##SIGN(DST, EA, ctx->mem_idx);
+#define PRED_LOAD_CANCEL(PRED, EA)     gen_pred_cancel(PRED, insn->is_endloop ? 4 : insn->slot)
 #define ALIAS_NEW_VAL(A) A##_NEW
 #define HEX_REG_UTIMERHI   HEX_REG_ALIAS_UTIMERHI
 #define HEX_REG_UTIMERLO   HEX_REG_ALIAS_UTIMERLO

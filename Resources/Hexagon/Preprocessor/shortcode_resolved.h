@@ -1,5 +1,5 @@
 #line 1 "Resources/Hexagon/Preprocessor/shortcode_resolved_tmp.h"
-#line 355 "Resources/Hexagon/Preprocessor/combined.h"
+#line 358 "Resources/Hexagon/Preprocessor/combined.h"
 insn(J2_jump, {; riV = (riV & ~(4 - 1)); JUMP((HEX_REG_ALIAS_PC)+riV);})
 insn(J2_jumpr, {JUMP(RsV);})
 insn(J2_jumpt, {; if (((PuV) & 1)) { ;riV = (riV & ~(4 - 1)); JUMP((HEX_REG_ALIAS_PC)+riV);; }})
@@ -333,10 +333,10 @@ insn(L4_return_tnew_pt, { size8u_t tmp; ;  EA = (RsV); ; if (((PvN) & 1)) { tmp 
 insn(L4_return_fnew_pt, { size8u_t tmp; ;  EA = (RsV); ; if ((!((PvN) & 1))) { tmp = (size8u_t)(mem_load_u64(EA)); RddV = ((tmp) ^ (((uint64_t)(HEX_REG_ALIAS_FRAMEKEY)) << 32)); (HEX_REG_ALIAS_SP = EA+8);; JUMP(((int64_t)((int32_t)((RddV >> ((1) * 32)) & 0x0ffffffffLL)))); } else {  cancel_slot; ; } })
 insn(L4_return_tnew_pnt, { size8u_t tmp; ;  EA = (RsV); ; if (((PvN) & 1)) { tmp = (size8u_t)(mem_load_u64(EA)); RddV = ((tmp) ^ (((uint64_t)(HEX_REG_ALIAS_FRAMEKEY)) << 32)); (HEX_REG_ALIAS_SP = EA+8);; JUMP(((int64_t)((int32_t)((RddV >> ((1) * 32)) & 0x0ffffffffLL)))); } else {  cancel_slot; ; } })
 insn(L4_return_fnew_pnt, { size8u_t tmp; ;  EA = (RsV); ; if ((!((PvN) & 1))) { tmp = (size8u_t)(mem_load_u64(EA)); RddV = ((tmp) ^ (((uint64_t)(HEX_REG_ALIAS_FRAMEKEY)) << 32)); (HEX_REG_ALIAS_SP = EA+8);; JUMP(((int64_t)((int32_t)((RddV >> ((1) * 32)) & 0x0ffffffffLL)))); } else {  cancel_slot; ; } })
-insn(L2_loadw_locked, {  EA = (RsV); ; fLOAD_LOCKED(1,4,u,EA,RdV) })
-insn(S2_storew_locked, {  EA = (RsV); ; fSTORE_LOCKED(1,4,EA,RtV,PdV) })
-insn(L4_loadd_locked, {  EA = (RsV); ; fLOAD_LOCKED(1,8,u,EA,RddV) })
-insn(S4_stored_locked, {  EA = (RsV); ; fSTORE_LOCKED(1,8,EA,RttV,PdV) })
+insn(L2_loadw_locked, {  EA = (RsV); ; gen_load_locked4u(RdV, EA, ctx->mem_idx); })
+insn(S2_storew_locked, {  EA = (RsV); ; gen_store_conditional4(ctx, PdV, EA, RtV); })
+insn(L4_loadd_locked, {  EA = (RsV); ; gen_load_locked8u(RddV, EA, ctx->mem_idx); })
+insn(S4_stored_locked, {  EA = (RsV); ; gen_store_conditional8(ctx, PdV, EA, RttV); })
 insn(L4_loadrub_rr, {        EA = RsV + (RtV << uiV);    ; RdV = (size1u_t)(mem_load_u8(EA));})
 insn(L2_ploadrubt_io, {;         EA = RsV + uiV;    ; if(((PtV) & 1)){RdV = (size1u_t)(mem_load_u8(EA));} else { cancel_slot; ;}})
 insn(L2_ploadrubt_pi, { EA = (RxV); ; if(((PtV) & 1)){  RxV = RxV + (siV); ; RdV = (size1u_t)(mem_load_u8(EA));} else { cancel_slot; ;}})

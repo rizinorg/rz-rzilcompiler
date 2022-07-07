@@ -96,3 +96,14 @@
 
 #define fLSBNEW0        (ALIAS_NEW_VAL(P0) & 1)
 #define fLSBNEW1        (ALIAS_NEW_VAL(P1) & 1)
+
+// Macros defined inside #QEMU_GENERATE guards without an #else.
+// We do not include them in the preprocessing
+// so we add them here manually.
+
+#define PRED_LOAD_CANCEL(PRED, EA) \
+    gen_pred_cancel(PRED, insn->is_endloop ? 4 : insn->slot)
+#define fLOAD_LOCKED(NUM, SIZE, SIGN, EA, DST) \
+    gen_load_locked##SIZE##SIGN(DST, EA, ctx->mem_idx);
+#define fSTORE_LOCKED(NUM, SIZE, EA, SRC, PRED) \
+    gen_store_conditional##SIZE(ctx, PRED, EA, SRC);

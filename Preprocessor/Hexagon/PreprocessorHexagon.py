@@ -52,6 +52,7 @@ class PreprocessorHexagon:
                             in_qemu_gen = False
                         continue
                     if in_qemu_gen and is_vec_macro_file:
+                        # QEMU_GENERATE macros of the vector macro file are included.
                         res.append(line.strip('\n'))
                         continue
                     elif in_qemu_gen:
