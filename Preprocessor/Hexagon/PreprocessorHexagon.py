@@ -151,7 +151,7 @@ class PreprocessorHexagon:
 
         match = re.match(r'\{.*__COMPOUND_PART1__(\{.+})__COMPOUND_PART1__(.*)}$', insn_beh)
         beh_p1 = match.group(1)
-        beh_p2 = '{' + match.group(2)  # bracket was excluded in regex.
+        beh_p2 = '{' + match.group(2) + '}'  # brackets were excluded in regex.
         return beh_p1, beh_p2
 
     @staticmethod
