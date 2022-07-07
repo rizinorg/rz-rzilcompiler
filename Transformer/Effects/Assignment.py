@@ -47,34 +47,34 @@ class Assignment(Effect):
         if self.assign_type == AssignmentType.ASSIGN:
             return
         elif self.assign_type == AssignmentType.ASSIGN_ADD:
-            self.src = ArithmeticOp(f'add{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+            self.src = ArithmeticOp(f'add{self.src.get_name()}{self.dest.get_name()}',
                                     self.src, self.dest, ArithmeticType.ADD)
         elif self.assign_type == AssignmentType.ASSIGN_SUB:
-            self.src = ArithmeticOp(f'sub{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+            self.src = ArithmeticOp(f'sub{self.src.get_name()}{self.dest.get_name()}',
                                     self.src, self.dest, ArithmeticType.SUB)
         elif self.assign_type == AssignmentType.ASSIGN_MUL:
-            self.src = ArithmeticOp(f'mul{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+            self.src = ArithmeticOp(f'mul{self.src.get_name()}{self.dest.get_name()}',
                                     self.src, self.dest, ArithmeticType.MUL)
         elif self.assign_type == AssignmentType.ASSIGN_MOD:
-            self.src = ArithmeticOp(f'mod{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+            self.src = ArithmeticOp(f'mod{self.src.get_name()}{self.dest.get_name()}',
                                     self.src, self.dest, ArithmeticType.MOD)
         elif self.assign_type == AssignmentType.ASSIGN_DIV:
-            self.src = ArithmeticOp(f'div{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+            self.src = ArithmeticOp(f'div{self.src.get_name()}{self.dest.get_name()}',
                                     self.src, self.dest, ArithmeticType.DIV)
         elif self.assign_type == AssignmentType.ASSIGN_RIGHT:
-            self.src = BitOp(f'shiftr{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+            self.src = BitOp(f'shiftr{self.src.get_name()}{self.dest.get_name()}',
                                     self.src, self.dest, BitOperationType.RSHIFT)
         elif self.assign_type == AssignmentType.ASSIGN_LEFT:
-            self.src = BitOp(f'shiftl{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+            self.src = BitOp(f'shiftl{self.src.get_name()}{self.dest.get_name()}',
                              self.src, self.dest, BitOperationType.LSHIFT)
         elif self.assign_type == AssignmentType.ASSIGN_AND:
-            self.src = BitOp(f'and{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+            self.src = BitOp(f'and{self.src.get_name()}{self.dest.get_name()}',
                              self.src, self.dest, BitOperationType.AND)
         elif self.assign_type == AssignmentType.ASSIGN_OR:
-            self.src = BitOp(f'or{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+            self.src = BitOp(f'or{self.src.get_name()}{self.dest.get_name()}',
                              self.src, self.dest, BitOperationType.OR)
         elif self.assign_type == AssignmentType.ASSIGN_XOR:
-            self.src = BitOp(f'xor{self.src.get_isa_name()}{self.dest.get_isa_name()}',
+            self.src = BitOp(f'xor{self.src.get_name()}{self.dest.get_name()}',
                              self.src, self.dest, BitOperationType.XOR)
         else:
             raise NotImplementedError(f'Assign type {self.assign_type} not handled.')
@@ -84,8 +84,8 @@ class Assignment(Effect):
         :return: RZIL ops to write the pure value.
         """
         if self.type == EffectType.SETG:
-            return f'SETG({self.dest.get_assoc_name()}, {self.src.get_isa_name()})'
+            return f'SETG({self.dest.get_assoc_name()}, {self.src.get_name()})'
         elif self.type == EffectType.SETL:
-            return f'SETL("{self.dest.get_isa_name()}", {self.src.get_isa_name()})'
+            return f'SETL("{self.dest.get_name()}", {self.src.get_name()})'
         else:
             raise NotImplementedError(f'Effect ype {self.type} not handled.')

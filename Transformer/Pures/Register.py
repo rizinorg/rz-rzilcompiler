@@ -24,6 +24,7 @@ class Register(GlobalVar):
         self.is_new = is_new
         self.is_explicit = is_explicit  # Register number is predefined by instruction.
         self.is_reg_alias = is_reg_alias
+
         if self.is_new:
             GlobalVar.__init__(self, name + '_tmp', v_type)
         else:
@@ -31,7 +32,7 @@ class Register(GlobalVar):
 
     def il_init_var(self):
         if self.is_explicit:
-            return f'RzIlOpPure *{self.get_isa_name()} = VARG({self.get_isa_name()});'
+            return f'RzIlOpPure *{self.get_name()} = VARG({self.get_name()});'
 
         if self.access == RegisterAccessType.W:  # Registers which are only written do not need an own RzILOpPure.
             return self.il_isa_to_assoc_name()
@@ -40,11 +41,11 @@ class Register(GlobalVar):
         else:
             init = self.il_isa_to_assoc_name() + '\n'
 
-        init += f'RzIlOpPure *{self.get_isa_name()} = VARG({self.get_assoc_name()});'
+        init += f'RzIlOpPure *{self.get_name()} = VARG({self.get_assoc_name()});'
         return init
 
     def il_isa_to_assoc_name(self):
-        return f'const char *{self.name_assoc} = {isa_to_reg_fnc}({", ".join(isa_to_reg_args)}, "{self.name}");'
+        return f'const char *{self.name_assoc} = {isa_to_reg_fnc}({", ".join(isa_to_reg_args)}, "{self.get_isa_name()}", {str(self.is_new).lower()});'
 
     def il_reg_alias_to_hw_reg(self) -> str:
         """ Some registers are an alias for another register (PC = C9, GP = C11, SP = R29 etc.

@@ -61,7 +61,7 @@ class Pure:
 
     def get_isa_name(self):
         """ Returns the name of the RzILOpPure variable as in the ISA manual. """
-        return self.name
+        return self.isa_name
 
     def get_assoc_name(self):
         return self.name_assoc
