@@ -351,6 +351,15 @@ class RZILTransformer(Transformer):
         # These are empty compound statements.
         return Empty(f'empty_{self.get_op_id()}')
 
+    def gcc_extended_expr(self, items):
+        self.ext.set_token_meta_data('gcc_extended_expr')
+        if isinstance(items[0], list):
+            raise NotImplementedError('List of statements in gcc extended expressions not implemented.')
+        expr = items[1]
+        if expr:
+            return expr
+        raise NotImplementedError('GCC extended expressions without expression are not implemented.')
+
     def expr_stmt(self, items):
         self.ext.set_token_meta_data('expr_stmt')
         # These are empty expression statements.
