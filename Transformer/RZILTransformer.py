@@ -10,6 +10,7 @@ from Transformer.Effects.ForLoop import ForLoop
 from Transformer.Effects.Jump import Jump
 from Transformer.Effects.MemStore import MemStore
 from Transformer.Effects.NOP import NOP
+from Transformer.Effects.PredicateWrite import PredicateWrite
 from Transformer.Effects.Sequence import Sequence
 from Transformer.HexagonExtension import HexagonExtension
 from Transformer.Hybrids.Hybrid import Hybrid, PostfixExpr
@@ -266,6 +267,10 @@ class RZILTransformer(Transformer):
         else:
             raise NotImplementedError(f'Unary expression {items[0]} not handler.')
         return self.resolve_hybrid_ops(v)
+
+    def pred_write(self, items):
+        name = f'op_PRED_WRITE_{self.get_op_id()}'
+        return PredicateWrite(name, items[1], items[2])
 
     def postfix_expr(self, items):
         self.ext.set_token_meta_data('postfix_expr')
