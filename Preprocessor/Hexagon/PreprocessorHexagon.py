@@ -37,25 +37,30 @@ class PreprocessorHexagon:
                 is_vec_macro_file = False
             with open(mp) as f:
                 in_qemu_gen = False
+                in_user_only = False
                 for line in f.readlines():
                     if line == '\n':
                         continue
                     if re.match(r'#ifdef QEMU_GENERATE', line):
                         in_qemu_gen = True
                         continue
+                    if re.match(r'#ifdef CONFIG_USER_ONLY', line):
+                        in_user_only = True
+                        continue
                     if re.match(r'#ifndef|#ifdef', line):
                         continue
                     if re.match(r'#include', line):
                         continue
                     if re.match(r'(#else)|(#endif)', line):
-                        if in_qemu_gen:
+                        if in_qemu_gen or in_user_only:
+                            in_user_only = False
                             in_qemu_gen = False
                         continue
                     if in_qemu_gen and is_vec_macro_file:
                         # QEMU_GENERATE macros of the vector macro file are included.
                         res.append(line.strip('\n'))
                         continue
-                    elif in_qemu_gen:
+                    elif in_qemu_gen or in_user_only:
                         continue
                     if re.match(r'(\s*//)|(/\*)|(\s*\*)', line):  # Ignore comments
                         continue

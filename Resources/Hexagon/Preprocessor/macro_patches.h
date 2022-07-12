@@ -107,3 +107,6 @@
     gen_load_locked##SIZE##SIGN(DST, EA, ctx->mem_idx);
 #define fSTORE_LOCKED(NUM, SIZE, EA, SRC, PRED) \
     gen_store_conditional##SIZE(ctx, PRED, EA, SRC);
+
+// Frame checks are currently not implemented. They are not modeled for user instructions anyway.
+#define fFRAMECHECK(ADDR, EA)

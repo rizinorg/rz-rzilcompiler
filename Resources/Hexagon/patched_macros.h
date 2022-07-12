@@ -209,8 +209,7 @@
 #define fGET_FRAMEKEY() READ_REG(HEX_REG_FRAMEKEY)
 #define fFRAME_SCRAMBLE(VAL) ((VAL) ^ (fCAST8u(fGET_FRAMEKEY()) << 32))
 #define fFRAME_UNSCRAMBLE(VAL) fFRAME_SCRAMBLE(VAL)
-#define fFRAMECHECK(ADDR, EA) do { } while (0) /* Not modelled in linux-user */
-#define fFRAMECHECK(ADDR, EA)  g_assert_not_reached();
+#define fFRAMECHECK(ADDR, EA)
 #define fSTORE(NUM, SIZE, EA, SRC) MEM_STORE##SIZE(EA, SRC, slot)
 #define fGETBYTE(N, SRC) ((int8_t)((SRC >> ((N) * 8)) & 0xff))
 #define fGETUBYTE(N, SRC) ((uint8_t)((SRC >> ((N) * 8)) & 0xff))

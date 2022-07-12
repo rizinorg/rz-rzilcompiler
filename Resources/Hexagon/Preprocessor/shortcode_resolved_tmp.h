@@ -1,4 +1,4 @@
-#line 358 "Resources/Hexagon/Preprocessor/combined.h"
+#line 357 "Resources/Hexagon/Preprocessor/combined.h"
 insn(J2_jump, {; riV = (riV & ~(4 - 1)); JUMP((HEX_REG_ALIAS_PC)+riV);})
 insn(J2_jumpr, {JUMP(RsV);})
 insn(J2_jumpt, {; if (((PuV) & 1)) { ;riV = (riV & ~(4 - 1)); JUMP((HEX_REG_ALIAS_PC)+riV);; }})
@@ -323,7 +323,7 @@ insn(S4_storerhnew_ur, {; do {        EA = UiV + (RuV << uiV);    } while (0); m
 insn(S2_storerhnew_pbr, {fEA_BREVR(RxV); do { RxV = RxV + (MuV); } while (0); mem_store_u16(EA, ((int16_t)(((NtN) >> ((0) * 16)) & 0xffff))); })
 insn(S2_storerhnew_pci, {do { EA = (RxV); } while (0); fPM_CIRI(RxV,siV,MuV); mem_store_u16(EA, ((int16_t)(((NtN) >> ((0) * 16)) & 0xffff)));})
 insn(S2_storerhnew_pcr, {do { EA = (RxV); } while (0); fPM_CIRR(RxV,((((11) != 0) ? sextract64(((((MuV) & 0xf0000000) >> 21) | ((MuV >> 17) & 0x7f)), 0, (11)) : 0LL))<<1,MuV); mem_store_u16(EA, ((int16_t)(((NtN) >> ((0) * 16)) & 0xffff)));})
-insn(S2_allocframe, { do {        EA = RxV + -8;    } while (0); mem_store_u64(EA, (((((uint64_t)((HEX_REG_ALIAS_LR))) << 32) | ((uint32_t)((HEX_REG_ALIAS_FP)))) ^ (((uint64_t)(HEX_REG_ALIAS_FRAMEKEY)) << 32))); (HEX_REG_ALIAS_FP = EA);; g_assert_not_reached();; RxV = EA-uiV; })
+insn(S2_allocframe, { do {        EA = RxV + -8;    } while (0); mem_store_u64(EA, (((((uint64_t)((HEX_REG_ALIAS_LR))) << 32) | ((uint32_t)((HEX_REG_ALIAS_FP)))) ^ (((uint64_t)(HEX_REG_ALIAS_FRAMEKEY)) << 32))); (HEX_REG_ALIAS_FP = EA);; ; RxV = EA-uiV; })
 insn(L2_deallocframe, { size8u_t tmp; do { EA = (RsV); } while (0); tmp = (size8u_t)(mem_load_u64(EA)); RddV = ((tmp) ^ (((uint64_t)(HEX_REG_ALIAS_FRAMEKEY)) << 32)); (HEX_REG_ALIAS_SP = EA+8);; })
 insn(L4_return, { size8u_t tmp; do { EA = (RsV); } while (0); tmp = (size8u_t)(mem_load_u64(EA)); RddV = ((tmp) ^ (((uint64_t)(HEX_REG_ALIAS_FRAMEKEY)) << 32)); (HEX_REG_ALIAS_SP = EA+8);; JUMP(((int64_t)((int32_t)((RddV >> ((1) * 32)) & 0x0ffffffffLL))));})
 insn(L4_return_t, { size8u_t tmp; ; do { EA = (RsV); } while (0); if (((PvV) & 1)) { tmp = (size8u_t)(mem_load_u64(EA)); RddV = ((tmp) ^ (((uint64_t)(HEX_REG_ALIAS_FRAMEKEY)) << 32)); (HEX_REG_ALIAS_SP = EA+8);; JUMP(((int64_t)((int32_t)((RddV >> ((1) * 32)) & 0x0ffffffffLL)))); } else { do { cancel_slot; } while (0); } })
@@ -1639,7 +1639,7 @@ insn(SS2_storewi0, {do {        EA = RsV + uiV;    } while (0); mem_store_u32(EA
 insn(SS2_storebi0, {do {        EA = RsV + uiV;    } while (0); mem_store_u8(EA, 0);})
 insn(SS2_storewi1, {do {        EA = RsV + uiV;    } while (0); mem_store_u32(EA, 1);})
 insn(SS2_storebi1, {do {        EA = RsV + uiV;    } while (0); mem_store_u8(EA, 1);})
-insn(SS2_allocframe, { do {        EA = (HEX_REG_ALIAS_SP) + -8;    } while (0); mem_store_u64(EA, (((((uint64_t)((HEX_REG_ALIAS_LR))) << 32) | ((uint32_t)((HEX_REG_ALIAS_FP)))) ^ (((uint64_t)(HEX_REG_ALIAS_FRAMEKEY)) << 32))); (HEX_REG_ALIAS_FP = EA);; g_assert_not_reached();; (HEX_REG_ALIAS_SP = EA-uiV);; })
+insn(SS2_allocframe, { do {        EA = (HEX_REG_ALIAS_SP) + -8;    } while (0); mem_store_u64(EA, (((((uint64_t)((HEX_REG_ALIAS_LR))) << 32) | ((uint32_t)((HEX_REG_ALIAS_FP)))) ^ (((uint64_t)(HEX_REG_ALIAS_FRAMEKEY)) << 32))); (HEX_REG_ALIAS_FP = EA);; ; (HEX_REG_ALIAS_SP = EA-uiV);; })
 insn(V6_vL32b_pi, { do { EA = (RxV); } while (0); gen_vreg_load(ctx, VdV_off, EA, true); do { RxV = RxV + (siV*(1 << (7))); } while (0); })
 insn(V6_vL32b_ai, { do {        EA = RtV + siV*(1 << (7));    } while (0); gen_vreg_load(ctx, VdV_off, EA, true);})
 insn(V6_vL32b_ppu, { do { EA = (RxV); } while (0); gen_vreg_load(ctx, VdV_off, EA, true); do { RxV = RxV + (MuV); } while (0); })
