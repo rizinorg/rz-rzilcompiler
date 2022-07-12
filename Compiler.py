@@ -77,8 +77,8 @@ class Compiler:
         stats = {k: {"count": 0} for k in keys}
         excs = dict()
 
-        # for insn in tqdm(self.preprocessor.behaviors.keys(), desc="Compiling..."):
-        for insn in euclid_instructions:
+        for insn in tqdm(self.preprocessor.behaviors.keys(), desc="Compiling..."):
+        # for insn in euclid_instructions:
             e = None
             try:
                 self.compile_insn(insn)
