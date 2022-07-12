@@ -167,4 +167,9 @@ class HexagonTransformerExtension(TransformerExtension):
 class HexagonCompilerExtension(CompilerExtension):
 
     def transform_insn_name(self, insn_name) -> str:
+        if insn_name == 'SA2_tfrsi':
+            # SA2_tfrsi is not documented and not in the shortcode.
+            return 'A2_tfrsi'
+        if insn_name[:2] == 'X2':
+            raise NotImplementedError('Can not compiler duplex instructions because they are not given in the shortcode.')
         return insn_name[:-13] if re.match(r'^.+_undocumented$', insn_name) else insn_name
