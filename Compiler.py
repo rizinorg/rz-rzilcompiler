@@ -119,7 +119,9 @@ class Compiler:
 
         for k, v in stats.items():
             print(f'{k} = {v["count"]}')
-
+        if len(excs) == 0:
+            print('* All instructions compiled successfully!')
+            return
         self.fix_compile_exceptions(excs)
 
     @staticmethod
