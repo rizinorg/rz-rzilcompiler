@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 import argparse
+import re
 import sys
 import traceback
 
@@ -156,18 +157,19 @@ class Compiler:
             so this method returns a list of compiled behaviors.
             For most instructions this list has a length of 1.
         """
-        behaviors = self.preprocessor.get_insn_behavior(insn_name)
+        insn = insn_name[:-13] if re.match(r'^.+_undocumented$', insn_name) else insn_name
+        behaviors = self.preprocessor.get_insn_behavior(insn)
         if not behaviors:
             raise NotImplementedError(f"Behavior for instruction {insn_name} not known by the preprocessor.")
 
         parse_trees = [self.parser.parse(behavior) for behavior in behaviors]
-        self.compiled_insns[insn_name] = {'rzil': [], 'meta': [], 'parse_trees': []}
+        self.compiled_insns[insn] = {'rzil': [], 'meta': [], 'parse_trees': []}
         for pt in parse_trees:
-            self.compiled_insns[insn_name]['rzil'].append(self.transformer.transform(pt))
-            self.compiled_insns[insn_name]['meta'].append(self.transformer.ext.get_meta())
-            self.compiled_insns[insn_name]['parse_trees'].append(pt.pretty())
+            self.compiled_insns[insn]['rzil'].append(self.transformer.transform(pt))
+            self.compiled_insns[insn]['meta'].append(self.transformer.ext.get_meta())
+            self.compiled_insns[insn]['parse_trees'].append(pt.pretty())
         ILOpsHolder().clear()
-        return self.compiled_insns[insn_name]
+        return self.compiled_insns[insn]
 
     def get_insn_rzil(self, insn_name: str) -> [str]:
         if insn_name in self.compiled_insns:
