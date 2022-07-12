@@ -154,6 +154,13 @@ class HexagonTransformerExtension(TransformerExtension):
             # @start and @length parameters, and return it, sign extended to
             # an int64_t".
             return ValueType(True, 64)
+        elif fcn_name == 'extract64':
+            # QEMU function
+            # Extract from the 64 bit input @value the bit field specified by the
+            # @start and @length parameters, and return it. The bit field must
+            # lie entirely within the 64 bit word. It is valid to request that
+            # all 64 bits are returned (ie @length 64 and @start 0).
+            return ValueType(False, 64)
         else:
             raise NotImplementedError(f'No value type for function {fcn_name} defined.')
 
