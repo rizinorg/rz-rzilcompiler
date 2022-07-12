@@ -77,8 +77,8 @@ class Compiler:
         stats = {k: {"count": 0} for k in keys}
         excs = dict()
 
-        for insn in tqdm(self.preprocessor.behaviors.keys(), desc="Compiling..."):
-        # for insn in euclid_instructions:
+        # for insn in tqdm(self.preprocessor.behaviors.keys(), desc="Compiling..."):
+        for insn in euclid_instructions:
             e = None
             try:
                 self.compile_insn(insn)
@@ -117,11 +117,24 @@ class Compiler:
                 else:
                     excs[e_name] = [tup]
 
-        for k, v in stats.items():
-            print(f'{k} = {v["count"]}')
         if len(excs) == 0:
             print('* All instructions compiled successfully!')
             return
+
+        for k, v in stats.items():
+            print(f'{k} = {v["count"]}')
+        stats = dict()
+        for v_exc in excs['VisitError']:
+            err: VisitError = v_exc[2]
+            exc_str = str(err.orig_exc)
+            if exc_str in stats:
+                stats[exc_str] += 1
+            else:
+                stats[exc_str] = 1
+        print('Visit Errors:')
+        for k, x in stats.items():
+            print(f'\t{x} - {k}')
+
         self.fix_compile_exceptions(excs)
 
     @staticmethod
