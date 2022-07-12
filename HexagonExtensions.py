@@ -1,6 +1,9 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
+import re
+
+from CompilerExtension import CompilerExtension
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.Immediate import Immediate
 from Transformer.Pures.LocalVar import LocalVar
@@ -159,3 +162,9 @@ class HexagonTransformerExtension(TransformerExtension):
             return LocalVar('EA', ValueType(False, 32))
         elif identifier == self.special_identifiers['iterator_i']:
             return LocalVar('i', ValueType(False, 32))
+
+
+class HexagonCompilerExtension(CompilerExtension):
+
+    def transform_insn_name(self, insn_name) -> str:
+        return insn_name[:-13] if re.match(r'^.+_undocumented$', insn_name) else insn_name

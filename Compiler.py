@@ -13,6 +13,7 @@ from lark.lark import Lark
 from tqdm import tqdm
 
 from ArchEnum import ArchEnum
+from HexagonExtensions import HexagonCompilerExtension
 from Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.RZILTransformer import RZILTransformer
@@ -25,14 +26,22 @@ class Compiler:
     parser = None
     transformer = None
     compiled_insns = dict()
+    ext = None
 
     def __init__(self, arch: ArchEnum, path_resources: str):
         self.arch: ArchEnum = arch
         self.path_resources: str = path_resources
 
+        self.set_extension()
         self.set_parser()
         self.set_transformer()
         self.set_preprocessor()
+
+    def set_extension(self):
+        if self.arch == ArchEnum.HEXAGON:
+            self.ext = HexagonCompilerExtension()
+        else:
+            raise NotImplementedError(f'No compiler extension for {self.arch} given.')
 
     def set_parser(self):
         print("* Set up Lark parser.")
@@ -158,7 +167,7 @@ class Compiler:
             For most instructions this list has a length of 1.
         """
 
-        insn = insn_name[:-13] if re.match(r'^.+_undocumented$', insn_name) else insn_name
+        insn = self.ext.transform_insn_name(insn_name)
         behaviors = self.preprocessor.get_insn_behavior(insn)
         if not behaviors:
             raise NotImplementedError(f"Behavior for instruction {insn_name} not known by the preprocessor.")
