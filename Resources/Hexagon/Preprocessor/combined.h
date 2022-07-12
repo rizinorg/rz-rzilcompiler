@@ -90,7 +90,7 @@
 #define fSATB(VAL) (fSATN(8, VAL))
 #define fVSATUB(VAL) (fVSATUN(8, VAL))
 #define fVSATB(VAL) (fVSATN(8, VAL))
-#define fIMMEXT(IMM)
+#define fIMMEXT(IMM) (IMM)
 #define fMUST_IMMEXT(IMM) fIMMEXT(IMM)
 #define fPCALIGN(IMM) IMM = (IMM & ~PCALIGN_MASK)
 #define fREAD_IREG(VAL)    (fSXTN(11, 64, (((VAL) & 0xf0000000) >> 21) | ((VAL >> 17) & 0x7f)))

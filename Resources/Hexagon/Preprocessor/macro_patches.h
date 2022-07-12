@@ -21,7 +21,7 @@
 
 #define fPART1(WORK) __COMPOUND_PART1__{ WORK; }__COMPOUND_PART1__
 
-#define fIMMEXT(IMM)
+#define fIMMEXT(IMM) (IMM)
 
 #define fREAD_GP() \
     (insn->extension_valid ? 0 : READ_REG(HEX_REG_GP))
