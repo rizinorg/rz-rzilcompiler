@@ -341,8 +341,7 @@ class RZILTransformer(Transformer):
     def for_loop(self, items):
         if len(items) != 5:
             raise NotImplementedError(f'For loops with {len(items)} elements is not supported yet.')
-        holder = ILOpsHolder()
-        return ForLoop(f'for_{self.get_op_id()}', items[1], items[2], items[3], holder.consume_compound())
+        return ForLoop(f'for_{self.get_op_id()}', items[1], items[2], items[3], flatten_list(items[4]))
 
     def iteration_stmt(self, items):
         self.ext.set_token_meta_data('iteration_stmt')
