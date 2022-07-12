@@ -157,6 +157,7 @@ class Compiler:
             so this method returns a list of compiled behaviors.
             For most instructions this list has a length of 1.
         """
+
         insn = insn_name[:-13] if re.match(r'^.+_undocumented$', insn_name) else insn_name
         behaviors = self.preprocessor.get_insn_behavior(insn)
         if not behaviors:

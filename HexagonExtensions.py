@@ -11,7 +11,7 @@ from Transformer.helper_hexagon import get_value_type_from_reg_type, get_value_t
 from lark import Token, Tree
 
 
-class HexagonExtension(TransformerExtension):
+class HexagonTransformerExtension(TransformerExtension):
 
     uses_new = False
     writes_mem = False

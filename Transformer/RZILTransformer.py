@@ -12,7 +12,7 @@ from Transformer.Effects.MemStore import MemStore
 from Transformer.Effects.NOP import NOP
 from Transformer.Effects.PredicateWrite import PredicateWrite
 from Transformer.Effects.Sequence import Sequence
-from Transformer.HexagonExtension import HexagonExtension
+from HexagonExtensions import HexagonTransformerExtension
 from Transformer.Hybrids.Hybrid import Hybrid, PostfixExpr
 from Transformer.Hybrids.PostfixIncDec import PostfixIncDec
 from Transformer.ILOpsHolder import ILOpsHolder
@@ -30,7 +30,7 @@ from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Pures.PureExec import PureExec
 from Transformer.Pures.Ternary import Ternary
 from Transformer.helper import exc_if_types_not_match, flatten_list
-from Transformer.helper_hexagon import get_value_type_by_c_number, get_num_base_by_token, get_c_type_by_value_type
+from Transformer.helper_hexagon import get_value_type_by_c_number, get_num_base_by_token
 
 
 class RZILTransformer(Transformer):
@@ -46,7 +46,7 @@ class RZILTransformer(Transformer):
         self.arch = arch
 
         if self.arch == ArchEnum.HEXAGON:
-            self.ext = HexagonExtension()
+            self.ext = HexagonTransformerExtension()
         else:
             raise NotImplementedError(f'Architecture {self.arch} has not Transformer extension.')
         super().__init__()
