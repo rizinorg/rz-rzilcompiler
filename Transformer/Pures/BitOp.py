@@ -40,18 +40,18 @@ class BitOp(PureExec):
 
     def il_exec(self):
         if self.op_type == BitOperationType.AND:
-            return f"LOGAND({self.ops[0].il_read()}, {self.ops[1].il_read()}"
+            return f"LOGAND({self.ops[0].il_read()}, {self.ops[1].il_read()})"
         elif self.op_type == BitOperationType.OR:
-            return f"LOGOR({self.ops[0].il_read()}, {self.ops[1].il_read()}"
+            return f"LOGOR({self.ops[0].il_read()}, {self.ops[1].il_read()})"
         elif self.op_type == BitOperationType.XOR:
-            return f"LOGXOR({self.ops[0].il_read()}, {self.ops[1].il_read()}"
+            return f"LOGXOR({self.ops[0].il_read()}, {self.ops[1].il_read()})"
         elif self.op_type == BitOperationType.NOT:
-            return f"LOGNOT({self.ops[0].il_read()}"
+            return f"LOGNOT({self.ops[0].il_read()})"
         elif self.op_type == BitOperationType.NEG:
-            return f"NEG({self.ops[0].il_read()}"
+            return f"NEG({self.ops[0].il_read()})"
         elif self.op_type == BitOperationType.RSHIFT:
-            return f'SHIFTR0({self.ops[0].il_read()}, {self.ops[1].il_read()}'
+            return f'SHIFTR0({self.ops[0].il_read()}, {self.ops[1].il_read()})'
         elif self.op_type == BitOperationType.LSHIFT:
-            return f'SHIFTL0({self.ops[0].il_read()}, {self.ops[1].il_read()}'
+            return f'SHIFTL0({self.ops[0].il_read()}, {self.ops[1].il_read()})'
         else:
             raise NotImplementedError("")
