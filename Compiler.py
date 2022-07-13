@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 import argparse
-import re
 import sys
 import traceback
 
@@ -17,8 +16,6 @@ from HexagonExtensions import HexagonCompilerExtension
 from Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.RZILTransformer import RZILTransformer
-
-from Tests.testcases import euclid_instructions
 
 
 class Compiler:
@@ -77,8 +74,7 @@ class Compiler:
         stats = {k: {"count": 0} for k in keys}
         excs = dict()
 
-        # for insn in tqdm(self.preprocessor.behaviors.keys(), desc="Compiling..."):
-        for insn in euclid_instructions:
+        for insn in tqdm(self.preprocessor.behaviors.keys(), desc="Compiling..."):
             e = None
             try:
                 self.compile_insn(insn)
