@@ -110,3 +110,14 @@
 
 // Frame checks are currently not implemented. They are not modeled for user instructions anyway.
 #define fFRAMECHECK(ADDR, EA)
+
+// TODO
+// fCARRY_FROM_ADD
+// fEA_BREVR
+// fPM_CIRI
+// fPM_CIRR
+// fCARRY_FROM_ADD
+// fFLOAT
+// fSF_RECIP_COMMON
+// fSF_INVSQRT_COMMON
+// fDOUBLE

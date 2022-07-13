@@ -161,6 +161,29 @@ class HexagonTransformerExtension(TransformerExtension):
             # lie entirely within the 64 bit word. It is valid to request that
             # all 64 bits are returned (ie @length 64 and @start 0).
             return ValueType(False, 64)
+        # TODO
+        # // sizeof -> Main priority.
+        # int128_exts64
+        # revbit32
+        # gen_store_conditional4
+        # gen_store_conditional8
+        # conv_round
+        # // gen_vreg_load -> 57
+        # // conv_4u_to_sf
+        # // conv_4u_to_df
+        # // conv_4s_to_sf
+        # // conv_4s_to_df
+        # // conv_8u_to_sf
+        # // conv_8u_to_df
+        # // conv_8s_to_sf
+        # // conv_8s_to_df
+        # // ctpop64
+        # // ctpop32
+        # // clo64
+        # // revbit64
+        # // interleave
+        # // deinterleave
+        # // helper_raise_exception
         else:
             raise NotImplementedError(f'No value type for function {fcn_name} defined.')
 
