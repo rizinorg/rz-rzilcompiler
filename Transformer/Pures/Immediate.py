@@ -15,4 +15,8 @@ class Immediate(LocalVar):
         self.set_isa_name(name)
 
     def il_init_var(self, isa_to_imm_fcn=None):
-        return f'RzILOpPure *{self.get_isa_name()} = {isa_to_imm_fnc}({", ".join(isa_to_imm_args)}, "{self.name}");'
+        sign = 's' if self.v_type.signed else 'u'
+        il_macro = f'{sign.upper()}N'
+        cast = f'({sign}t{self.v_type.bit_width})'
+        get_imm = f'{isa_to_imm_fnc}({", ".join(isa_to_imm_args)}, "{self.name}"'
+        return f'RzILOpPure *{self.get_isa_name()} = {il_macro}({cast} {get_imm}))'
