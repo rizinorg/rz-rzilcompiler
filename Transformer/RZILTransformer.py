@@ -83,9 +83,11 @@ class RZILTransformer(Transformer):
         return res
 
     def relational_expr(self, items):
+        self.ext.set_token_meta_data('relational_expr')
         return self.compare_op(items)
 
     def equality_expr(self, items):
+        self.ext.set_token_meta_data('equality_expr')
         return self.compare_op(items)
 
     def reg_alias(self, items):
@@ -174,6 +176,7 @@ class RZILTransformer(Transformer):
         return v
 
     def selection_stmt(self, items):
+        self.ext.set_token_meta_data('selection_stmt')
         cond = items[1]
         then_seq = Sequence(f'seq_then_{self.get_op_id()}', flatten_list(items[2]))
         name = f'branch_{self.get_op_id()}'
@@ -186,6 +189,7 @@ class RZILTransformer(Transformer):
             raise NotImplementedError(f'"{items[0]}" branch not implemented.')
 
     def conditional_expr(self, items):
+        self.ext.set_token_meta_data('conditional_expr')
         return self.resolve_hybrid_ops(Ternary(f'cond_{self.get_op_id()}', items[0], items[1], items[2]))
 
     def assignment_expr(self, items):
@@ -269,6 +273,7 @@ class RZILTransformer(Transformer):
         return self.resolve_hybrid_ops(v)
 
     def pred_write(self, items):
+        self.ext.set_token_meta_data('pred_write')
         name = f'op_PRED_WRITE_{self.get_op_id()}'
         return PredicateWrite(name, items[1], items[2])
 
@@ -323,6 +328,7 @@ class RZILTransformer(Transformer):
         return CCall(f'c_call_{self.get_op_id()}', val_type, items)
 
     def identifier(self, items):
+        self.ext.set_token_meta_data('identifier')
         # Hexagon shortcode can initialize certain variables without type.
         # Those are converted to a local var here.
         identifier = items[0].value
@@ -335,10 +341,12 @@ class RZILTransformer(Transformer):
         return identifier
 
     def compare_op(self, items):
+        self.ext.set_token_meta_data('compare_op')
         op_type = CompareOpType(items[1])
         return self.resolve_hybrid_ops(CompareOp(f'op_{op_type.name}', items[0], items[2], op_type))
 
     def for_loop(self, items):
+        self.ext.set_token_meta_data('for_loop')
         if len(items) != 5:
             raise NotImplementedError(f'For loops with {len(items)} elements is not supported yet.')
         return ForLoop(f'for_{self.get_op_id()}', items[1], items[2], items[3], flatten_list(items[4]))
@@ -370,7 +378,7 @@ class RZILTransformer(Transformer):
         return Empty(f'empty_{self.get_op_id()}')
 
     def cancel_slot_stmt(self, items):
-        self.ext.set_token_meta_data('cancel_slot_expr')
+        self.ext.set_token_meta_data('cancel_slot_stmt')
         return NOP(f'nop_{self.get_op_id()}')
 
     def block_item_list(self, items):
@@ -383,8 +391,6 @@ class RZILTransformer(Transformer):
         # holder.add_to_compound(items[0])
         return items[0]
 
-    def cancel_slot_expr(self, items):
-        return NOP(f'nop_{self.get_op_id()}')
 
     def resolve_hybrid_ops(self, operation: PureExec):
         hybrids = list()

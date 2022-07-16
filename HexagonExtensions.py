@@ -21,6 +21,7 @@ class HexagonTransformerExtension(TransformerExtension):
     reads_mem = False
     is_conditional = False
     branches = False
+    writes_predicate = False
 
     def __init__(self):
         # Variables names used in the shortcode with special meaning.
@@ -29,6 +30,10 @@ class HexagonTransformerExtension(TransformerExtension):
     def set_uses_new(self):
         if not self.uses_new:
             self.uses_new = True
+
+    def set_writes_pred(self):
+        if not self.writes_predicate:
+            self.writes_predicate = True
 
     def set_writes_mem(self):
         if not self.writes_mem:
@@ -55,6 +60,10 @@ class HexagonTransformerExtension(TransformerExtension):
             self.set_uses_new()
         elif token == 'jump':
             self.set_branches()
+        elif token == 'selection_stmt':
+            self.set_is_conditional()
+        elif token == 'pred_write':
+            self.set_writes_pred()
 
     def reg_alias(self, items):
         alias = items[0]
