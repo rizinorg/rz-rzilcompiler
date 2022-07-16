@@ -4,7 +4,7 @@
 #
 # Any classes which produce no RZIL ops but C-code instead
 #
-
+from Transformer.PluginInfo import hexagon_c_call_prefix
 from Transformer.Pures.Pure import ValueType, PureType
 from Transformer.Pures.PureExec import PureExec
 
@@ -20,4 +20,4 @@ class CCall(PureExec):
             # Arguments can be strings
             return arg if isinstance(arg, str) else arg.il_read()
 
-        return f'{self.fcn_name}({", ".join([read_arg(arg) for arg in self.ops])})'
+        return f'{hexagon_c_call_prefix + self.fcn_name.upper()}({", ".join([read_arg(arg) for arg in self.ops])})'
