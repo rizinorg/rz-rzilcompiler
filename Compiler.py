@@ -189,6 +189,7 @@ class Compiler:
             self.compiled_insns[insn]['rzil'].append(self.transformer.transform(pt))
             self.compiled_insns[insn]['meta'].append(self.transformer.ext.get_meta())
             self.compiled_insns[insn]['parse_trees'].append(pt.pretty())
+        self.transformer.ext.reset_flags()
         ILOpsHolder().clear()
         return self.compiled_insns[insn]
 

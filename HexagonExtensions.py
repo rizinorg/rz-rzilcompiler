@@ -51,6 +51,14 @@ class HexagonTransformerExtension(TransformerExtension):
         if not self.branches:
             self.branches = True
 
+    def reset_flags(self):
+        self.is_conditional = False
+        self.reads_mem = False
+        self.writes_mem = False
+        self.writes_predicate = False
+        self.uses_new = False
+        self.branches = False
+
     def set_token_meta_data(self, token: str):
         if token == 'mem_store':
             self.set_writes_mem()
