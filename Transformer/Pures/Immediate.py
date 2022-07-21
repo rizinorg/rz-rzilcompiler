@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from Transformer.PluginInfo import isa_to_imm_fnc, isa_to_imm_args
-from Transformer.Pures.LetVar import LetVar
 from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.Pure import ValueType
 
@@ -17,6 +16,7 @@ class Immediate(LocalVar):
     def il_init_var(self, isa_to_imm_fcn=None):
         sign = 's' if self.v_type.signed else 'u'
         il_macro = f'{sign.upper()}N'
-        cast = f'({sign}t{self.v_type.bit_width})'
+        width = self.v_type.bit_width
+        cast = f'({sign}t{width})'
         get_imm = f'{isa_to_imm_fnc}({", ".join(isa_to_imm_args)}, "{self.name}"'
-        return f'RzILOpPure *{self.get_isa_name()} = {il_macro}({cast} {get_imm}))'
+        return f'RzILOpPure *{self.get_isa_name()} = {il_macro}({width}, {cast} {get_imm}));'
