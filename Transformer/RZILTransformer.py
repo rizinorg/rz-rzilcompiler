@@ -152,6 +152,15 @@ class RZILTransformer(Transformer):
         name = f'const_{"neg" if items[0] == "-" else "pos"}{items[1]}{items[2] if items[2] else ""}'
         return Number(name, int(num_str, get_num_base_by_token(items[1])), v_type)
 
+    def declaration_specifiers(self, items):
+        self.ext.set_token_meta_data('declaration_specifiers')
+        specifier: str = items[0]
+        t: ValueType = items[1]
+        if specifier == 'const':
+            # Currently ignore that the variable should be constant.
+            return t
+        raise NotImplementedError(f'Type specifier {specifier} currently not supported.')
+
     def declaration(self, items):
         self.ext.set_token_meta_data('declaration')
 
