@@ -309,7 +309,10 @@ class RZILTransformer(Transformer):
         va = items[3]
         data: Pure = items[4]
         operation_value_type = ValueType(items[1] != 'u', int(items[2]))
-        exc_if_types_not_match(operation_value_type, data.value_type)
+        if operation_value_type != data.value_type:
+            # STOREW determines from the data type how many bytes are written.
+            # Cast the data type to the mem store type
+            data = Cast(f'op_{self.get_op_id()}', operation_value_type, va)
         return MemStore(f'ms_{data.get_name()}', va, data)
 
     # SPECIFIC FOR: Hexagon
