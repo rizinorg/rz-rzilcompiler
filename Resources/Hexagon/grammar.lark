@@ -397,6 +397,10 @@ reg_alias: /[A-Z0-9]+/ [_reg_alias_new]
 _reg_alias_new: "_NEW"
 
 ?number: [NUM_SIGN] (HEX_NUMBER | DEC_NUMBER) [INT_POST_TYPE]
+        | float_number
+
+float_number: COMMON_FLOAT
+        | COMMON_SIGNED_FLOAT
 
 c_size_type: "size" BIT_WIDTH SIGN_TYPE "_t"
 c_int_type: SIGN_TYPE_INT BIT_WIDTH "_t"
@@ -517,3 +521,5 @@ IDENTIFIER.0: /[A-Za-z_]+\w*/
 %import common.SIGNED_NUMBER
 %import common.WS
 %ignore WS
+%import common.FLOAT -> COMMON_FLOAT
+%import common.SIGNED_FLOAT -> COMMON_SIGNED_FLOAT
