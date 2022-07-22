@@ -26,7 +26,7 @@ class HexagonTransformerExtension(TransformerExtension):
 
     def __init__(self):
         # Variables names used in the shortcode with special meaning.
-        self.special_identifiers = {'EffectiveAddress': 'EA', 'iterator_i': 'i'}
+        self.special_identifiers = {"EffectiveAddress": "EA", "iterator_i": "i"}
 
     def set_uses_new(self):
         if not self.uses_new:
@@ -62,16 +62,16 @@ class HexagonTransformerExtension(TransformerExtension):
         self.uses_new = False
         self.branches = False
 
-    def set_token_meta_data(self, token: str):
-        if token == 'mem_store':
+    def set_token_meta_data(self, token: str, **kwargs):
+        if token == "mem_store":
             self.set_writes_mem()
-        elif token == 'mem_load':
+        elif token == "mem_load":
             self.set_reads_mem()
-        elif token == 'new_reg':
+        elif token == "new_reg":
             self.set_uses_new()
-        elif token == 'jump':
+        elif token == "jump":
             self.set_branches()
-        elif token == 'selection_stmt':
+        elif token == "selection_stmt":
             self.set_is_conditional()
         elif token == "pred_write":
             if len(kwargs) != 1:
@@ -84,7 +84,7 @@ class HexagonTransformerExtension(TransformerExtension):
         is_new = False
         if len(items) == 2:
             is_new = True
-        if alias == 'UPCYCLE' or alias == 'PKTCOUNT' or alias == 'UTIMER':
+        if alias == "UPCYCLE" or alias == "PKTCOUNT" or alias == "UTIMER":
             size = 64
         else:
             size = 32
@@ -102,7 +102,7 @@ class HexagonTransformerExtension(TransformerExtension):
             # The name is always the last in the list.
             name = items[-1]
         else:
-            name = ''.join(items)
+            name = "".join(items)
         reg_type = RegisterAccessType(items[1].type)  # src, dest, both
         v_type = get_value_type_from_reg_type(items)
 
@@ -123,7 +123,7 @@ class HexagonTransformerExtension(TransformerExtension):
 
     def imm(self, items):
         v_type = get_value_type_by_isa_imm(items)
-        name = f'{items[0]}'
+        name = f"{items[0]}"
         imm = Immediate(name, v_type)
         return imm
 
@@ -131,23 +131,23 @@ class HexagonTransformerExtension(TransformerExtension):
         items: Tree = items[0]
         rule = items.data
         tokens = items.children
-        if rule == 'c_size_type':
-            return ValueType(tokens[1] == 's', int(tokens[0]))
-        elif rule == 'c_int_type':
-            return ValueType(tokens[0] == 'int', int(tokens[1]))
+        if rule == "c_size_type":
+            return ValueType(tokens[1] == "s", int(tokens[0]))
+        elif rule == "c_int_type":
+            return ValueType(tokens[0] == "int", int(tokens[1]))
         else:
-            raise NotImplementedError(f'Data type {rule} is not handled.')
+            raise NotImplementedError(f"Data type {rule} is not handled.")
 
     def get_meta(self):
         flags = []
         if self.is_conditional:
-            flags.append('HEX_IL_INSN_ATTR_COND')
+            flags.append("HEX_IL_INSN_ATTR_COND")
         if self.uses_new:
-            flags.append('HEX_IL_INSN_ATTR_NEW')
+            flags.append("HEX_IL_INSN_ATTR_NEW")
         if self.writes_mem:
-            flags.append('HEX_IL_INSN_ATTR_MEM_WRITE')
+            flags.append("HEX_IL_INSN_ATTR_MEM_WRITE")
         if self.reads_mem:
-            flags.append('HEX_IL_INSN_ATTR_MEM_READ')
+            flags.append("HEX_IL_INSN_ATTR_MEM_READ")
         if self.branches:
             flags.append("HEX_IL_INSN_ATTR_BRANCH")
         if self.writes_predicate:
@@ -155,33 +155,33 @@ class HexagonTransformerExtension(TransformerExtension):
             for p in self.preds_written:
                 flags.append(f"HEX_IL_INSN_ATTR_WRITE_P{p}")
         if len(flags) == 0:
-            flags.append('HEX_IL_INSN_ATTR_NONE')
+            flags.append("HEX_IL_INSN_ATTR_NONE")
 
         return flags
 
     def get_val_type_by_fcn(self, fcn_name: str):
-        if fcn_name == 'hex_get_npc':
+        if fcn_name == "hex_get_npc":
             return ValueType(False, 32)
-        elif fcn_name == 'REGFIELD':
+        elif fcn_name == "REGFIELD":
             # Register field macros. Calls a function which returns the width or
             # offset into the register of the field.
             return ValueType(False, 32)
-        elif fcn_name == 'clo32':
+        elif fcn_name == "clo32":
             # QEMU function -- uint32_t clo32(uint32_t val)
             # Count leading ones in 32 bit value.
             return ValueType(False, 32)
-        elif fcn_name == 'deposit64':
+        elif fcn_name == "deposit64":
             # QEMU function
             # uint64_t deposit64(uint64_t value, int start, int length, uint64_t fieldval)
             # Sets the bits from 'start' to 'start+length' in 'value' with 'fieldvar'
             return ValueType(False, 64)
-        elif fcn_name == 'sextract64':
+        elif fcn_name == "sextract64":
             # QEMU function
             # "Extract from the 64 bit input @value the bit field specified by the
             # @start and @length parameters, and return it, sign extended to
             # an int64_t".
             return ValueType(True, 64)
-        elif fcn_name == 'extract64':
+        elif fcn_name == "extract64":
             # QEMU function
             # Extract from the 64 bit input @value the bit field specified by the
             # @start and @length parameters, and return it. The bit field must
@@ -212,27 +212,28 @@ class HexagonTransformerExtension(TransformerExtension):
         # // deinterleave
         # // helper_raise_exception
         else:
-            raise NotImplementedError(f'No value type for function {fcn_name} defined.')
+            raise NotImplementedError(f"No value type for function {fcn_name} defined.")
 
     def special_identifier_to_local_var(self, identifier):
-        if identifier == self.special_identifiers['EffectiveAddress']:
-            return LocalVar('EA', ValueType(False, 32))
-        elif identifier == self.special_identifiers['iterator_i']:
-            return LocalVar('i', ValueType(False, 32))
+        if identifier == self.special_identifiers["EffectiveAddress"]:
+            return LocalVar("EA", ValueType(False, 32))
+        elif identifier == self.special_identifiers["iterator_i"]:
+            return LocalVar("i", ValueType(False, 32))
 
 
 class HexagonCompilerExtension(CompilerExtension):
-
     def transform_insn_name(self, insn_name) -> str:
-        if 'sa2_tfrsi' in insn_name.lower():
+        if "sa2_tfrsi" in insn_name.lower():
             # SA2_tfrsi is the sub-instruction equivalent to A2_tfrsi.
             # But it is not documented and not in the shortcode.
-            return 'A2_tfrsi'
-        if insn_name[:2] == 'X2':
-            raise NotImplementedError('Can not compiler duplex instructions because they are not given in the shortcode.')
-        if re.match(r'^.+_undocumented$', insn_name):
+            return "A2_tfrsi"
+        if insn_name[:2] == "X2":
+            raise NotImplementedError(
+                "Can not compiler duplex instructions because they are not given in the shortcode."
+            )
+        if re.match(r"^.+_undocumented$", insn_name):
             return insn_name[:-13]
-        elif re.match(r'^undocumented_.+$', insn_name):
+        elif re.match(r"^undocumented_.+$", insn_name):
             return insn_name[13:]
         else:
             return insn_name
