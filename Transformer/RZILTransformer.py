@@ -52,6 +52,10 @@ class RZILTransformer(Transformer):
             raise NotImplementedError(f'Architecture {self.arch} has not Transformer extension.')
         super().__init__()
 
+    def reset(self):
+        self.op_count = 0
+        self.ext.reset_flags()
+
     def get_op_id(self):
         op_id = self.op_count
         self.op_count += 1
