@@ -3,7 +3,7 @@
 
 from Transformer.Effects.Effect import Effect, EffectType
 from Transformer.Pures.BitOp import BitOp, BitOperationType
-from Transformer.Pures.Pure import Pure, PureType
+from Transformer.Pures.Pure import Pure, PureType, ValueType
 from enum import StrEnum
 
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
@@ -89,3 +89,11 @@ class Assignment(Effect):
             return f'SETL("{self.dest.get_name()}", {self.src.get_name()})'
         else:
             raise NotImplementedError(f'Effect ype {self.type} not handled.')
+
+    def set_dest_type(self, t: ValueType):
+        """ For "<type> Assignment" declarations the Assignment gets parsed first.
+        Afterwards the type. Here we update the type of the destination variable.
+        """
+        if self.dest.type != PureType.LOCAL and self.dest.type != PureType.LET:
+            raise NotImplementedError(f"Updating the type of a {self.dest.type} is not allowed.")
+        self.dest.set_value_type(t)
