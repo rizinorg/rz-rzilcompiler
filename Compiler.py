@@ -177,21 +177,25 @@ class Compiler:
             so this method returns a list of compiled behaviors.
             For most instructions this list has a length of 1.
         """
+        try:
+            insn = self.ext.transform_insn_name(insn_name)
+            behaviors = self.preprocessor.get_insn_behavior(insn)
+            if not behaviors:
+                raise NotImplementedError(f"Behavior for instruction {insn_name} not known by the preprocessor.")
 
-        insn = self.ext.transform_insn_name(insn_name)
-        behaviors = self.preprocessor.get_insn_behavior(insn)
-        if not behaviors:
-            raise NotImplementedError(f"Behavior for instruction {insn_name} not known by the preprocessor.")
+            parse_trees = [self.parser.parse(behavior) for behavior in behaviors]
+            self.compiled_insns[insn] = {'rzil': [], 'meta': [], 'parse_trees': []}
+            for pt in parse_trees:
+                self.compiled_insns[insn]['rzil'].append(self.transformer.transform(pt))
+                self.compiled_insns[insn]['meta'].append(self.transformer.ext.get_meta())
+                self.compiled_insns[insn]['parse_trees'].append(pt.pretty())
+            return self.compiled_insns[insn]
+        except Exception as e:
+            raise e
+        finally:
+            self.transformer.reset()
+            ILOpsHolder().clear()
 
-        parse_trees = [self.parser.parse(behavior) for behavior in behaviors]
-        self.compiled_insns[insn] = {'rzil': [], 'meta': [], 'parse_trees': []}
-        for pt in parse_trees:
-            self.compiled_insns[insn]['rzil'].append(self.transformer.transform(pt))
-            self.compiled_insns[insn]['meta'].append(self.transformer.ext.get_meta())
-            self.compiled_insns[insn]['parse_trees'].append(pt.pretty())
-        self.transformer.reset()
-        ILOpsHolder().clear()
-        return self.compiled_insns[insn]
 
     def get_insn_rzil(self, insn_name: str) -> [str]:
         if insn_name in self.compiled_insns:
