@@ -55,6 +55,12 @@ class Register(GlobalVar):
         """
         return f'const char *{self.name_assoc} = {isa_alias_to_reg}({", ".join(isa_alias_to_reg_args)}, {self.get_alias_enum(self.name)});'
 
+    def get_pred_num(self) -> int:
+        num = self.get_name()[-1]
+        if self.get_name()[0].upper() != 'P' or num not in ['0', '1', '2', '3']:
+            raise NotImplementedError(f'This function should only called for explicit predicate register. This is {self.get_name()}')
+        return int(num)
+
     @staticmethod
     def get_alias_enum(alias: str) -> str:
         return f'HEX_REG_ALIAS_{alias.upper()}'

@@ -22,6 +22,7 @@ class HexagonTransformerExtension(TransformerExtension):
     is_conditional = False
     branches = False
     writes_predicate = False
+    preds_written = list()  # The numbers of the predicate registers written.
 
     def __init__(self):
         # Variables names used in the shortcode with special meaning.
@@ -31,9 +32,11 @@ class HexagonTransformerExtension(TransformerExtension):
         if not self.uses_new:
             self.uses_new = True
 
-    def set_writes_pred(self):
+    def set_writes_pred(self, num: int):
         if not self.writes_predicate:
             self.writes_predicate = True
+        if num not in self.preds_written:
+            self.preds_written.append(num)
 
     def set_writes_mem(self):
         if not self.writes_mem:
@@ -70,8 +73,11 @@ class HexagonTransformerExtension(TransformerExtension):
             self.set_branches()
         elif token == 'selection_stmt':
             self.set_is_conditional()
-        elif token == 'pred_write':
-            self.set_writes_pred()
+        elif token == "pred_write":
+            if len(kwargs) != 1:
+                raise NotImplementedError("If a predicate is written it always needs to give its number.")
+            num = kwargs["pred_num"]
+            self.set_writes_pred(num)
 
     def reg_alias(self, items):
         alias = items[0]
@@ -143,7 +149,11 @@ class HexagonTransformerExtension(TransformerExtension):
         if self.reads_mem:
             flags.append('HEX_IL_INSN_ATTR_MEM_READ')
         if self.branches:
-            flags.append('HEX_IL_INSN_ATTR_BRANCH')
+            flags.append("HEX_IL_INSN_ATTR_BRANCH")
+        if self.writes_predicate:
+            flags.append("HEX_IL_INSN_ATTR_WPRED")
+            for p in self.preds_written:
+                flags.append(f"HEX_IL_INSN_ATTR_WRITE_P{p}")
         if len(flags) == 0:
             flags.append('HEX_IL_INSN_ATTR_NONE')
 

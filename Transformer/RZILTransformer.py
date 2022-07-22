@@ -28,6 +28,7 @@ from Transformer.Pures.Pure import Pure, ValueType
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Pures.PureExec import PureExec
+from Transformer.Pures.Register import Register
 from Transformer.Pures.Ternary import Ternary
 from Transformer.helper import exc_if_types_not_match, flatten_list
 from Transformer.helper_hexagon import get_value_type_by_c_number, get_num_base_by_token
@@ -273,7 +274,8 @@ class RZILTransformer(Transformer):
         return self.resolve_hybrid_ops(v)
 
     def pred_write(self, items):
-        self.ext.set_token_meta_data('pred_write')
+        pred_reg: Register = items[1]
+        self.ext.set_token_meta_data('pred_write', pred_num=pred_reg.get_pred_num())
         name = f'op_PRED_WRITE_{self.get_op_id()}'
         return PredicateWrite(name, items[1], items[2])
 
