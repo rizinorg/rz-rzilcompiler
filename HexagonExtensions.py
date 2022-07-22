@@ -26,7 +26,7 @@ class HexagonTransformerExtension(TransformerExtension):
 
     def __init__(self):
         # Variables names used in the shortcode with special meaning.
-        self.special_identifiers = {"EffectiveAddress": "EA", "iterator_i": "i"}
+        self.spec_ids = {"EffectiveAddress": "EA", "iterator_vars": ["i", "k", "j"]}
 
     def set_uses_new(self):
         if not self.uses_new:
@@ -214,11 +214,20 @@ class HexagonTransformerExtension(TransformerExtension):
         else:
             raise NotImplementedError(f"No value type for function {fcn_name} defined.")
 
+    def is_special_id(self, ident: str) -> bool:
+        if ident == self.spec_ids["EffectiveAddress"]:
+            return True
+        elif ident in self.spec_ids["iterator_vars"]:
+            return True
+        else:
+            return False
+
     def special_identifier_to_local_var(self, identifier):
-        if identifier == self.special_identifiers["EffectiveAddress"]:
+        if identifier == self.spec_ids["EffectiveAddress"]:
             return LocalVar("EA", ValueType(False, 32))
-        elif identifier == self.special_identifiers["iterator_i"]:
-            return LocalVar("i", ValueType(False, 32))
+        elif identifier in self.spec_ids["iterator_vars"]:
+            return LocalVar(identifier, ValueType(False, 32))
+        raise NotImplementedError(f"Special identifier {identifier} not handled.")
 
 
 class HexagonCompilerExtension(CompilerExtension):
