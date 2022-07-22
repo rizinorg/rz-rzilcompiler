@@ -235,5 +235,9 @@ class HexagonCompilerExtension(CompilerExtension):
             return insn_name[:-13]
         elif re.match(r"^undocumented_.+$", insn_name):
             return insn_name[13:]
+        elif re.match(f"^IMPORTED_", insn_name):
+            return insn_name[9:]
+        elif re.match(r"^dep_", insn_name):
+            return insn_name[4:]
         else:
             return insn_name
