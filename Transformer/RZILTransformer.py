@@ -24,7 +24,7 @@ from Transformer.Pures.CompareOp import CompareOp, CompareOpType
 from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.MemLoad import MemAccessType, MemLoad
 from Transformer.Pures.Number import Number
-from Transformer.Pures.Pure import Pure, ValueType
+from Transformer.Pures.Pure import Pure, ValueType, PureType
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Pures.PureExec import PureExec
@@ -107,9 +107,9 @@ class RZILTransformer(Transformer):
         return self.ext.hex_reg(items, True)
 
     def explicit_reg(self, items):
-        self.ext.set_token_meta_data('explicit_reg')
         name = items[0]
         new = items[1] is not None
+        self.ext.set_token_meta_data('explicit_reg', is_new=new)
         if name == 'R31':
             # We don't know whether R31 is used as dest or src. Hence: SRC_DEST_REG.
             return self.ext.hex_reg([Token('REG_TYPE', 'R'), Token('SRC_DEST_REG', '31'), name], is_new=new)

@@ -73,6 +73,9 @@ class HexagonTransformerExtension(TransformerExtension):
             self.set_branches()
         elif token == "selection_stmt":
             self.set_is_conditional()
+        elif token == "explicit_reg":
+            if kwargs["is_new"]:
+                self.set_uses_new()
         elif token == "pred_write":
             if len(kwargs) != 1:
                 raise NotImplementedError("If a predicate is written it always needs to give its number.")
