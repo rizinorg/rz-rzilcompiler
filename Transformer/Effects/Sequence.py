@@ -8,6 +8,9 @@ from Transformer.Pures.Pure import Pure
 class Sequence(Effect):
 
     def __init__(self, name, effects: list[Effect]):
+        for e in effects:
+            if not isinstance(e, Effect):
+                raise NotImplementedError(f'{e.get_name()} is not an effect but was given to a sequence.')
         self.effects = effects
         Effect.__init__(self, name, EffectType.SEQUENCE)
 

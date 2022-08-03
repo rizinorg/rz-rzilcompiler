@@ -5,6 +5,7 @@ from lark import Transformer, Token
 
 from ArchEnum import ArchEnum
 from Transformer.Effects.Branch import Branch
+from Transformer.Effects.Effect import Effect
 from Transformer.Effects.Empty import Empty
 from Transformer.Effects.ForLoop import ForLoop
 from Transformer.Effects.Jump import Jump
@@ -83,8 +84,9 @@ class RZILTransformer(Transformer):
                 res += op.il_init_var() + '\n'
                 continue
             res += op.il_init_var() + '\n'
-
-        res += f'\nreturn SEQN({", ".join([op.get_name() for op in flatten_list(items)])});'
+        instruction_sequence = Sequence(f'instruction_sequence', [op for op in flatten_list(items) if isinstance(op, Effect)])
+        res += instruction_sequence.il_init_var() + '\n'
+        res += f'\nreturn {instruction_sequence.get_name()};'
         return res
 
     def relational_expr(self, items):
