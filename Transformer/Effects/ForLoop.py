@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from Transformer.Effects.Effect import Effect, EffectType
+from Transformer.Effects.Sequence import Sequence
 from Transformer.Pures.Pure import Pure
 
 
@@ -11,10 +12,9 @@ class ForLoop(Effect):
     for (init ; control ; after_cycle) { compound }
     """
 
-    def __init__(self, name: str, init: Effect, control: Pure, after_cycle: Effect, compound: list[Effect]):
+    def __init__(self, name: str, init: Effect, control: Pure, compound: Sequence):
         self.init = init  # declaration/assignment
         self.control = control  # Condition
-        self.after = after_cycle  # After loop expression
         self.compound = compound
         Effect.__init__(self, name, EffectType.LOOP)
 
@@ -23,6 +23,6 @@ class ForLoop(Effect):
         :return: RZIL ops to write the pure value.
         """
 
-        return f'SEQ2({self.init.il_write()},\n' \
-               f'REPEAT({self.control.il_read()},\n' \
-               f'SEQN({", ".join([effect.il_write() for effect in self.compound + [self.after]])})))'
+        return f'SEQ2({self.init.il_write()}, ' \
+               f'REPEAT({self.control.il_read()}, ' \
+               f'{self.compound.get_name()}))'
