@@ -362,7 +362,7 @@ class RZILTransformer(Transformer):
     def compare_op(self, items):
         self.ext.set_token_meta_data('compare_op')
         op_type = CompareOpType(items[1])
-        return self.resolve_hybrid_ops(CompareOp(f'op_{op_type.name}', items[0], items[2], op_type))
+        return self.resolve_hybrid_ops(CompareOp(f'op_{op_type.name}_{self.get_op_id()}', items[0], items[2], op_type))
 
     def for_loop(self, items):
         self.ext.set_token_meta_data('for_loop')
@@ -409,7 +409,6 @@ class RZILTransformer(Transformer):
         # holder = ILOpsHolder()
         # holder.add_to_compound(items[0])
         return items[0]
-
 
     def resolve_hybrid_ops(self, operation: PureExec):
         hybrids = list()
