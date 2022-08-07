@@ -22,7 +22,7 @@ class ValueType:
     def il_op(self, value: int):
         """ Returns the corresponding SN/UN(size, val) string. """
         s = 'SN' if self.signed else 'UN'
-        s += f'({self.bit_width}, {value})'
+        s += f'({self.bit_width}, {value:#x})'
         return s
 
     def __eq__(self, other):
