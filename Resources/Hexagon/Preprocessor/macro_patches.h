@@ -3,6 +3,9 @@
 
 // Macros in this file fill replace the qualcomm macros from the Qemu source.
 
+#define RF_WIDTH HEX_RF_WIDTH
+#define RF_OFFSET HEX_RF_OFFSET
+
 #define MEM_LOAD1s(VA) (mem_load_s8(VA))
 #define MEM_LOAD1u(VA) (mem_load_u8(VA))
 #define MEM_LOAD2s(VA) (mem_load_s16(VA))

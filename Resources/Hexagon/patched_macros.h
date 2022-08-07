@@ -27,6 +27,8 @@
 #define HEX_REG_SA0   HEX_REG_ALIAS_SA0
 #define HEX_REG_R31   HEX_REG_ALIAS_R31
 #define HEX_REG_LR   HEX_REG_ALIAS_LR
+#define RF_OFFSET HEX_RF_OFFSET
+#define RF_WIDTH HEX_RF_WIDTH
 #define HEXAGON_MACROS_H
 #define READ_REG(NUM)                    NUM
 #define READ_PREG(NUM)                   P##NUM
