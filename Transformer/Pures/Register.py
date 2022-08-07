@@ -46,7 +46,7 @@ class Register(GlobalVar):
         return init
 
     def il_isa_to_assoc_name(self):
-        return f'const char *{self.name_assoc} = {isa_to_reg_fnc}({", ".join(isa_to_reg_args)}, "{self.get_isa_name()}", {str(self.is_new).lower()});'
+        return f'const char *{self.name_assoc} = {isa_to_reg_fnc}({", ".join(isa_to_reg_args)}, \'{self.get_isa_name()[1]}\', {str(self.is_new).lower()});'
 
     def il_reg_alias_to_hw_reg(self) -> str:
         """ Some registers are an alias for another register (PC = C9, GP = C11, SP = R29 etc.
