@@ -50,10 +50,10 @@ class Register(GlobalVar):
 
     def il_reg_alias_to_hw_reg(self) -> str:
         """ Some registers are an alias for another register (PC = C9, GP = C11, SP = R29 etc.
-            Unfortunately those alias change from Hexagon arch to arch. So the plugin needs to translate these.
-            Here we return the code for this translation.
+            Unfortunately those alias can change from ISA version to ISA version.
+            So the plugin needs to translate these. Here we return the code for this translation.
         """
-        return f'const char *{self.name_assoc} = {isa_alias_to_reg}({", ".join(isa_alias_to_reg_args)}, {self.get_alias_enum(self.name)});'
+        return f'const char *{self.name_assoc} = {isa_alias_to_reg}({", ".join(isa_alias_to_reg_args)}{", " if isa_alias_to_reg_args else ""}{self.get_alias_enum(self.name)});'
 
     def get_pred_num(self) -> int:
         num = self.get_name()[-1]
