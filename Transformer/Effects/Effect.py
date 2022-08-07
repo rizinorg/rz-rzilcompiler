@@ -44,4 +44,4 @@ class Effect:
         raise OverloadException('')
 
     def il_init_var(self):
-        return f'RzIlOpEffect *{self.get_name()} = {self.il_write()};'
+        return f'RzILOpEffect *{self.get_name()} = {self.il_write()};'

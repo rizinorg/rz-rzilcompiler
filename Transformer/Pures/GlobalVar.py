@@ -13,7 +13,7 @@ class GlobalVar(Pure):
 
     def il_init_var(self):
         init = self.il_isa_to_assoc_name()
-        init += f'RzIlOpPure *{self.get_name()} = VARG({self.get_name()});'
+        init += f'RzILOpPure *{self.get_name()} = VARG({self.get_name()});'
         return init
 
     def il_read(self):

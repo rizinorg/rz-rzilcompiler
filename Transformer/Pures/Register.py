@@ -33,7 +33,7 @@ class Register(GlobalVar):
 
     def il_init_var(self):
         if self.is_explicit:
-            return f'RzIlOpPure *{self.get_name()} = VARG({self.get_name()});'
+            return f'RzILOpPure *{self.get_name()} = VARG({self.get_name()});'
 
         if self.access == RegisterAccessType.W:  # Registers which are only written do not need an own RzILOpPure.
             return self.il_isa_to_assoc_name()
@@ -42,7 +42,7 @@ class Register(GlobalVar):
         else:
             init = self.il_isa_to_assoc_name() + '\n'
 
-        init += f'RzIlOpPure *{self.get_name()} = VARG({self.get_assoc_name()});'
+        init += f'RzILOpPure *{self.get_name()} = VARG({self.get_assoc_name()});'
         return init
 
     def il_isa_to_assoc_name(self):
