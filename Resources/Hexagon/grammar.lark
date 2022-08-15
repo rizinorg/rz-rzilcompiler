@@ -121,13 +121,11 @@ ASSIGN_OP: "="
 	| XOR_ASSIGN
 	| OR_ASSIGN
 
-// GCC extension which allows statements and declarations within expressions.
+// GCC extension which allows compound statements and declarations within expressions.
 // See: https://gcc.gnu.org/onlinedocs/gcc-2.95.3/gcc_4.html#SEC62
-gcc_extended_expr: "{" [block_item_list] [expr_stmt] "}"
-
 ?expr: assignment_expr
 	| expr "," assignment_expr
-	| gcc_extended_expr
+	| compound_stmt
 
 ?constant_expr: conditional_expr
 
