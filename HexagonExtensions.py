@@ -170,9 +170,9 @@ class HexagonTransformerExtension(TransformerExtension):
             # offset into the register of the field.
             return ValueType(False, 32)
         elif fcn_name == "clo32":
-            # QEMU function -- uint32_t clo32(uint32_t val)
+            # QEMU function -- int32_t clo32(uint32_t val)
             # Count leading ones in 32 bit value.
-            return ValueType(False, 32)
+            return ValueType(True, 32)
         elif fcn_name == "deposit64":
             # QEMU function
             # uint64_t deposit64(uint64_t value, int start, int length, uint64_t fieldval)
