@@ -15,4 +15,4 @@ class NOP(Effect):
         :return: RZIL ops to write the pure value.
         """
 
-        return 'NOP'
+        return 'NOP()'
