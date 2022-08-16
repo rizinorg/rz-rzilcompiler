@@ -61,6 +61,16 @@ class Register(GlobalVar):
             raise NotImplementedError(f'This function should only called for explicit predicate register. This is {self.get_name()}')
         return int(num)
 
+    def get_name(self):
+        # There is a tricky case where write only register are read any ways in the semantic definitions.
+        # We can detect those registers because Register.get_name() gets only called on readable registers.
+        # So if this method is called on a write-only register we change the type to read/write.
+        # This way the register gets initialized as a read write.
+        # Examples: a2_svaddh, a4_vcmpbgt
+        if self.access is RegisterAccessType.W or self.access is RegisterAccessType.PW:
+            self.access = RegisterAccessType.RW if self.access is RegisterAccessType.W else RegisterAccessType.PRW
+        return GlobalVar.get_name(self)
+
     @staticmethod
     def get_alias_enum(alias: str) -> str:
         return f'HEX_REG_ALIAS_{alias.upper()}'
