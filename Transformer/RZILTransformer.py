@@ -31,6 +31,7 @@ from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Pures.PureExec import PureExec
 from Transformer.Pures.Register import Register
 from Transformer.Pures.Ternary import Ternary
+from Transformer.Pures.Variable import Variable
 from Transformer.helper import exc_if_types_not_match, flatten_list
 from Transformer.helper_hexagon import get_value_type_by_c_number, get_num_base_by_token
 
@@ -177,7 +178,7 @@ class RZILTransformer(Transformer):
             assg.set_dest_type(t)
             return assg
         elif isinstance(items[1], str):
-            return LocalVar(items[1], t)
+            return Variable(items[1], t)
         raise NotImplementedError(f'Declaration with items {items} not implemented.')
 
     def init_declarator(self, items):
@@ -185,7 +186,7 @@ class RZILTransformer(Transformer):
 
         if len(items) != 2:
             raise NotImplementedError(f'Can not initialize an Init declarator with {len(items)} tokens.')
-        dest = LocalVar(items[0], None)  # Size is updated in declaration handler.
+        dest = Variable(items[0], None)  # Size is updated in declaration handler.
         op_type = AssignmentType.ASSIGN
         src: Pure = items[1]
         name = f'op_{op_type.name}_{self.get_op_id()}'
