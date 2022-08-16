@@ -26,9 +26,9 @@ class PostfixIncDec(Hybrid):
 
     def il_exec(self):
         if self.op_type == PostfixExpr.DEC:
-            return f'DEC({self.il_read()})'
+            return f'DEC({self.il_read()}, {self.value_type.bit_width})'
         elif self.op_type == PostfixExpr.INC:
-            return f'INC({self.il_read()})'
+            return f'INC({self.il_read()}, {self.value_type.bit_width})'
         else:
             raise NotImplementedError(f'il_exec for {self.op_type} not implemented.')
 
