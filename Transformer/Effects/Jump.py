@@ -16,4 +16,4 @@ class Jump(Effect):
         :return: RZIL ops to write the pure value.
         """
 
-        return f'JUMP({self.target.il_read()})'
+        return f'JMP({self.target.il_read()})'
