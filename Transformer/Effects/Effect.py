@@ -47,5 +47,5 @@ class Effect:
         return f'RzILOpEffect *{self.get_name()} = {self.il_write()};'
 
     def effect_var(self):
-        """ Returns the variable name which holds the IL effect."""
+        """ Returns the C variable name which holds the IL effect."""
         return self.get_name()

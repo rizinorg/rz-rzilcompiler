@@ -87,7 +87,7 @@ class RZILTransformer(Transformer):
             res += op.il_init_var() + '\n'
         instruction_sequence = Sequence(f'instruction_sequence', [op for op in flatten_list(items) if isinstance(op, Effect)])
         res += instruction_sequence.il_init_var() + '\n'
-        res += f'\nreturn {instruction_sequence.get_name()};'
+        res += f'\nreturn {instruction_sequence.effect_var()};'
         return res
 
     def relational_expr(self, items):
@@ -134,7 +134,7 @@ class RZILTransformer(Transformer):
     def jump(self, items):
         self.ext.set_token_meta_data('jump')
         ta: Pure = items[1]
-        return Jump(f'jump_{ta.get_name()}', ta)
+        return Jump(f'jump_{ta.pure_var()}', ta)
 
     def data_type(self, items):
         self.ext.set_token_meta_data('data_type')

@@ -63,6 +63,10 @@ class Pure:
         """ Returns the name of the RzILOpPure variable as in the ISA manual. """
         return self.isa_name
 
+    def pure_var(self):
+        """ Returns the C variable name which holds the IL Pure."""
+        self.get_name()
+
     def get_assoc_name(self):
         return self.name_assoc
 
