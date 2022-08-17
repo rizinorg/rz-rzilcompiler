@@ -19,7 +19,7 @@ class PostfixIncDec(Hybrid):
         :return: RZIL ops to write the pure value.
         """
         if self.op_type == PostfixExpr.INC or self.op_type == PostfixExpr.DEC:
-            return f'SET{self.gl}("{self.ops[0].vm_id(True)}", {self.il_exec()})'
+            return f'SET{self.gl}({self.ops[0].vm_id(True)}, {self.il_exec()})'
         else:
             raise NotImplementedError(f'{self.op_type} not implemented.')
 
