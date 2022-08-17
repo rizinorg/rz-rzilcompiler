@@ -3,6 +3,7 @@
 
 from Transformer.Effects.Effect import Effect, EffectType
 from Transformer.Pures.BitOp import BitOp, BitOperationType
+from Transformer.Pures.LetVar import LetVar
 from Transformer.Pures.Pure import Pure, PureType, ValueType
 from enum import StrEnum
 
@@ -83,10 +84,14 @@ class Assignment(Effect):
         """ Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
         """
+        if isinstance(self.src, LetVar):
+            read = f'LET({self.src.vm_id(True)}, {self.src.pure_var()}, {self.src.il_read()})'
+        else:
+            read = self.src.il_read()
         if self.type == EffectType.SETG:
-            return f'SETG({self.dest.vm_id(True)}, {self.src.il_read()})'
+            return f'SETG({self.dest.vm_id(True)}, {read})'
         elif self.type == EffectType.SETL:
-            return f'SETL({self.dest.vm_id(True)}, {self.src.il_read()})'
+            return f'SETL({self.dest.vm_id(True)}, {read})'
         else:
             raise NotImplementedError(f'Effect ype {self.type} not handled.')
 
