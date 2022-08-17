@@ -18,4 +18,4 @@ class PredicateWrite(Effect):
         :return: RZIL ops to write the pure value.
         """
 
-        return f'write_pred({self.p_reg.get_name()}, {self.val.get_name()})'
+        return f'write_pred({self.p_reg.vm_id(True)}, {self.val.vm_id(False)})'

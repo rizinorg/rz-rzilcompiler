@@ -13,7 +13,7 @@ class LetVar(Pure):
 
     def get_val(self):
         """ Returns the value of the variable. """
-        raise self.value
+        return self.value
 
     def il_init_var(self):
         return f'RzILOpPure *{self.pure_var()} = {self.value_type.il_op(self.value)};'

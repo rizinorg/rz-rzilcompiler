@@ -330,7 +330,7 @@ class RZILTransformer(Transformer):
             # STOREW determines from the data type how many bytes are written.
             # Cast the data type to the mem store type
             data = Cast(f'op_{self.get_op_id()}', operation_value_type, va)
-        return MemStore(f'ms_{data.get_name()}', va, data)
+        return MemStore(f'ms_{data.vm_id(False)}', va, data)
 
     # SPECIFIC FOR: Hexagon
     def mem_load(self, items):
@@ -341,7 +341,7 @@ class RZILTransformer(Transformer):
         if not isinstance(va, Pure):
             va = ILOpsHolder().get_op_by_name(va.value)
 
-        return self.resolve_hybrid_ops(MemLoad(f'ml_{va.get_name()}', va, mem_acc_type))
+        return self.resolve_hybrid_ops(MemLoad(f'ml_{va.vm_id(False)}', va, mem_acc_type))
 
     def c_call(self, items):
         self.ext.set_token_meta_data('c_call')
@@ -410,8 +410,6 @@ class RZILTransformer(Transformer):
 
     def block_item(self, items):
         self.ext.set_token_meta_data('block_item')
-        # holder = ILOpsHolder()
-        # holder.add_to_compound(items[0])
         return items[0]
 
     def resolve_hybrid_ops(self, operation: PureExec):

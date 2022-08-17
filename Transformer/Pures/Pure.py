@@ -65,7 +65,7 @@ class Pure:
 
     def pure_var(self):
         """ Returns the C variable name which holds the IL Pure."""
-        self.get_name()
+        return self.get_name()
 
     def vm_id(self, write_usage: bool):
         """
@@ -73,12 +73,7 @@ class Pure:
         """
         raise OverloadException('')
 
-    def get_assoc_name(self, tmp: bool):
-        if tmp:
-            return self.name_assoc + '_tmp'
-        return self.name_assoc
-
-    def set_value_type(self, value_type: ValueType):
+    def set_value_type(self, value_type: ValueType) -> None:
         self.value_type = value_type
 
     def il_read(self):

@@ -19,8 +19,3 @@ class GlobalVar(Pure):
 
         self.reads += 1
         return ret
-
-    def vm_id(self, write_usage: bool):
-        # Global var names (registers mainly) are stored in "<reg>_assoc" variables.
-        if write_usage:
-            return self.get_assoc_name(True)

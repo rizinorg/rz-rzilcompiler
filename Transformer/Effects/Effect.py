@@ -43,8 +43,8 @@ class Effect:
         """
         raise OverloadException('')
 
-    def il_init_var(self):
-        return f'RzILOpEffect *{self.get_name()} = {self.il_write()};'
+    def il_init_var(self) -> str:
+        return f'RzILOpEffect *{self.effect_var()} = {self.il_write()};'
 
     def effect_var(self):
         """ Returns the C variable name which holds the IL effect."""

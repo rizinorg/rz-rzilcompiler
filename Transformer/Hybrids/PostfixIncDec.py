@@ -18,9 +18,8 @@ class PostfixIncDec(Hybrid):
         """ Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
         """
-        name = self.ops[0].get_name()
         if self.op_type == PostfixExpr.INC or self.op_type == PostfixExpr.DEC:
-            return f'SET{self.gl}("{name}", {self.il_exec()})'
+            return f'SET{self.gl}("{self.ops[0].vm_id(True)}", {self.il_exec()})'
         else:
             raise NotImplementedError(f'{self.op_type} not implemented.')
 
@@ -36,7 +35,7 @@ class PostfixIncDec(Hybrid):
         """ Returns the RZIL ops to read the variable value.
         :return: RZIL ops to read the pure value.
         """
-        return f'VAR{self.gl}("{self.ops[0].get_name()}")'
+        return self.ops[0].il_read()
 
 
 def get_scope_letter(op: Pure) -> str:

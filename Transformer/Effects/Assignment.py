@@ -84,9 +84,9 @@ class Assignment(Effect):
         :return: RZIL ops to write the pure value.
         """
         if self.type == EffectType.SETG:
-            return f'SETG({self.dest.get_assoc_name()}, {self.src.il_read()})'
+            return f'SETG({self.dest.vm_id(True)}, {self.src.il_read()})'
         elif self.type == EffectType.SETL:
-            return f'SETL("{self.dest.pure_var()}", {self.src.il_read()})'
+            return f'SETL({self.dest.vm_id(True)}, {self.src.il_read()})'
         else:
             raise NotImplementedError(f'Effect ype {self.type} not handled.')
 
