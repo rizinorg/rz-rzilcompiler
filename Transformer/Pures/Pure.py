@@ -67,7 +67,15 @@ class Pure:
         """ Returns the C variable name which holds the IL Pure."""
         self.get_name()
 
-    def get_assoc_name(self):
+    def vm_id(self, write_usage: bool):
+        """
+        Returns the id this Pure is known to the VM as string or a variable name which holds it.
+        """
+        raise OverloadException('')
+
+    def get_assoc_name(self, tmp: bool):
+        if tmp:
+            return self.name_assoc + '_tmp'
         return self.name_assoc
 
     def set_value_type(self, value_type: ValueType):

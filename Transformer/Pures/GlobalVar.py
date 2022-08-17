@@ -11,16 +11,16 @@ class GlobalVar(Pure):
         self.reads = 0
         Pure.__init__(self, name, PureType.GLOBAL, v_type)
 
-    def il_init_var(self):
-        init = self.il_isa_to_assoc_name()
-        init += f'RzILOpPure *{self.get_name()} = VARG({self.get_name()});'
-        return init
-
     def il_read(self):
         if self.reads < 1:  # First use of this variable
-            ret = self.get_name()
+            ret = self.pure_var()
         else:
-            ret = f'DUP({self.get_name()})'
+            ret = f'DUP({self.pure_var()})'
 
         self.reads += 1
         return ret
+
+    def vm_id(self, write_usage: bool):
+        # Global var names (registers mainly) are stored in "<reg>_assoc" variables.
+        if write_usage:
+            return self.get_assoc_name(True)

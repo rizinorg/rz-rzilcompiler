@@ -16,8 +16,11 @@ class LetVar(Pure):
         raise self.value
 
     def il_init_var(self):
-        return f'RzILOpPure *{self.get_name()} = {self.value_type.il_op(self.value)};'
+        return f'RzILOpPure *{self.pure_var()} = {self.value_type.il_op(self.value)};'
 
     def il_read(self):
         """ Returns the code to read the let variable for the VM. """
-        return f'VARLP("{self.get_name()}")'
+        return f'VARLP({self.vm_id(False)})'
+
+    def vm_id(self, write_usage: bool):
+        return f'"{self.get_name()}"'
