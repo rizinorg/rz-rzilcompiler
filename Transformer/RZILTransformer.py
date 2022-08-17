@@ -58,6 +58,7 @@ class RZILTransformer(Transformer):
     def reset(self):
         self.op_count = 0
         self.ext.reset_flags()
+        self.gcc_ext_effects.clear()
 
     def get_op_id(self):
         op_id = self.op_count
