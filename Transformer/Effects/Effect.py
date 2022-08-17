@@ -34,10 +34,10 @@ class Effect:
             return
         holder.add_effect(self)
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self.name
 
-    def il_write(self):
+    def il_write(self) -> str:
         """ Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
         """
@@ -46,6 +46,6 @@ class Effect:
     def il_init_var(self) -> str:
         return f'RzILOpEffect *{self.effect_var()} = {self.il_write()};'
 
-    def effect_var(self):
+    def effect_var(self) -> str:
         """ Returns the C variable name which holds the IL effect."""
         return self.get_name()

@@ -16,7 +16,7 @@ class CCall(PureExec):
         PureExec.__init__(self, name, args[1:], val_type)
 
     def il_exec(self):
-        def read_arg(arg):
+        def read_arg(arg) -> str:
             # Arguments can be strings
             return arg if isinstance(arg, str) else arg.il_read()
         tmp = 'SIGNED(' if self.value_type.signed else 'UNSIGNED('

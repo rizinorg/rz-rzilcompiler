@@ -17,13 +17,13 @@ class LocalVar(Pure):
         """ Returns the value of the variable. """
         raise OverloadException('')
 
-    def il_init_var(self):
+    def il_init_var(self) -> str:
         # Local vars are not initialized like global vars. They are initialized when an assignment to them happens.
         return f'// Declare: {self.value_type} {self.get_name()};'
 
-    def il_read(self):
+    def il_read(self) -> str:
         """ Returns the code to read the local variable for the VM. """
         return f'VARL({self.vm_id(False)})'
 
-    def vm_id(self, write_usage: bool):
+    def vm_id(self, write_usage: bool) -> str:
         return f'"{self.get_name()}"'
