@@ -123,9 +123,11 @@ ASSIGN_OP: "="
 
 // GCC extension which allows compound statements and declarations within expressions.
 // See: https://gcc.gnu.org/onlinedocs/gcc-2.95.3/gcc_4.html#SEC62
+gcc_extended_expr: "{" [block_item_list] [expr_stmt] "}"
+
 ?expr: assignment_expr
 	| expr "," assignment_expr
-	| compound_stmt
+	| gcc_extended_expr
 
 ?constant_expr: conditional_expr
 
