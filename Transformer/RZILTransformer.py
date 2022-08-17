@@ -47,6 +47,7 @@ class RZILTransformer(Transformer):
     def __init__(self, arch: ArchEnum):
 
         self.arch = arch
+        self.gcc_ext_effects = list()
 
         if self.arch == ArchEnum.HEXAGON:
             self.ext = HexagonTransformerExtension()
@@ -85,7 +86,7 @@ class RZILTransformer(Transformer):
                 res += op.il_init_var() + '\n'
                 continue
             res += op.il_init_var() + '\n'
-        instruction_sequence = Sequence(f'instruction_sequence', [op for op in flatten_list(items) if isinstance(op, Effect)])
+        instruction_sequence = Sequence(f'instruction_sequence', [op for op in flatten_list(items) + self.gcc_ext_effects if isinstance(op, Effect)])
         res += instruction_sequence.il_init_var() + '\n'
         res += f'\nreturn {instruction_sequence.effect_var()};'
         return res
@@ -390,6 +391,7 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('gcc_extended_expr')
         if isinstance(items[0], list):
             raise NotImplementedError('List of statements in gcc extended expressions not implemented.')
+        self.gcc_ext_effects.append(items[0])
         expr = items[1]
         if expr:
             return expr
