@@ -19,6 +19,6 @@ class CCall(PureExec):
         def read_arg(arg):
             # Arguments can be strings
             return arg if isinstance(arg, str) else arg.il_read()
-        tmp = 'SN' if self.value_type.signed else 'UN'
-        tmp += f'({self.value_type.bit_width}'
+        tmp = 'SIGNED(' if self.value_type.signed else 'UNSIGNED('
+        tmp += f'{self.value_type.bit_width}'
         return f'{tmp}, {hexagon_c_call_prefix + self.fcn_name.upper()}({", ".join([read_arg(arg) for arg in self.ops])}))'
