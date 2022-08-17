@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 transform_test = [
-'{         EA = (HEX_REG_ALIAS_SP) + -8;    ; mem_store_u64(EA, (((((uint64_t)((HEX_REG_ALIAS_LR))) << 32) | ((uint32_t)((HEX_REG_ALIAS_FP)))) ^ (((uint64_t)(HEX_REG_ALIAS_FRAMEKEY)) << 32))); (HEX_REG_ALIAS_FP = EA);; ; (HEX_REG_ALIAS_SP = EA-uiV);; }',
+    '{ int i; for (i=0;i<2;i++) {         RdV = (RdV & ~(0x0ffffLL << ((i) * 16))) |        (((uint64_t)(((((((16) != 0) ? sextract64((((int16_t)((RsV >> ((i) * 16)) & 0xffff))+((int16_t)((RtV >> ((i) * 16)) & 0xffff))), 0, (16)) : 0LL) == (((int16_t)((RsV >> ((i) * 16)) & 0xffff))+((int16_t)((RtV >> ((i) * 16)) & 0xffff)))) ? (((int16_t)((RsV >> ((i) * 16)) & 0xffff))+((int16_t)((RtV >> ((i) * 16)) & 0xffff))) : ({        HEX_REG_ALIAS_USR_NEW = ((REGFIELD(HEX_RF_WIDTH, HEX_REG_FIELD_USR_OVF)) ? deposit64(HEX_REG_ALIAS_USR_NEW, (REGFIELD(HEX_RF_OFFSET, HEX_REG_FIELD_USR_OVF)), (REGFIELD(HEX_RF_WIDTH, HEX_REG_FIELD_USR_OVF)), ((1))) : HEX_REG_ALIAS_USR_NEW);        ((((int16_t)((RsV >> ((i) * 16)) & 0xffff))+((int16_t)((RtV >> ((i) * 16)) & 0xffff))) < 0) ? (-(1LL << ((16) - 1))) : ((1LL << ((16) - 1)) - 1);    }))) & 0x0ffff)) << ((i) * 16));    ; } }',
+    #'{ RdV = (((((32) != 0) ? sextract64(((-((int64_t)(RsV)))), 0, (32)) : 0LL) == ((-((int64_t)(RsV))))) ? ((-((int64_t)(RsV)))) : ({        HEX_REG_ALIAS_USR_NEW = ((REGFIELD(HEX_RF_WIDTH, HEX_REG_FIELD_USR_OVF)) ? deposit64(HEX_REG_ALIAS_USR_NEW, (REGFIELD(HEX_RF_OFFSET, HEX_REG_FIELD_USR_OVF)), (REGFIELD(HEX_RF_WIDTH, HEX_REG_FIELD_USR_OVF)), ((1))) : HEX_REG_ALIAS_USR_NEW);        (((-((int64_t)(RsV)))) < 0) ? (-(1LL << ((32) - 1))) : ((1LL << ((32) - 1)) - 1);    })); }'
     ]
-
 
 euclid_instructions = [
     'A4_ext',
