@@ -22,8 +22,8 @@ class Register(GlobalVar):
     def __init__(self, name: str, access: RegisterAccessType, v_type: ValueType, is_new: bool = False, is_explicit: bool = False, is_reg_alias: bool = False):
         self.access = access
         self.is_new = is_new
-        self.is_explicit = is_explicit  # Register number is predefined by instruction.
         self.is_reg_alias = is_reg_alias
+        self.is_explicit = is_explicit or is_reg_alias  # Register number is predefined by instruction.
 
         if self.is_new:
             GlobalVar.__init__(self, name + '_tmp', v_type)
@@ -38,7 +38,8 @@ class Register(GlobalVar):
 
     def vm_id(self, write_usage: bool):
         # Global var names (registers mainly) are stored in "<reg>_assoc(_tmp)" variables.
-        if self.is_explicit:
+
+        if self.is_explicit and not self.is_reg_alias:
             if write_usage:
                 return f'"{self.get_name()}_tmp"'
             return f'"{self.get_name()}"'
@@ -48,7 +49,7 @@ class Register(GlobalVar):
         return self.get_assoc_name(False)
 
     def il_init_var(self):
-        if self.is_explicit:
+        if self.is_explicit and not self.is_reg_alias:
             return f'RzILOpPure *{self.pure_var()} = VARG({self.vm_id(False)});'
 
         # Registers which are only written do not need their own RzILOpPure.
@@ -57,8 +58,6 @@ class Register(GlobalVar):
         elif self.access == RegisterAccessType.RW or self.access == RegisterAccessType.PRW:
             init = self.il_isa_to_assoc_name(True) + '\n'
             init += self.il_isa_to_assoc_name(False) + '\n'
-        elif self.is_reg_alias:
-            init = self.il_reg_alias_to_hw_reg() + '\n'
         else:
             init = self.il_isa_to_assoc_name(False) + '\n'
 
@@ -70,14 +69,16 @@ class Register(GlobalVar):
         to the real register name of the current instruction.
         E.g. Rs -> "R3"
         """
+        if self.is_reg_alias:
+            return self.il_reg_alias_to_hw_reg(write_usage)
         return f'const char *{self.get_assoc_name(write_usage)} = {isa_to_reg_fnc}({", ".join(isa_to_reg_args)}, \'{self.get_isa_name()[1]}\', {str(self.is_new).lower()});'
 
-    def il_reg_alias_to_hw_reg(self) -> str:
+    def il_reg_alias_to_hw_reg(self, write_usage: bool) -> str:
         """ Some registers are an alias for another register (PC = C9, GP = C11, SP = R29 etc.
             Unfortunately those alias can change from ISA version to ISA version.
             So the plugin needs to translate these. Here we return the code for this translation.
         """
-        return f'const char *{self.name_assoc} = {isa_alias_to_reg}({", ".join(isa_alias_to_reg_args)}{", " if isa_alias_to_reg_args else ""}{self.get_alias_enum(self.name)});'
+        return f'const char *{self.get_assoc_name(write_usage)} = {isa_alias_to_reg}({", ".join(isa_alias_to_reg_args)}{", " if isa_alias_to_reg_args else ""}{self.get_alias_enum(self.name)}, {str(write_usage).lower()});'
 
     def il_read(self) -> str:
         # There is a tricky case where write only register are read any ways in the semantic definitions.
