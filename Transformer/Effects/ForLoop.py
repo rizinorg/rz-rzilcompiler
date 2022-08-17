@@ -23,6 +23,6 @@ class ForLoop(Effect):
         :return: RZIL ops to write the pure value.
         """
 
-        return f'SEQ2({self.init.get_name()}, ' \
+        return f'SEQ2({self.init.effect_var()}, ' \
                f'REPEAT({self.control.il_read()}, ' \
-               f'{self.compound.get_name()}))'
+               f'{self.compound.effect_var()}))'

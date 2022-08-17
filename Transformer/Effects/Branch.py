@@ -18,4 +18,4 @@ class Branch(Effect):
         :return: RZIL ops to write the pure value.
         """
 
-        return f'BRANCH({self.cond.get_name()}, {self.then.get_name()}, {self.otherwise.get_name()})'
+        return f'BRANCH({self.cond.get_name()}, {self.then.effect_var()}, {self.otherwise.effect_var()})'
