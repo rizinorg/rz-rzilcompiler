@@ -17,6 +17,6 @@ class Immediate(LetVar):
         sign = 's' if self.v_type.signed else 'u'
         il_macro = f'{sign.upper()}N'
         width = self.v_type.bit_width
-        cast = f'({sign}t{width})' if width > 8 else 8
+        cast = f'({sign}t{width if width > 8 else 8})'
         get_imm = f'{isa_to_imm_fnc}({", ".join(isa_to_imm_args)}, \'{self.get_isa_name()}\''
         return f'RzILOpPure *{self.pure_var()} = {il_macro}({width}, {cast} {get_imm}));'
