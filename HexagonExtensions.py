@@ -83,16 +83,19 @@ class HexagonTransformerExtension(TransformerExtension):
             self.set_writes_pred(num)
 
     def reg_alias(self, items):
-        alias = items[0]
+        alias = items[0].lower()
+        holder = ILOpsHolder()
+        if alias in holder.read_ops:
+            return holder.read_ops[alias]
         is_new = False
         if len(items) == 2:
             is_new = True
-        if alias == "UPCYCLE" or alias == "PKTCOUNT" or alias == "UTIMER":
+        if alias == "upcycle" or alias == "pktcount" or alias == "utimer":
             size = 64
         else:
             size = 32
         v_type = ValueType(False, size)
-        return Register(alias.lower(), RegisterAccessType.R, v_type, is_new=is_new, is_reg_alias=True)
+        return Register(alias, RegisterAccessType.R, v_type, is_new=is_new, is_reg_alias=True)
 
     def reg(self, items):
         return self.hex_reg(items, False)
