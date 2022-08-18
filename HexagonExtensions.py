@@ -96,7 +96,7 @@ class HexagonTransformerExtension(TransformerExtension):
         else:
             size = 32
         v_type = ValueType(False, size)
-        return Register(alias, RegisterAccessType.R, v_type, is_new=is_new, is_reg_alias=True)
+        return Register(alias, RegisterAccessType.UNKNOWN, v_type, is_new=is_new, is_reg_alias=True)
 
     def reg(self, items):
         return self.hex_reg(items, False)

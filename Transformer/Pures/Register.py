@@ -15,6 +15,7 @@ class RegisterAccessType(StrEnum):
     PR = 'SRC_REG_PAIR'
     PW = 'DEST_REG_PAIR'
     PRW = 'SRC_DEST_REG_PAIR'
+    UNKNOWN = 'UNKNOWN'
 
 
 class Register(GlobalVar):
@@ -87,6 +88,8 @@ class Register(GlobalVar):
         # Examples: a2_svaddh, a4_vcmpbgt
         if self.access is RegisterAccessType.W or self.access is RegisterAccessType.PW:
             return f'VARG({self.vm_id(True)})'
+        if self.access == RegisterAccessType.UNKNOWN:
+            self.access = RegisterAccessType.R
         return GlobalVar.il_read(self)
 
     def get_pred_num(self) -> int:
@@ -103,6 +106,8 @@ class Register(GlobalVar):
             self.access = RegisterAccessType.RW
         elif self.access == RegisterAccessType.PR:
             self.access = RegisterAccessType.PRW
+        elif self.access == RegisterAccessType.UNKNOWN:
+            self.access = RegisterAccessType.W
 
     @staticmethod
     def get_alias_enum(alias: str) -> str:
