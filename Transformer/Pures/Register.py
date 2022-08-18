@@ -95,6 +95,15 @@ class Register(GlobalVar):
             raise NotImplementedError(f'This function should only called for explicit predicate register. This is {self.get_name()}')
         return int(num)
 
+    def add_write_property(self):
+        """ Adds the WRITE access property to the register.
+            Useful if the register was only seen as read but gets a value assigned later.
+        """
+        if self.access == RegisterAccessType.R:
+            self.access = RegisterAccessType.RW
+        elif self.access == RegisterAccessType.PR:
+            self.access = RegisterAccessType.PRW
+
     @staticmethod
     def get_alias_enum(alias: str) -> str:
         return f'HEX_REG_ALIAS_{alias.upper()}'

@@ -8,6 +8,7 @@ from Transformer.Pures.Pure import Pure, PureType, ValueType
 from enum import StrEnum
 
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
+from Transformer.Pures.Register import Register
 
 
 class AssignmentType(StrEnum):
@@ -41,6 +42,8 @@ class Assignment(Effect):
             Effect.__init__(self, name, EffectType.SETG)
         else:
             raise NotImplementedError(f'Dest type {self.dest.type} not handled.')
+        if isinstance(self.dest, Register):
+            self.dest.add_write_property()
         self.set_src()
 
     def set_src(self):
