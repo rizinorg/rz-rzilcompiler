@@ -361,7 +361,7 @@ class RZILTransformer(Transformer):
             return holder.read_ops[identifier]
         if self.ext.is_special_id(identifier):
             return self.ext.special_identifier_to_local_var(identifier)
-        # Return string
+        # Return string. It could be a variable or a function call.
         return identifier
 
     def compare_op(self, items):
@@ -416,6 +416,8 @@ class RZILTransformer(Transformer):
         return items[0]
 
     def resolve_hybrid_ops(self, operation: PureExec):
+        """ Returns the Pure part of the Hybrid op. The Hybrid's effect is added to the ILOpholder.
+        """
         hybrids = list()
         for h in operation.ops:
             if isinstance(h, Hybrid):
