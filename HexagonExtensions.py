@@ -9,6 +9,7 @@ from Transformer.Pures.Immediate import Immediate
 from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.Pure import ValueType
 from Transformer.Pures.Register import RegisterAccessType, Register
+from Transformer.Pures.Variable import Variable
 from Transformer.TransformerExtension import TransformerExtension
 from Transformer.helper_hexagon import get_value_type_from_reg_type, get_value_type_by_isa_imm
 from lark import Token, Tree
@@ -230,9 +231,9 @@ class HexagonTransformerExtension(TransformerExtension):
 
     def special_identifier_to_local_var(self, identifier):
         if identifier == self.spec_ids["EffectiveAddress"]:
-            return LocalVar("EA", ValueType(False, 32))
+            return Variable("EA", ValueType(False, 32))
         elif identifier in self.spec_ids["iterator_vars"]:
-            return LocalVar(identifier, ValueType(False, 32))
+            return Variable(identifier, ValueType(False, 32))
         raise NotImplementedError(f"Special identifier {identifier} not handled.")
 
 
