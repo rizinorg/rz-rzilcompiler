@@ -15,5 +15,5 @@ class Variable(LocalVar):
 
     def il_init_var(self):
         # Local vars are not initialized like global vars. They are initialized when an assignment to them happens.
-        code = f'// Declare: {self.value_type} {self.get_name()};\n'
+        code = f'// Declare: {self.value_type} {self.get_name()};'
         return code
