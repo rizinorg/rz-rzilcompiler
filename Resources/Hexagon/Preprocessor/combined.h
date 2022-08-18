@@ -109,7 +109,7 @@
 #define fREAD_GP()     (insn->extension_valid ? 0 : READ_REG(HEX_REG_GP))
 #define fREAD_GP() READ_REG(HEX_REG_GP)
 #define fREAD_PC() (READ_REG(HEX_REG_PC))
-#define fREAD_NPC() (hex_get_npc(pkt) & (0xfffffffe))
+#define fREAD_NPC() (get_npc(pkt) & (0xfffffffe))
 #define fREAD_P0() (READ_PREG(0))
 #define fREAD_P3() (READ_PREG(3))
 #define fCHECK_PCALIGN(A)

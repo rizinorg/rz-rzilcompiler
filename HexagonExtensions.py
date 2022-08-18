@@ -167,7 +167,7 @@ class HexagonTransformerExtension(TransformerExtension):
         return flags
 
     def get_val_type_by_fcn(self, fcn_name: str):
-        if fcn_name == "hex_get_npc":
+        if fcn_name == "get_npc":
             return ValueType(False, 32)
         elif fcn_name == "REGFIELD":
             # Register field macros. Calls a function which returns the width or

@@ -68,7 +68,7 @@
 
 #define ALIAS_NEW_VAL(A) A##_NEW
 
-#define fREAD_NPC() (hex_get_npc(pkt) & (0xfffffffe))
+#define fREAD_NPC() (get_npc(pkt) & (0xfffffffe))
 
 // Set/get register fields
 
