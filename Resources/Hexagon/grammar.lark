@@ -16,7 +16,7 @@ mem_load: MEM_LOAD SIGN_TYPE BIT_WIDTH "(" _argument_expr_list ")"
 
 mem_store: MEM_STORE SIGN_TYPE BIT_WIDTH "(" _argument_expr_list ")" ";"
 
-pred_write: WRITE_PRED "(" (reg_alias | reg) "," expr ")"
+pred_write: WRITE_PRED "(" reg "," expr ")"
 
 ?enumeration_constant: IDENTIFIER
 

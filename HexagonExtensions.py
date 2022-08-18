@@ -110,22 +110,16 @@ class HexagonTransformerExtension(TransformerExtension):
             name = items[-1]
         else:
             name = "".join(items)
-        reg_type = RegisterAccessType(items[1].type)  # src, dest, both
+        if name in holder.read_ops:
+            return holder.read_ops[name]
+
+        if is_explicit:
+            access_t = RegisterAccessType.UNKNOWN
+        else:
+            access_t = RegisterAccessType(items[1].type)  # src, dest, both
         v_type = get_value_type_from_reg_type(items)
 
-        if reg_type in [RegisterAccessType.R, RegisterAccessType.PR]:
-            if name in holder.read_ops:
-                return holder.read_ops[name]
-        elif reg_type in [RegisterAccessType.W, RegisterAccessType.PW]:
-            if name in holder.read_ops:
-                return holder.read_ops[name]
-        elif reg_type in [RegisterAccessType.RW, RegisterAccessType.PRW]:
-            if name in holder.read_ops:
-                return holder.read_ops[name]
-        else:
-            raise NotImplementedError(f'Reg type "{reg_type.name}" not implemented.')
-
-        v = Register(name, reg_type, v_type, is_new)
+        v = Register(name, access=access_t, v_type=v_type, is_new=is_new, is_explicit=is_explicit)
         return v
 
     def imm(self, items):
@@ -195,6 +189,8 @@ class HexagonTransformerExtension(TransformerExtension):
             # lie entirely within the 64 bit word. It is valid to request that
             # all 64 bits are returned (ie @length 64 and @start 0).
             return ValueType(False, 64)
+        elif fcn_name == "WRITE_PRED":
+            return ValueType(False, 0)
         # TODO
         # // sizeof -> Main priority.
         # int128_exts64
