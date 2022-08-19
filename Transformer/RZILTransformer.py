@@ -456,7 +456,7 @@ class RZILTransformer(Transformer):
             raise NotImplementedError(f'Hybrid {hybrid} has no valid sequence order set.')
 
         seq = Sequence(f'seq_{self.get_op_id()}', h_seq)
-        seq = self.chk_hybrid_dep(seq)
+        self.chk_hybrid_dep(seq)
 
         self.hybrid_effect_list.append(seq)
         # Return local tX
