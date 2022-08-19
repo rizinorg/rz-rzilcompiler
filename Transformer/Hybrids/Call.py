@@ -23,6 +23,9 @@ class Call(Hybrid):
             return arg if isinstance(arg, str) else arg.il_read()
         return f'{hexagon_c_call_prefix + self.fcn_name.upper()}({", ".join([read_arg(arg) for arg in self.ops])})'
 
+    def il_init_var(self):
+        return f'RzILOpEffect *{self.effect_var()} = {self.il_exec()};'
+
     def il_write(self):
         return self.il_exec()
 

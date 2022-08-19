@@ -25,6 +25,9 @@ class PostfixIncDec(Hybrid):
         else:
             raise NotImplementedError(f'{self.op_type} not implemented.')
 
+    def il_init_var(self):
+        return f'RzILOpEffect *{self.effect_var()} = {self.il_exec()};'
+
     def il_exec(self):
         if self.op_type == HybridType.DEC:
             return f'DEC({self.il_read()}, {self.value_type.bit_width})'
