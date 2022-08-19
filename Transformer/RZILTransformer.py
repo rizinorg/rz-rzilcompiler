@@ -32,7 +32,7 @@ from Transformer.Pures.PureExec import PureExec
 from Transformer.Pures.Register import Register
 from Transformer.Pures.Ternary import Ternary
 from Transformer.Pures.Variable import Variable
-from Transformer.helper import flatten_list
+from Transformer.helper import flatten_list, drain_list
 from Transformer.helper_hexagon import get_value_type_by_c_number, get_num_base_by_token
 
 
@@ -42,7 +42,9 @@ class RZILTransformer(Transformer):
     The classes do the actual code generation.
     """
     op_count = 0
+    # Total count of hybrids seen during transformation
     hybrid_op_count = 0
+    hybrid_effect_list = list()
 
     def __init__(self, arch: ArchEnum):
 
@@ -59,6 +61,8 @@ class RZILTransformer(Transformer):
         self.op_count = 0
         self.ext.reset_flags()
         self.gcc_ext_effects.clear()
+        self.hybrid_op_count = 0
+        self.hybrid_effect_list.clear()
 
     def get_op_id(self):
         op_id = self.op_count
@@ -87,7 +91,7 @@ class RZILTransformer(Transformer):
                 res += op.il_init_var() + '\n'
                 continue
             res += op.il_init_var() + '\n'
-        instruction_sequence = Sequence(f'instruction_sequence', [op for op in flatten_list(items) + self.gcc_ext_effects if isinstance(op, Effect)])
+        instruction_sequence = self.chk_hybrid_dep(Sequence(f'instruction_sequence', [op for op in flatten_list(items) + self.gcc_ext_effects if isinstance(op, Effect)]))
         res += instruction_sequence.il_init_var() + '\n'
         res += f'\nreturn {instruction_sequence.effect_var()};'
         return res
@@ -136,7 +140,7 @@ class RZILTransformer(Transformer):
     def jump(self, items):
         self.ext.set_token_meta_data('jump')
         ta: Pure = items[1]
-        return Jump(f'jump_{ta.pure_var()}', ta)
+        return self.chk_hybrid_dep(Jump(f'jump_{ta.pure_var()}', ta))
 
     def data_type(self, items):
         self.ext.set_token_meta_data('data_type')
@@ -146,7 +150,7 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('cast_expr')
         val_type = items[0]
         data = items[1]
-        return self.resolve_hybrid_ops(Cast(f'cast_{val_type}_{self.get_op_id()}', val_type, data))
+        return Cast(f'cast_{val_type}_{self.get_op_id()}', val_type, data)
 
     def number(self, items):
         # Numbers of the form -10ULL
@@ -173,12 +177,20 @@ class RZILTransformer(Transformer):
             raise NotImplementedError(f'Declarations without exactly two tokens are not supported.')
         if hasattr(items[0], 'type') and items[0].type != 'IDENTIFIER':
             # Declarations like: "TYPE <id>;" are ignored. They get initialize when they first get set.
-            return Empty(f'empty_{self.get_op_id()}')
+            return self.chk_hybrid_dep(Empty(f'empty_{self.get_op_id()}'))
         t: ValueType = items[0]
         if isinstance(items[1], Assignment):
             assg: Assignment = items[1]
             assg.set_dest_type(t)
             return assg
+        elif isinstance(items[1], Sequence):
+            # This is an assignment which has a hybrid dependency. Iterate over sequence ops and find Assignment.
+            items[1]: Sequence
+            for e in items[1]:
+                if isinstance(e, Assignment):
+                    e.set_dest_type(t)
+                    return items[1]
+            raise NotImplementedError('declaration without Assignment are not implemented.')
         elif isinstance(items[1], str):
             return Variable(items[1], t)
         raise NotImplementedError(f'Declaration with items {items} not implemented.')
@@ -192,25 +204,24 @@ class RZILTransformer(Transformer):
         op_type = AssignmentType.ASSIGN
         src: Pure = items[1]
         name = f'op_{op_type.name}_{self.get_op_id()}'
-        v = Assignment(name, op_type, dest, src)
-        return v
+        return self.chk_hybrid_dep(Assignment(name, op_type, dest, src))
 
     def selection_stmt(self, items):
         self.ext.set_token_meta_data('selection_stmt')
         cond = items[1]
-        then_seq = Sequence(f'seq_then_{self.get_op_id()}', flatten_list(items[2]))
+        then_seq = self.chk_hybrid_dep(Sequence(f'seq_then_{self.get_op_id()}', flatten_list(items[2])))
         name = f'branch_{self.get_op_id()}'
         if items[0] == 'if' and len(items) == 3:
-            return Branch(name, cond, then_seq, Empty(f'empty_{self.get_op_id()}'))
+            return self.chk_hybrid_dep(Branch(name, cond, then_seq, Empty(f'empty_{self.get_op_id()}')))
         elif items[0] == 'if' and len(items) > 3 and items[3] == 'else':
-            else_seq = Sequence(f'seq_else_{self.get_op_id()}', flatten_list(items[4]))
-            return Branch(name, cond, then_seq, else_seq)
+            else_seq = self.chk_hybrid_dep(Sequence(f'seq_else_{self.get_op_id()}', flatten_list(items[4])))
+            return self.chk_hybrid_dep(Branch(name, cond, then_seq, else_seq))
         else:
             raise NotImplementedError(f'"{items[0]}" branch not implemented.')
 
     def conditional_expr(self, items):
         self.ext.set_token_meta_data('conditional_expr')
-        return self.resolve_hybrid_ops(Ternary(f'cond_{self.get_op_id()}', items[0], items[1], items[2]))
+        return Ternary(f'cond_{self.get_op_id()}', items[0], items[1], items[2])
 
     def assignment_expr(self, items):
         self.ext.set_token_meta_data('assignment_expr')
@@ -219,8 +230,7 @@ class RZILTransformer(Transformer):
         op_type = AssignmentType(items[1])
         src: Pure = items[2]
         name = f'op_{op_type.name}_{self.get_op_id()}'
-        v = Assignment(name, op_type, dest, src)
-        return v
+        return self.chk_hybrid_dep(Assignment(name, op_type, dest, src))
 
     def additive_expr(self, items):
         self.ext.set_token_meta_data('additive_expr')
@@ -230,7 +240,7 @@ class RZILTransformer(Transformer):
         op_type = ArithmeticType(items[1])
         name = f'op_{op_type.name}_{self.get_op_id()}'
         v = ArithmeticOp(name, a, b, op_type)
-        return self.resolve_hybrid_ops(v)
+        return v
 
     def multiplicative_expr(self, items):
         self.ext.set_token_meta_data('additive_expr')
@@ -240,34 +250,34 @@ class RZILTransformer(Transformer):
         op_type = ArithmeticType(items[1])
         name = f'op_{op_type.name}_{self.get_op_id()}'
         v = ArithmeticOp(name, a, b, op_type)
-        return self.resolve_hybrid_ops(v)
+        return v
 
     def and_expr(self, items):
         self.ext.set_token_meta_data('and_expr')
 
-        return self.resolve_hybrid_ops(self.bit_operations(items, BitOperationType.AND))
+        return self.bit_operations(items, BitOperationType.AND)
 
     def inclusive_or_expr(self, items):
         self.ext.set_token_meta_data('inclusive_or_expr')
 
-        return self.resolve_hybrid_ops(self.bit_operations(items, BitOperationType.OR))
+        return self.bit_operations(items, BitOperationType.OR)
 
     def exclusive_or_expr(self, items):
         self.ext.set_token_meta_data('exclusive_or_expr')
 
-        return self.resolve_hybrid_ops(self.bit_operations(items, BitOperationType.XOR))
+        return self.bit_operations(items, BitOperationType.XOR)
 
     def logical_and_expr(self, items):
         self.ext.set_token_meta_data('logical_and_expr')
-        return self.resolve_hybrid_ops(self.boolean_expr(items))
+        return self.boolean_expr(items)
 
     def logical_or_expr(self, items):
         self.ext.set_token_meta_data('logical_or_expr')
-        return self.resolve_hybrid_ops(self.boolean_expr(items))
+        return self.boolean_expr(items)
 
     def logical_not_expr(self, items):
         self.ext.set_token_meta_data('logical_not_expr')
-        return self.resolve_hybrid_ops(self.boolean_expr(items))
+        return self.boolean_expr(items)
 
     def boolean_expr(self, items):
         a = items[0]
@@ -275,11 +285,11 @@ class RZILTransformer(Transformer):
         b = items[2] if len(items) == 3 else None
         name = f'op_{t}_{self.get_op_id()}'
         v = BooleanOp(name, a, b, t)
-        return self.resolve_hybrid_ops(v)
+        return v
 
     def shift_expr(self, items):
         self.ext.set_token_meta_data('shift_expr')
-        return self.resolve_hybrid_ops(self.bit_operations(items, BitOperationType(items[1])))
+        return self.bit_operations(items, BitOperationType(items[1]))
 
     def unary_expr(self, items):
         self.ext.set_token_meta_data('unary_expr')
@@ -290,13 +300,13 @@ class RZILTransformer(Transformer):
             v = self.bit_operations(items, BitOperationType.NEG)
         else:
             raise NotImplementedError(f'Unary expression {items[0]} not handler.')
-        return self.resolve_hybrid_ops(v)
+        return v
 
     def pred_write(self, items):
         pred_reg: Register = items[1]
         self.ext.set_token_meta_data('pred_write', pred_num=pred_reg.get_pred_num())
         name = f'op_PRED_WRITE_{self.get_op_id()}'
-        return PredicateWrite(name, items[1], items[2])
+        return self.chk_hybrid_dep(PredicateWrite(name, items[1], items[2]))
 
     def postfix_expr(self, items):
         self.ext.set_token_meta_data('postfix_expr')
@@ -304,7 +314,7 @@ class RZILTransformer(Transformer):
         name = f'op_{HybridType(items[1]).name}_{self.get_op_id()}'
         if t == HybridType.INC or t == HybridType.DEC:
             op: LocalVar = items[0]
-            return PostfixIncDec(name, op, op.value_type, t)
+            return self.resolve_hybrid(PostfixIncDec(name, op, op.value_type, t))
         else:
             raise NotImplementedError(f'Postfix expression {t} not handled.')
 
@@ -321,7 +331,7 @@ class RZILTransformer(Transformer):
         b = items[2]
         name = f'op_{op_type.name}_{self.get_op_id()}'
         v = BitOp(name, a, b, op_type)
-        return self.resolve_hybrid_ops(v)
+        return v
 
     def mem_store(self, items):
         self.ext.set_token_meta_data('mem_store')
@@ -332,7 +342,7 @@ class RZILTransformer(Transformer):
             # STOREW determines from the data type how many bytes are written.
             # Cast the data type to the mem store type
             data = Cast(f'op_{self.get_op_id()}', operation_value_type, va)
-        return MemStore(f'ms_{data.get_name()}_{self.get_op_id()}', va, data)
+        return self.chk_hybrid_dep(MemStore(f'ms_{data.get_name()}_{self.get_op_id()}', va, data))
 
     # SPECIFIC FOR: Hexagon
     def mem_load(self, items):
@@ -343,13 +353,13 @@ class RZILTransformer(Transformer):
         if not isinstance(va, Pure):
             va = ILOpsHolder().get_op_by_name(va.value)
 
-        return self.resolve_hybrid_ops(MemLoad(f'ml_{va.get_name()}_{self.get_op_id()}', va, mem_acc_type))
+        return MemLoad(f'ml_{va.get_name()}_{self.get_op_id()}', va, mem_acc_type)
 
     def c_call(self, items):
         self.ext.set_token_meta_data('c_call')
         prefix = items[0]
         val_type = self.ext.get_val_type_by_fcn(prefix)
-        return Call(f'c_call_{self.get_op_id()}', val_type, items)
+        return self.resolve_hybrid(Call(f'c_call_{self.get_op_id()}', val_type, items))
 
     def identifier(self, items):
         self.ext.set_token_meta_data('identifier')
@@ -367,14 +377,14 @@ class RZILTransformer(Transformer):
     def compare_op(self, items):
         self.ext.set_token_meta_data('compare_op')
         op_type = CompareOpType(items[1])
-        return self.resolve_hybrid_ops(CompareOp(f'op_{op_type.name}_{self.get_op_id()}', items[0], items[2], op_type))
+        return CompareOp(f'op_{op_type.name}_{self.get_op_id()}', items[0], items[2], op_type)
 
     def for_loop(self, items):
         self.ext.set_token_meta_data('for_loop')
         if len(items) != 5:
             raise NotImplementedError(f'For loops with {len(items)} elements is not supported yet.')
-        compound = Sequence(f'seq_{self.get_op_id()}', flatten_list(items[4]) + [items[3]])
-        return ForLoop(f'for_{self.get_op_id()}', items[1], items[2], compound)
+        compound = self.chk_hybrid_dep(Sequence(f'seq_{self.get_op_id()}', flatten_list(items[4]) + [items[3]]))
+        return self.chk_hybrid_dep(ForLoop(f'for_{self.get_op_id()}', items[1], items[2], compound))
 
     def iteration_stmt(self, items):
         self.ext.set_token_meta_data('iteration_stmt')
@@ -386,13 +396,13 @@ class RZILTransformer(Transformer):
     def compound_stmt(self, items):
         self.ext.set_token_meta_data('compound_stmt')
         # These are empty compound statements.
-        return Empty(f'empty_{self.get_op_id()}')
+        return self.chk_hybrid_dep(Empty(f'empty_{self.get_op_id()}'))
 
     def gcc_extended_expr(self, items):
         self.ext.set_token_meta_data('gcc_extended_expr')
         if isinstance(items[0], list):
             raise NotImplementedError('List of statements in gcc extended expressions not implemented.')
-        self.gcc_ext_effects.append(items[0])
+        self.gcc_ext_effects.append(self.chk_hybrid_dep(items[0]))
         expr = items[1]
         if expr:
             return expr
@@ -401,11 +411,11 @@ class RZILTransformer(Transformer):
     def expr_stmt(self, items):
         self.ext.set_token_meta_data('expr_stmt')
         # These are empty expression statements.
-        return Empty(f'empty_{self.get_op_id()}')
+        return self.chk_hybrid_dep(Empty(f'empty_{self.get_op_id()}'))
 
     def cancel_slot_stmt(self, items):
         self.ext.set_token_meta_data('cancel_slot_stmt')
-        return NOP(f'nop_{self.get_op_id()}')
+        return self.chk_hybrid_dep(NOP(f'nop_{self.get_op_id()}'))
 
     def block_item_list(self, items):
         self.ext.set_token_meta_data('block_item_list')
@@ -415,27 +425,32 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('block_item')
         return items[0]
 
-    def resolve_hybrid_ops(self, operation: PureExec):
-        """ Returns the Pure part of the Hybrid op. The Hybrid's effect is added to the ILOpholder.
+    def chk_hybrid_dep(self, effect: Effect) -> Effect:
+        """ Check hybrid dependency. Checks if a hybrid effect must be executed before the given effect and returns
+            a sequence of Sequence(hybrid, given effect) if so. Otherwise, the original effect.
         """
-        hybrids = list()
-        for h in operation.ops:
-            if isinstance(h, Hybrid):
-                hybrids.append(h)
-        if len(hybrids) == 0:
-            return operation
+        if len(self.hybrid_effect_list) == 0:
+            return effect
+        return Sequence(f'seq_{self.get_op_id()}', drain_list(self.hybrid_effect_list) + [effect])
 
-        tx_name = f't{self.hybrid_op_count}'
-        tx = LocalVar(tx_name, operation.value_type)
+    def resolve_hybrid(self, hybrid: Hybrid) -> Pure:
+        """ Splits a hybrid in a Pure and Effect part.
+            The Pure is assigned to a LocalVar. The LocalVar gets returned.
+            The hybrids effect and the assignment of the LocalVar are saved to a list and used later when
+            the dependent effect is created.
+        """
+        tmp_x_name = f'h_tmp{self.hybrid_op_count}'
+        tmp_x = LocalVar(tmp_x_name, hybrid.value_type)
         self.hybrid_op_count += 1
 
-        # tx = <operation>
-        name = f'op_{AssignmentType.ASSIGN.name}_{self.get_op_id()}'
-        set_tx = Assignment(name, AssignmentType.ASSIGN, tx, operation)
-        hybrids.insert(0, set_tx)
+        # Assign the hybrid pure part to tmp_x.
+        name = f'op_{AssignmentType.ASSIGN.name}_hybrid_tmp_{self.get_op_id()}'
+        set_tmp = Assignment(name, AssignmentType.ASSIGN, tmp_x, hybrid)
 
-        # The Effect will be added to the ILOpHolder in the Effect constructor
-        Sequence(f'seq_{self.get_op_id()}', hybrids)
+        # Add hybrid effect to the ILOpHolder in the Effect constructor.
+        seq = Sequence(f'seq_{self.get_op_id()}', [set_tmp, hybrid])
+        self.chk_hybrid_dep(seq)
 
+        self.hybrid_effect_list.append(seq)
         # Return local tX
-        return tx
+        return tmp_x

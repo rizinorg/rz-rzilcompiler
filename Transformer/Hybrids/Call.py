@@ -29,4 +29,4 @@ class Call(Hybrid):
         # The value of the call is always stored in "ret_val"
         tmp = 'SIGNED(' if self.value_type.signed else 'UNSIGNED('
         tmp += f'{self.value_type.bit_width}'
-        return f'{tmp}, VARL("ret_val_{self.get_name()}"))'
+        return f'{tmp}, VARL("ret_val"))'

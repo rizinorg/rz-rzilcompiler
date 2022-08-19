@@ -66,3 +66,9 @@ def flatten_list(ls: list) -> list:
         else:
             result.append(el)
     return result
+
+
+def drain_list(l: list) -> list:
+    """ Returns the content of a list and clears it. """
+    result, l[:] = l[:], []
+    return result
