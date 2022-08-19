@@ -8,9 +8,10 @@ from Transformer.Pures.Pure import ValueType, Pure
 from Transformer.Pures.PureExec import PureExec
 
 
-class PostfixExpr(StrEnum):
+class HybridType(StrEnum):
     INC = '++'
     DEC = '--'
+    CALL = 'call'
 
 
 class Hybrid(PureExec, Effect):

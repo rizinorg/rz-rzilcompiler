@@ -14,25 +14,25 @@ from Transformer.Effects.NOP import NOP
 from Transformer.Effects.PredicateWrite import PredicateWrite
 from Transformer.Effects.Sequence import Sequence
 from HexagonExtensions import HexagonTransformerExtension
-from Transformer.Hybrids.Hybrid import Hybrid, PostfixExpr
+from Transformer.Hybrids.Hybrid import Hybrid, HybridType
 from Transformer.Hybrids.PostfixIncDec import PostfixIncDec
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.BitOp import BitOperationType, BitOp
 from Transformer.Pures.BooleanOp import BooleanOpType, BooleanOp
-from Transformer.Pures.CCode import CCall
+from Transformer.Hybrids.Call import Call
 from Transformer.Pures.Cast import Cast
 from Transformer.Pures.CompareOp import CompareOp, CompareOpType
 from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.MemLoad import MemAccessType, MemLoad
 from Transformer.Pures.Number import Number
-from Transformer.Pures.Pure import Pure, ValueType, PureType
+from Transformer.Pures.Pure import Pure, ValueType
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Pures.PureExec import PureExec
 from Transformer.Pures.Register import Register
 from Transformer.Pures.Ternary import Ternary
 from Transformer.Pures.Variable import Variable
-from Transformer.helper import exc_if_types_not_match, flatten_list
+from Transformer.helper import flatten_list
 from Transformer.helper_hexagon import get_value_type_by_c_number, get_num_base_by_token
 
 
@@ -300,9 +300,9 @@ class RZILTransformer(Transformer):
 
     def postfix_expr(self, items):
         self.ext.set_token_meta_data('postfix_expr')
-        t = PostfixExpr(items[1])
-        name = f'op_{PostfixExpr(items[1]).name}_{self.get_op_id()}'
-        if t == PostfixExpr.INC or t == PostfixExpr.DEC:
+        t = HybridType(items[1])
+        name = f'op_{HybridType(items[1]).name}_{self.get_op_id()}'
+        if t == HybridType.INC or t == HybridType.DEC:
             op: LocalVar = items[0]
             return PostfixIncDec(name, op, op.value_type, t)
         else:
@@ -349,7 +349,7 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('c_call')
         prefix = items[0]
         val_type = self.ext.get_val_type_by_fcn(prefix)
-        return CCall(f'c_call_{self.get_op_id()}', val_type, items)
+        return Call(f'c_call_{self.get_op_id()}', val_type, items)
 
     def identifier(self, items):
         self.ext.set_token_meta_data('identifier')
