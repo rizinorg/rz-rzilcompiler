@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Transformer.Hybrids.Hybrid import HybridType, Hybrid
+from Transformer.Hybrids.Hybrid import HybridType, Hybrid, HybridSeqOrder
 from Transformer.Pures.GlobalVar import GlobalVar
 from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.Pure import ValueType, Pure
@@ -12,6 +12,8 @@ class PostfixIncDec(Hybrid):
     def __init__(self, name: str, operand: Pure, value_type: ValueType, hybrid_type: HybridType):
         self.op_type = hybrid_type
         self.gl = get_scope_letter(operand)
+        self.seq_order = HybridSeqOrder.SET_VAL_THEN_EXEC
+
         Hybrid.__init__(self, name, [operand], value_type)
 
     def il_write(self):

@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Transformer.Hybrids.Hybrid import Hybrid, HybridType
+from Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
 from Transformer.PluginInfo import hexagon_c_call_prefix
 from Transformer.Pures.Pure import ValueType
 
@@ -13,6 +13,7 @@ class Call(Hybrid):
     def __init__(self, name: str, val_type: ValueType, args: []):
         self.fcn_name = args[0]
         self.op_type = HybridType.CALL
+        self.seq_order = HybridSeqOrder.EXEC_THEN_SET_VAL
 
         Hybrid.__init__(self, name, args[1:], val_type)
 

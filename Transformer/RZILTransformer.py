@@ -14,7 +14,7 @@ from Transformer.Effects.NOP import NOP
 from Transformer.Effects.PredicateWrite import PredicateWrite
 from Transformer.Effects.Sequence import Sequence
 from HexagonExtensions import HexagonTransformerExtension
-from Transformer.Hybrids.Hybrid import Hybrid, HybridType
+from Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
 from Transformer.Hybrids.PostfixIncDec import PostfixIncDec
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.BitOp import BitOperationType, BitOp
@@ -91,7 +91,7 @@ class RZILTransformer(Transformer):
                 res += op.il_init_var() + '\n'
                 continue
             res += op.il_init_var() + '\n'
-        instruction_sequence = self.chk_hybrid_dep(Sequence(f'instruction_sequence', [op for op in flatten_list(items) + self.gcc_ext_effects if isinstance(op, Effect)]))
+        instruction_sequence = Sequence(f'instruction_sequence', [op for op in self.hybrid_effect_list + flatten_list(items) + self.gcc_ext_effects if isinstance(op, Effect)])
         res += instruction_sequence.il_init_var() + '\n'
         res += f'\nreturn {instruction_sequence.effect_var()};'
         return res
@@ -448,7 +448,14 @@ class RZILTransformer(Transformer):
         set_tmp = Assignment(name, AssignmentType.ASSIGN, tmp_x, hybrid)
 
         # Add hybrid effect to the ILOpHolder in the Effect constructor.
-        seq = Sequence(f'seq_{self.get_op_id()}', [set_tmp, hybrid])
+        if hybrid.seq_order == HybridSeqOrder.SET_VAL_THEN_EXEC:
+            h_seq = [set_tmp, hybrid]
+        elif hybrid.seq_order == HybridSeqOrder.EXEC_THEN_SET_VAL:
+            h_seq = [hybrid, set_tmp]
+        else:
+            raise NotImplementedError(f'Hybrid {hybrid} has no valid sequence order set.')
+
+        seq = Sequence(f'seq_{self.get_op_id()}', h_seq)
         self.chk_hybrid_dep(seq)
 
         self.hybrid_effect_list.append(seq)
