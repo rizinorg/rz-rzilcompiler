@@ -16,7 +16,7 @@ from Transformer.Effects.Sequence import Sequence
 from HexagonExtensions import HexagonTransformerExtension
 from Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
 from Transformer.Hybrids.PostfixIncDec import PostfixIncDec
-from Transformer.ILOpsHolder import ILOpsHolder
+from Transformer.ILOpsHolder import ILOpsHolder, OpCounter
 from Transformer.Pures.BitOp import BitOperationType, BitOp
 from Transformer.Pures.BooleanOp import BooleanOpType, BooleanOp
 from Transformer.Hybrids.Call import Call
@@ -41,7 +41,6 @@ class RZILTransformer(Transformer):
     Transforms the tree into Pures and Effects.
     The classes do the actual code generation.
     """
-    op_count = 0
     # Total count of hybrids seen during transformation
     hybrid_op_count = 0
     hybrid_effect_list = list()
@@ -58,16 +57,15 @@ class RZILTransformer(Transformer):
         super().__init__()
 
     def reset(self):
-        self.op_count = 0
+        OpCounter().reset()
         self.ext.reset_flags()
         self.gcc_ext_effects.clear()
         self.hybrid_op_count = 0
         self.hybrid_effect_list.clear()
 
-    def get_op_id(self):
-        op_id = self.op_count
-        self.op_count += 1
-        return op_id
+    @staticmethod
+    def get_op_id():
+        return OpCounter().get_op_count()
 
     def fbody(self, items):
         self.ext.set_token_meta_data('fbody')

@@ -18,6 +18,19 @@ def singleton(cls, *args, **kw):
 
 
 @singleton
+class OpCounter(object):
+    op_count = 0
+
+    def get_op_count(self):
+        cnt = self.op_count
+        self.op_count += 1
+        return cnt
+
+    def reset(self):
+        self.op_count = 0
+
+
+@singleton
 class ILOpsHolder(object):
     read_ops = dict()
     exec_ops = dict()

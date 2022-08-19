@@ -2,16 +2,21 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from Transformer.Effects.Effect import Effect, EffectType
-from Transformer.Pures.Pure import Pure
+from Transformer.Effects.Empty import Empty
+from Transformer.ILOpsHolder import OpCounter
 
 
 class Sequence(Effect):
 
     def __init__(self, name, effects: list[Effect]):
+        eff = list()
         for e in effects:
-            if not isinstance(e, Effect):
-                raise NotImplementedError(f'{e.get_name()} is not an effect but was given to a sequence.')
-        self.effects = effects
+            if isinstance(e, Effect):
+                eff.append(e)
+        if len(eff) == 0:
+            eff = [Empty(f'empty_seq_{OpCounter().get_op_count()}')]
+
+        self.effects = eff
         Effect.__init__(self, name, EffectType.SEQUENCE)
 
     def il_write(self):
