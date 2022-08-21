@@ -4,12 +4,14 @@
 from Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
 from Transformer.PluginInfo import hexagon_c_call_prefix
 from Transformer.Pures.Pure import ValueType
+from Transformer.Pures.LetVar import LetVar
 
 
 class Call(Hybrid):
     """ Class which is a call in the instruction semantics. Since the IL operation cannot model this with a branch
         to another function (this would be another IL op all together) it is modeled as a Hybrid op.
     """
+
     def __init__(self, name: str, val_type: ValueType, args: []):
         self.fcn_name = args[0]
         self.op_type = HybridType.CALL
@@ -19,9 +21,16 @@ class Call(Hybrid):
 
     def il_exec(self):
         def read_arg(arg) -> str:
-            # Arguments can be strings
-            return arg if isinstance(arg, str) else arg.il_read()
-        return f'{hexagon_c_call_prefix + self.fcn_name.upper()}({", ".join([read_arg(arg) for arg in self.ops])})'
+            # Arguments can be strings like enums
+            if isinstance(arg, str):
+                return arg
+            elif isinstance(arg, LetVar):
+                return f'LET({arg.vm_id(True)}, {arg.pure_var()}, {arg.il_read()})'
+            else:
+                return arg.il_read()
+
+        code = f'{hexagon_c_call_prefix + self.fcn_name.upper()}({", ".join([read_arg(arg) for arg in self.ops])})'
+        return code
 
     def il_write(self):
         return self.il_exec()
