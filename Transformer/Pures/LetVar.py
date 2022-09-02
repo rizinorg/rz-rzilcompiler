@@ -25,3 +25,17 @@ class LetVar(Pure):
 
     def vm_id(self, write_usage: bool):
         return f'"{self.get_name()}"'
+
+
+def resolve_lets(lets: [LetVar], consumer):
+    """ Wraps LET(...) around the consumer. """
+    from Transformer.Pures.PureExec import PureExec
+
+    code = ''
+    for let in lets:
+        let_read = let.pure_var() if let.reads < 1 else f'DUP({let.pure_var()})'
+        code += f'LET({let.vm_id(True)}, {let_read}, '
+        let.reads += 1
+    code += consumer.il_exec() if isinstance(consumer, PureExec) else consumer.il_read()
+    code += ')' * len(lets)
+    return code

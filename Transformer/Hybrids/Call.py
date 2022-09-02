@@ -4,7 +4,7 @@
 from Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
 from Transformer.PluginInfo import hexagon_c_call_prefix
 from Transformer.Pures.Pure import ValueType
-from Transformer.Pures.LetVar import LetVar
+from Transformer.Pures.LetVar import LetVar, resolve_lets
 
 
 class Call(Hybrid):
@@ -25,7 +25,7 @@ class Call(Hybrid):
             if isinstance(arg, str):
                 return arg
             elif isinstance(arg, LetVar):
-                return f'LET({arg.vm_id(True)}, {arg.pure_var()}, {arg.il_read()})'
+                return resolve_lets([arg], arg)
             else:
                 return arg.il_read()
 

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from Exceptions import OverloadException
-from Transformer.Pures.LetVar import LetVar
+from Transformer.Pures.LetVar import LetVar, resolve_lets
 from Transformer.Pures.Pure import Pure, PureType, ValueType
 
 
@@ -30,9 +30,7 @@ class PureExec(Pure):
             init = f'RzILOpPure *{self.pure_var()} = {self.il_exec()};'
             return init
         init = f'RzILOpPure *{self.pure_var()} = '
-        for let in self.lets:
-            init += f'LET({let.vm_id(True)}, {let.pure_var()}, '
-        init += self.il_exec() + ')' * len(self.lets) + ';'
+        init += resolve_lets(self.lets, self)
         return init
 
     def il_read(self):

@@ -3,7 +3,7 @@
 
 from Transformer.Effects.Effect import Effect, EffectType
 from Transformer.Pures.BitOp import BitOp, BitOperationType
-from Transformer.Pures.LetVar import LetVar
+from Transformer.Pures.LetVar import LetVar, resolve_lets
 from Transformer.Pures.Pure import Pure, PureType, ValueType
 from enum import StrEnum
 
@@ -88,7 +88,7 @@ class Assignment(Effect):
         :return: RZIL ops to write the pure value.
         """
         if isinstance(self.src, LetVar):
-            read = f'LET({self.src.vm_id(True)}, {self.src.pure_var()}, {self.src.il_read()})'
+            read = resolve_lets([self.src], self.src)
         else:
             read = self.src.il_read()
         if self.type == EffectType.SETG:
