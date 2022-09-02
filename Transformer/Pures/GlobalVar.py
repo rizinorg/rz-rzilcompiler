@@ -5,10 +5,8 @@ from Transformer.Pures.Pure import Pure, PureType, ValueType
 
 
 class GlobalVar(Pure):
-    reads = None
 
     def __init__(self, name: str, v_type: ValueType):
-        self.reads = 0
         Pure.__init__(self, name, PureType.GLOBAL, v_type)
 
     def il_read(self):

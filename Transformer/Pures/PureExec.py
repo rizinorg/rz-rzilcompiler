@@ -36,6 +36,7 @@ class PureExec(Pure):
         return init
 
     def il_read(self):
+        self.reads += 1
         return self.pure_var()
 
     def vm_id(self, write_usage):

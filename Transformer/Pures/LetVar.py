@@ -20,6 +20,7 @@ class LetVar(Pure):
 
     def il_read(self):
         """ Returns the code to read the let variable for the VM. """
+        self.reads += 1
         return f'VARLP({self.vm_id(False)})'
 
     def vm_id(self, write_usage: bool):

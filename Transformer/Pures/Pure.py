@@ -33,6 +33,7 @@ class ValueType:
 
 
 class Pure:
+    reads: int = 0
     name: str = ''  # Name of pure
     isa_name = None
     name_assoc: str = ''  # Name associated with the ISA name. E.g. ISA: "Rs" Associated: "R3"
