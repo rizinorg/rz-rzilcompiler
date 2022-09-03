@@ -404,14 +404,12 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('gcc_extended_expr')
         if isinstance(items[0], list) and isinstance(items[-1], Pure):
             raise NotImplementedError('List of statements in gcc extended expressions not implemented.')
-        elif isinstance(items[0], list):
+        elif isinstance(items[0], list) or not items[1]:
             # This is a compound statement.
             return items[0]
+
         self.gcc_ext_effects.append(self.chk_hybrid_dep(items[0]))
-        expr = items[1]
-        if expr:
-            return expr
-        raise NotImplementedError('GCC extended expressions without expression are not implemented.')
+        return items[1]  # expression
 
     def expr_stmt(self, items):
         self.ext.set_token_meta_data('expr_stmt')
