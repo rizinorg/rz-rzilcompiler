@@ -343,7 +343,7 @@ class RZILTransformer(Transformer):
         if operation_value_type != data.value_type:
             # STOREW determines from the data type how many bytes are written.
             # Cast the data type to the mem store type
-            data = Cast(f'op_{self.get_op_id()}', operation_value_type, va)
+            data = Cast(f'op_{self.get_op_id()}', operation_value_type, data)
         return self.chk_hybrid_dep(MemStore(f'ms_{data.get_name()}_{self.get_op_id()}', va, data))
 
     # SPECIFIC FOR: Hexagon
