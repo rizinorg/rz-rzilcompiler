@@ -49,11 +49,10 @@ def check_and_convert_types(a: ValueType, b: ValueType) -> (ValueType, ValueType
     if unsigned.bit_width >= signed.bit_width:
         signed.bit_width = unsigned.bit_width
         signed.signed = False
-        return (signed, unsigned) if a_is_signed else (b, a)
     else:
         unsigned.bit_width = signed.bit_width
         unsigned.signed = True
-        return (signed, unsigned) if a_is_signed else (b, a)
+    return (signed, unsigned) if a_is_signed else (unsigned, signed)
 
 
 def flatten_list(ls: list) -> list:
