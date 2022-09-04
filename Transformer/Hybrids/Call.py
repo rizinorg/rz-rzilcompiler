@@ -38,5 +38,5 @@ class Call(Hybrid):
     def il_read(self):
         # The value of the call is always stored in "ret_val"
         tmp = 'SIGNED(' if self.value_type.signed else 'UNSIGNED('
-        tmp += f'{self.value_type.bit_width}'
+        tmp += f'{self.value_type.bit_width}' if self.value_type.bit_width != 0 else 32
         return f'{tmp}, VARL("ret_val"))'
