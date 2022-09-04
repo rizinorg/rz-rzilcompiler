@@ -14,6 +14,18 @@ class Immediate(LocalVar):
         LocalVar.__init__(self, name, value_type=v_type)
         self.set_isa_name(name)
 
+    def il_read(self) -> str:
+        """ Returns the code to read the local variable for the VM. """
+        if self.reads < 1:
+            # The first time it is read is the assignment to the local variable of the same name.
+            # This is why we return the pure variable name.
+            # Afterwards the LocalVar must be read.
+            ret = self.pure_var()
+        else:
+            ret = f'VARL({self.vm_id(False)})'
+        self.reads += 1
+        return ret
+
     def il_init_var(self, isa_to_imm_fcn=None):
         sign = 's' if self.v_type.signed else 'u'
         il_macro = f'{sign.upper()}N'
