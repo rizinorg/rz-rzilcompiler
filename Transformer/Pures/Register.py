@@ -50,6 +50,9 @@ class Register(GlobalVar):
         return self.get_assoc_name(False)
 
     def il_init_var(self):
+        if self.get_name().lower() == 'pc':
+            # PC is never present as IL variable. Get it from the pkt.
+            return 'RzILOpPure *pc = U32(pkt->pkt_addr);'
         if self.is_explicit and not self.is_reg_alias:
             return f'RzILOpPure *{self.pure_var()} = VARG({self.vm_id(False)});'
 
