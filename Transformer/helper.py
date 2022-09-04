@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from copy import deepcopy
 
-from Transformer.Pures.Pure import ValueType
+from Transformer.ILOpsHolder import OpCounter
+from Transformer.Pures.Cast import Cast
+from Transformer.Pures.Pure import ValueType, Pure
 
 
 def get_smalles_val_type_for_number(num: int) -> int:
@@ -24,7 +26,37 @@ def exc_if_types_not_match(a: ValueType, b: ValueType):
                          f"b size: {b.bit_width} signed: {b.signed}")
 
 
-def check_and_convert_types(a: ValueType, b: ValueType) -> (ValueType, ValueType):
+def cast_operands(immutable_a: bool, **ops) -> (Pure, Pure):
+    """ Casts two operands to a common type according to C11 standard.
+        If immutable_op_a = True operand b is casted to the operand a type
+        (Useful for assignments to global vars like registers).
+        Operand are names in the order: a, b, c, ...
+    """
+    if 'a' not in ops and 'b' not in ops:
+        raise NotImplementedError('At least operand "a" and "b" must e given.')
+    a = ops['a']
+    b = ops['b']
+
+    sign_match = a.value_type.signed == b.value_type.signed
+    rank_match = a.value_type.bit_width == b.value_type.bit_width
+    if sign_match and rank_match:
+        return a, b
+
+    cname = f'cast_{OpCounter().get_op_count()}'
+    if immutable_a:
+        return a, Cast(cname, a.value_type, b)
+
+    casted_a, casted_b = c11_cast(a.value_type, b.value_type)
+
+    if casted_a.bit_width != a.value_type.bit_width or casted_a.signed != a.value_type.signed:
+        a = Cast(cname, casted_a, a)
+    if casted_b.bit_width != b.value_type.bit_width or casted_b.signed != b.value_type.signed:
+        b = Cast(cname, casted_b, b)
+
+    return a, b
+
+
+def c11_cast(a: ValueType, b: ValueType) -> (ValueType, ValueType):
     """ Compares both value types against each other and converts them according to
         Chapter 6.3.1.8 of ISO/IEC 9899:201x (C11 Standard).
         Please note that we do not follow the rank definition from the standard.

@@ -5,6 +5,7 @@ from Transformer.Effects.Effect import Effect, EffectType
 from Transformer.Pures.BitOp import BitOp, BitOperationType
 from Transformer.Pures.LetVar import LetVar, resolve_lets
 from Transformer.Pures.Pure import Pure, PureType, ValueType
+from Transformer.helper import cast_operands
 from enum import StrEnum
 
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
@@ -45,6 +46,7 @@ class Assignment(Effect):
         if isinstance(self.dest, Register):
             self.dest.add_write_property()
         self.set_src()
+        self.dest, self.src = cast_operands(a=self.dest, b=self.src, immutable_a=True)
 
     def set_src(self):
         """ Update the src in case of +=, -= and similar assignments. """

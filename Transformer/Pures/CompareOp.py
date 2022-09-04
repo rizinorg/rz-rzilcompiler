@@ -2,11 +2,9 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from enum import StrEnum
 
-from Transformer.ILOpsHolder import OpCounter
 from Transformer.Pures.Pure import Pure
 from Transformer.Pures.PureExec import PureExec
-from Transformer.Pures.Cast import Cast
-from Transformer.helper import check_and_convert_types
+from Transformer.helper import cast_operands
 
 
 class CompareOpType(StrEnum):
@@ -21,16 +19,10 @@ class CompareOpType(StrEnum):
 class CompareOp(PureExec):
 
     def __init__(self, name: str, a: Pure, b: Pure, op_type: CompareOpType):
-        a_casted, b_casted = check_and_convert_types(a.value_type, b.value_type)
         self.op_type = op_type
+        a, b = cast_operands(a=a, b=b, immutable_a=False)
 
-        cname = f'cast_{OpCounter().get_op_count()}'
-        if a_casted.bit_width != a.value_type.bit_width or a_casted.signed != a.value_type.signed:
-            a = Cast(cname, a_casted, a)
-        if b_casted.bit_width != b.value_type.bit_width or b_casted.signed != b.value_type.signed:
-            b = Cast(cname, b_casted, b)
-
-        PureExec.__init__(self, name, [a, b], a_casted)
+        PureExec.__init__(self, name, [a, b], a.value_type)
 
     def il_exec(self):
         sl = 'S' if self.ops[0].value_type.signed else 'U'
