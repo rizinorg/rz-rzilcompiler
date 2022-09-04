@@ -186,6 +186,8 @@ class Compiler:
             parse_trees = [self.parser.parse(behavior) for behavior in behaviors]
             self.compiled_insns[insn] = {'rzil': [], 'meta': [], 'parse_trees': []}
             for pt in parse_trees:
+                self.transformer.reset()
+                ILOpsHolder().clear()
                 self.compiled_insns[insn]['rzil'].append(self.transformer.transform(pt))
                 self.compiled_insns[insn]['meta'].append(self.transformer.ext.get_meta())
                 self.compiled_insns[insn]['parse_trees'].append(pt.pretty())
@@ -195,7 +197,6 @@ class Compiler:
         finally:
             self.transformer.reset()
             ILOpsHolder().clear()
-
 
     def get_insn_rzil(self, insn_name: str) -> [str]:
         if insn_name in self.compiled_insns:
