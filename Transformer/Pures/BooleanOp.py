@@ -28,7 +28,7 @@ class BooleanOp(PureExec):
 
     def il_exec(self):
         if self.op_type == BooleanOpType.AND:
-            return f'ADD({self.ops[0].il_read()}, {self.ops[1].il_read()})'
+            return f'AND({self.ops[0].il_read()}, {self.ops[1].il_read()})'
         elif self.op_type == BooleanOpType.OR:
             return f'OR({self.ops[0].il_read()}, {self.ops[1].il_read()})'
         elif self.op_type == BooleanOpType.INV:
