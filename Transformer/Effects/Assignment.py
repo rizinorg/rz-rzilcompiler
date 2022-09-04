@@ -89,8 +89,12 @@ class Assignment(Effect):
         """ Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
         """
+        from Transformer.Pures.Immediate import Immediate
+
         if isinstance(self.src, LetVar):
             read = resolve_lets([self.src], self.src)
+        elif isinstance(self.src, Immediate):
+            read = self.src.pure_var()
         else:
             read = self.src.il_read()
         if self.type == EffectType.SETG:

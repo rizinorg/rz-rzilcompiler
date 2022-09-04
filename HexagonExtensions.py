@@ -124,7 +124,7 @@ class HexagonTransformerExtension(TransformerExtension):
 
     def imm(self, items):
         v_type = get_value_type_by_isa_imm(items)
-        name = f"{items[0]}"
+        name = items[0]
         imm = Immediate(name, v_type)
         return imm
 

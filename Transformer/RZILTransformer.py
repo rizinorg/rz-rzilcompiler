@@ -44,6 +44,7 @@ class RZILTransformer(Transformer):
     # Total count of hybrids seen during transformation
     hybrid_op_count = 0
     hybrid_effect_list = list()
+    imm_set_effect_list = list()
 
     def __init__(self, arch: ArchEnum):
 
@@ -62,6 +63,7 @@ class RZILTransformer(Transformer):
         self.gcc_ext_effects.clear()
         self.hybrid_op_count = 0
         self.hybrid_effect_list.clear()
+        self.imm_set_effect_list.clear()
 
     @staticmethod
     def get_op_id():
@@ -89,7 +91,7 @@ class RZILTransformer(Transformer):
                 res += op.il_init_var() + '\n'
                 continue
             res += op.il_init_var() + '\n'
-        instruction_sequence = Sequence(f'instruction_sequence', [op for op in self.hybrid_effect_list + flatten_list(items) + self.gcc_ext_effects if isinstance(op, Effect)])
+        instruction_sequence = Sequence(f'instruction_sequence', [op for op in self.imm_set_effect_list + self.hybrid_effect_list + flatten_list(items) + self.gcc_ext_effects if isinstance(op, Effect)])
         res += instruction_sequence.il_init_var() + '\n'
         res += f'\nreturn {instruction_sequence.effect_var()};'
         return res
@@ -132,8 +134,13 @@ class RZILTransformer(Transformer):
 
     def imm(self, items):
         self.ext.set_token_meta_data('imm')
+        name = items[0]
+        if name in ILOpsHolder().read_ops:
+            return ILOpsHolder().read_ops[name]
 
-        return self.ext.imm(items)
+        imm = self.ext.imm(items)
+        self.imm_set_effect_list.append(Assignment(f'imm_assign_{OpCounter().get_op_count()}', AssignmentType.ASSIGN, imm, imm))
+        return imm
 
     def jump(self, items):
         self.ext.set_token_meta_data('jump')
