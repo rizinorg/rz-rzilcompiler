@@ -1,9 +1,10 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Transformer.Pures.Pure import Pure, ValueType
+from Transformer.Pures.Pure import Pure
 from Transformer.Pures.PureExec import PureExec
-from Transformer.helper import exc_if_types_not_match
+from Transformer.Pures.BooleanOp import BooleanOp
+from Transformer.Pures.CompareOp import CompareOp
 
 
 class Ternary(PureExec):
@@ -12,4 +13,8 @@ class Ternary(PureExec):
         PureExec.__init__(self, name, [cond, then_p, else_p], then_p.value_type)
 
     def il_exec(self):
-        return f'ITE({self.ops[0].il_read()}, {self.ops[1].il_read()}, {self.ops[2].il_read()})'
+        if isinstance(self.ops[0], BooleanOp) or isinstance(self.ops[0], CompareOp):
+            cond = self.ops[0].pure_var()
+        else:
+            cond = f'NON_ZERO({self.ops[0].pure_var()})'
+        return f'ITE({cond}, {self.ops[1].il_read()}, {self.ops[2].il_read()})'
