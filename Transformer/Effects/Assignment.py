@@ -93,6 +93,9 @@ class Assignment(Effect):
 
         if isinstance(self.src, LetVar):
             read = resolve_lets([self.src], self.src)
+        elif isinstance(self.src, Immediate):
+            self.src.assign_usage = True
+            read = self.src.il_read()
         else:
             read = self.src.il_read()
         if self.type == EffectType.SETG:

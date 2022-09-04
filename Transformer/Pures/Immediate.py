@@ -1,26 +1,29 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
-from Transformer.Effects.Assignment import Assignment, AssignmentType
-from Transformer.ILOpsHolder import OpCounter
+
 from Transformer.PluginInfo import isa_to_imm_fnc, isa_to_imm_args
 from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.Pure import ValueType
 
 
 class Immediate(LocalVar):
+
     def __init__(self, name: str, v_type: ValueType):
         self.name = name
         self.v_type = v_type
         LocalVar.__init__(self, name, value_type=v_type)
         self.set_isa_name(name)
+        self.assign_reads = 0
+        self.assign_usage = False
 
     def il_read(self) -> str:
         """ Returns the code to read the local variable for the VM. """
-        if self.reads < 1:
-            # The first time it is read is the assignment to the local variable of the same name.
-            # This is why we return the pure variable name.
+        if self.assign_reads < 1 and self.assign_usage:
+            # The assignment of the immediate Pure value to the local var reads the Pure variable.
             # Afterwards the LocalVar must be read.
             ret = self.pure_var()
+            self.assign_usage = False
+            self.assign_reads += 1
         else:
             ret = f'VARL({self.vm_id(False)})'
         self.reads += 1
