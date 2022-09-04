@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
+from copy import deepcopy
 
 from Transformer.Pures.Pure import ValueType
 
@@ -31,20 +32,22 @@ def check_and_convert_types(a: ValueType, b: ValueType) -> (ValueType, ValueType
     """
 
     sign_match = a.signed == b.signed
-    rank_match = a.bit_width = b.bit_width
+    rank_match = a.bit_width == b.bit_width
     if sign_match and rank_match:
         return a, b
+    va = deepcopy(a)
+    vb = deepcopy(b)
 
     if sign_match:
-        if a.bit_width < b.bit_width:
-            a.bit_width = b.bit_width
+        if va.bit_width < vb.bit_width:
+            va.bit_width = vb.bit_width
         else:
-            b.bit_width = a.bit_width
-        return a, b
+            vb.bit_width = va.bit_width
+        return va, vb
 
-    a_is_signed = a.signed
-    unsigned = b if a_is_signed else a
-    signed = a if a_is_signed else b
+    a_is_signed = va.signed
+    unsigned = vb if a_is_signed else va
+    signed = va if a_is_signed else vb
 
     if unsigned.bit_width >= signed.bit_width:
         signed.bit_width = unsigned.bit_width

@@ -28,6 +28,12 @@ class ValueType:
     def __eq__(self, other):
         return self.bit_width == other.bit_width
 
+    def __gt__(self, other):
+        return self.bit_width > other.bit_width
+
+    def __lt__(self, other):
+        return self.bit_width < other.bit_width
+
     def __str__(self):
         return f'{"st" if self.signed else "ut"}{self.bit_width}'
 
