@@ -3,6 +3,8 @@
 
 from Transformer.Effects.Effect import Effect, EffectType
 from Transformer.Pures.Pure import Pure
+from Transformer.Pures.BooleanOp import BooleanOp
+from Transformer.Pures.CompareOp import CompareOp
 
 
 class Branch(Effect):
@@ -17,5 +19,8 @@ class Branch(Effect):
         """ Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
         """
-
-        return f'BRANCH({self.cond.pure_var()}, {self.then.effect_var()}, {self.otherwise.effect_var()})'
+        if isinstance(self.cond, BooleanOp) or isinstance(self.cond, CompareOp):
+            cond = self.cond.pure_var()
+        else:
+            cond = f'NON_ZERO({self.cond.pure_var()})'
+        return f'BRANCH({cond}, {self.then.effect_var()}, {self.otherwise.effect_var()})'

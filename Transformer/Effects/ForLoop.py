@@ -4,6 +4,8 @@
 from Transformer.Effects.Effect import Effect, EffectType
 from Transformer.Effects.Sequence import Sequence
 from Transformer.Pures.Pure import Pure
+from Transformer.Pures.BooleanOp import BooleanOp
+from Transformer.Pures.CompareOp import CompareOp
 
 
 class ForLoop(Effect):
@@ -23,6 +25,11 @@ class ForLoop(Effect):
         :return: RZIL ops to write the pure value.
         """
 
+        if isinstance(self.control, BooleanOp) or isinstance(self.control, CompareOp):
+            control = self.control.il_read()
+        else:
+            control = f'NON_ZERO({self.control.il_read()})'
+
         return f'SEQ2({self.init.effect_var()}, ' \
-               f'REPEAT({self.control.il_read()}, ' \
+               f'REPEAT({control}, ' \
                f'{self.compound.effect_var()}))'
