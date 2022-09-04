@@ -14,7 +14,7 @@ class Ternary(PureExec):
 
     def il_exec(self):
         if isinstance(self.ops[0], BooleanOp) or isinstance(self.ops[0], CompareOp):
-            cond = self.ops[0].pure_var()
+            cond = self.ops[0].il_read()
         else:
-            cond = f'NON_ZERO({self.ops[0].pure_var()})'
+            cond = f'NON_ZERO({self.ops[0].il_read()})'
         return f'ITE({cond}, {self.ops[1].il_read()}, {self.ops[2].il_read()})'
