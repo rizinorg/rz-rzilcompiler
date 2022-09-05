@@ -185,11 +185,15 @@ class RZILTransformer(Transformer):
         if len(items) != 2:
             raise NotImplementedError(f'Declarations without exactly two tokens are not supported.')
         if hasattr(items[0], 'type') and items[0].type != 'IDENTIFIER':
-            # Declarations like: "TYPE <id>;" are ignored. They get initialize when they first get set.
+            # Declarations like: "TYPE <id>;" are only added to the ILOpholder list.
+            # They get initialize when they first get set.
+            Variable(items[1], items[0])
             return self.chk_hybrid_dep(Empty(f'empty_{self.get_op_id()}'))
         t: ValueType = items[0]
         if isinstance(items[1], Assignment):
             assg: Assignment = items[1]
+            if assg.dest.value_type:
+                raise ValueError(f'Variable {assg.dest.get_name()} was declared before.')
             assg.set_dest_type(t)
             return assg
         elif isinstance(items[1], Sequence):
@@ -197,10 +201,14 @@ class RZILTransformer(Transformer):
             items[1]: Sequence
             for e in items[1]:
                 if isinstance(e, Assignment):
+                    if e.dest.value_type:
+                        raise ValueError(f'Variable {e.dest.get_name()} was declared before.')
                     e.set_dest_type(t)
                     return items[1]
             raise NotImplementedError('declaration without Assignment are not implemented.')
         elif isinstance(items[1], str):
+            if items[1] in ILOpsHolder().read_ops:
+                return ILOpsHolder().read_ops[items[1]]
             return Variable(items[1], t)
         raise NotImplementedError(f'Declaration with items {items} not implemented.')
 
@@ -209,7 +217,13 @@ class RZILTransformer(Transformer):
 
         if len(items) != 2:
             raise NotImplementedError(f'Can not initialize an Init declarator with {len(items)} tokens.')
-        dest = Variable(items[0], None)  # Size is updated in declaration handler.
+        if items[0] in ILOpsHolder().read_ops:
+            # variable was declared before.
+            dest = ILOpsHolder().read_ops[items[0]]
+        else:
+            # Variable was not declared before. The type is unknown.
+            # Type is updated in declaration handler.
+            dest = Variable(items[0], None)
         op_type = AssignmentType.ASSIGN
         src: Pure = items[1]
         name = f'op_{op_type.name}_{self.get_op_id()}'
