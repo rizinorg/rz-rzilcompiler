@@ -192,8 +192,6 @@ class RZILTransformer(Transformer):
         t: ValueType = items[0]
         if isinstance(items[1], Assignment):
             assg: Assignment = items[1]
-            if assg.dest.value_type:
-                raise ValueError(f'Variable {assg.dest.get_name()} was declared before.')
             assg.set_dest_type(t)
             return assg
         elif isinstance(items[1], Sequence):

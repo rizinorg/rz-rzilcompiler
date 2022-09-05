@@ -36,10 +36,16 @@ def cast_operands(immutable_a: bool, **ops) -> (Pure, Pure):
         raise NotImplementedError('At least operand "a" and "b" must e given.')
     a = ops['a']
     b = ops['b']
+    if not a.value_type and not b.value_type:
+        raise NotImplementedError('Cannot cast ops without value types.')
+    if not a.value_type:
+        a.value_type = b.value_type
+        return a, b
+    if not b.value_type:
+        b.value_type = a.value_type
+        return a, b
 
-    sign_match = a.value_type.signed == b.value_type.signed
-    rank_match = a.value_type.bit_width == b.value_type.bit_width
-    if sign_match and rank_match:
+    if a.value_type == b.value_type:
         return a, b
 
     cname = f'cast_{OpCounter().get_op_count()}'

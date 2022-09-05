@@ -112,3 +112,4 @@ class Assignment(Effect):
         if self.dest.type != PureType.LOCAL and self.dest.type != PureType.LET:
             raise NotImplementedError(f"Updating the type of a {self.dest.type} is not allowed.")
         self.dest.set_value_type(t)
+        self.dest, self.src = cast_operands(a=self.dest, b=self.src, immutable_a=True)
