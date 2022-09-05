@@ -10,7 +10,6 @@ class Variable(LocalVar):
     """
 
     def __init__(self, name: str, val_type: ValueType):
-        # Value type is set on assignment.
         LocalVar.__init__(self, name, value_type=val_type)
 
     def il_init_var(self):

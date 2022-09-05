@@ -1,10 +1,13 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
-
+from HexagonExtensions import get_fcn_arg_types
 from Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
+from Transformer.ILOpsHolder import OpCounter
 from Transformer.PluginInfo import hexagon_c_call_prefix
+from Transformer.Pures.Cast import Cast
 from Transformer.Pures.Pure import ValueType
 from Transformer.Pures.LetVar import LetVar, resolve_lets
+from Transformer.Pures.Variable import Variable
 
 
 class Call(Hybrid):
@@ -18,16 +21,26 @@ class Call(Hybrid):
         self.seq_order = HybridSeqOrder.EXEC_THEN_SET_VAL
 
         Hybrid.__init__(self, name, args[1:], val_type)
+        arg_types = get_fcn_arg_types(self.fcn_name)
+        if len(self.ops) != len(arg_types):
+            raise NotImplementedError('Not all ops have a type assigned.')
+        for i, (arg, a_type) in enumerate(zip(self.ops, arg_types)):
+            if isinstance(arg, str):
+                continue
+            if not a_type or arg.value_type == a_type:
+                continue
+
+            self.ops[i] = Cast(f'arg_cast_{OpCounter().get_op_count()}', a_type, arg)
 
     def il_exec(self):
         def read_arg(arg) -> str:
             # Arguments can be strings like enums
             if isinstance(arg, str):
                 return arg
-            elif isinstance(arg, LetVar):
+
+            if isinstance(arg, LetVar):
                 return resolve_lets([arg], arg)
-            else:
-                return arg.il_read()
+            return arg.il_read()
 
         code = f'{hexagon_c_call_prefix + self.fcn_name.upper()}({", ".join([read_arg(arg) for arg in self.ops])})'
         return code
