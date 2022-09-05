@@ -26,7 +26,7 @@ class ValueType:
         return s
 
     def __eq__(self, other):
-        return self.bit_width == other.bit_width
+        return self.bit_width == other.bit_width and self.signed == other.signed
 
     def __gt__(self, other):
         return self.bit_width > other.bit_width
