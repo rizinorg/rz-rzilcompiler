@@ -161,41 +161,38 @@ class HexagonTransformerExtension(TransformerExtension):
         return flags
 
     def get_val_type_by_fcn(self, fcn_name: str):
-        # All functions return the same type.
-        return ValueType(False, 64)
-
-        # if fcn_name == "get_npc":
-        #     return ValueType(False, 32)
-        # elif fcn_name == "REGFIELD":
-        #     # Register field macros. Calls a function which returns the width or
-        #     # offset into the register of the field.
-        #     return ValueType(False, 32)
-        # elif fcn_name == "clo32":
-        #     # QEMU function -- int32_t clo32(uint32_t val)
-        #     # Count leading ones in 32 bit value.
-        #     return ValueType(True, 32)
-        # elif fcn_name == "deposit64":
-        #     # QEMU function
-        #     # uint64_t deposit64(uint64_t value, int start, int length, uint64_t fieldval)
-        #     # Sets the bits from 'start' to 'start+length' in 'value' with 'fieldvar'
-        #     return ValueType(False, 64)
-        # elif fcn_name == "sextract64":
-        #     # QEMU function
-        #     # "Extract from the 64 bit input @value the bit field specified by the
-        #     # @start and @length parameters, and return it, sign extended to
-        #     # an int64_t".
-        #     return ValueType(True, 64)
-        # elif fcn_name == "extract64":
-        #     # QEMU function
-        #     # Extract from the 64 bit input @value the bit field specified by the
-        #     # @start and @length parameters, and return it. The bit field must
-        #     # lie entirely within the 64 bit word. It is valid to request that
-        #     # all 64 bits are returned (ie @length 64 and @start 0).
-        #     return ValueType(False, 64)
-        # elif fcn_name == "WRITE_PRED":
-        #     return ValueType(False, 0)
-        # else:
-        #     raise NotImplementedError(f"No value type for function {fcn_name} defined.")
+        if fcn_name == "get_npc":
+            return ValueType(False, 32)
+        elif fcn_name == "REGFIELD":
+            # Register field macros. Calls a function which returns the width or
+            # offset into the register of the field.
+            return ValueType(False, 32)
+        elif fcn_name == "clo32":
+            # QEMU function -- int32_t clo32(uint32_t val)
+            # Count leading ones in 32 bit value.
+            return ValueType(True, 32)
+        elif fcn_name == "deposit64":
+            # QEMU function
+            # uint64_t deposit64(uint64_t value, int start, int length, uint64_t fieldval)
+            # Sets the bits from 'start' to 'start+length' in 'value' with 'fieldvar'
+            return ValueType(False, 64)
+        elif fcn_name == "sextract64":
+            # QEMU function
+            # "Extract from the 64 bit input @value the bit field specified by the
+            # @start and @length parameters, and return it, sign extended to
+            # an int64_t".
+            return ValueType(True, 64)
+        elif fcn_name == "extract64":
+            # QEMU function
+            # Extract from the 64 bit input @value the bit field specified by the
+            # @start and @length parameters, and return it. The bit field must
+            # lie entirely within the 64 bit word. It is valid to request that
+            # all 64 bits are returned (ie @length 64 and @start 0).
+            return ValueType(False, 64)
+        elif fcn_name == "WRITE_PRED":
+            return ValueType(False, 0)
+        else:
+            raise NotImplementedError(f"No value type for function {fcn_name} defined.")
         # TODO
         # // sizeof -> Main priority.
         # int128_exts64
@@ -256,3 +253,41 @@ class HexagonCompilerExtension(CompilerExtension):
             return insn_name[4:]
         else:
             return insn_name
+
+
+def get_fcn_arg_types(fcn_name: str) -> [ValueType]:
+    """ Returns a list of ValueTypes for each function argument (from left to right).
+    If an argument has no IL type (strings for example) the type is None.
+    """
+    if fcn_name == "get_npc":
+        return [None]
+    elif fcn_name == "REGFIELD":
+        return [None, None]
+    elif fcn_name == "clo32":
+        # QEMU function -- int32_t clo32(uint32_t val)
+        # Count leading ones in 32 bit value.
+        return [ValueType(False, 32)]
+    elif fcn_name == "deposit64":
+        # QEMU function
+        # uint64_t deposit64(uint64_t value, int start, int length, uint64_t fieldval)
+        # Sets the bits from 'start' to 'start+length' in 'value' with 'fieldvar'
+        return [ValueType(False, 64), ValueType(True, 64), ValueType(True, 64), ValueType(False, 64)]
+    elif fcn_name == "sextract64":
+        # QEMU function
+        # int64_t sextract64(uint64_t value, int start, int length)
+        # "Extract from the 64 bit input @value the bit field specified by the
+        # @start and @length parameters, and return it, sign extended to
+        # an int64_t".
+        return [ValueType(False, 64), ValueType(True, 64), ValueType(True, 64)]
+    elif fcn_name == "extract64":
+        # QEMU function
+        # uint64_t extract64(uint64_t value, int start, int length)
+        # Extract from the 64 bit input @value the bit field specified by the
+        # @start and @length parameters, and return it. The bit field must
+        # lie entirely within the 64 bit word. It is valid to request that
+        # all 64 bits are returned (ie @length 64 and @start 0).
+        return [ValueType(False, 64), ValueType(True, 64), ValueType(True, 64)]
+    elif fcn_name == "WRITE_PRED":
+        return [ValueType(False, 8), ValueType(False, 8)]
+    else:
+        raise NotImplementedError(f"No value type for function {fcn_name} defined.")
