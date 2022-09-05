@@ -424,7 +424,7 @@ DEST_REG_PAIR: "dd"
 SRC_DEST_REG: /[xyz]/
 SRC_DEST_REG_PAIR: "xx" | "yy"
 
-INT_POST_TYPE: "LL" | "ULL"
+INT_POST_TYPE: "LL" | "ULL" | "U"
 HEX_NUMBER: /0x[\da-f]*/i
 DEC_NUMBER: /0|[1-9][\d_]*/i
 NUM_SIGN: /[-+]/i

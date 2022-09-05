@@ -60,7 +60,7 @@ def get_value_type_by_c_number(items: [Token]) -> ValueType:
     postfix = items[2] if items[2] else ''
 
     c_signed_types_postfix = ['LL']
-    c_unsigned_types_postfix = ['ULL']
+    c_unsigned_types_postfix = ['ULL', 'U']
 
     if postfix != '' and (postfix not in c_signed_types_postfix and postfix not in c_unsigned_types_postfix):
         raise NotImplementedError(f'Unsupported number postfix {postfix}')
