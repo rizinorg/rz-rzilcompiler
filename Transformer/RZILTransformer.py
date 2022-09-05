@@ -358,7 +358,7 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('mem_store')
         va = items[3]
         data: Pure = items[4]
-        operation_value_type = items[1]
+        operation_value_type = ValueType(items[1] == 's', items[2])
         if operation_value_type != data.value_type:
             # STOREW determines from the data type how many bytes are written.
             # Cast the data type to the mem store type
@@ -368,7 +368,7 @@ class RZILTransformer(Transformer):
     # SPECIFIC FOR: Hexagon
     def mem_load(self, items):
         self.ext.set_token_meta_data('mem_load')
-        vt = items[1]
+        vt = ValueType(items[1] == 's', items[2])
         mem_acc_type = MemAccessType(vt, True)
         va = items[3]
         if not isinstance(va, Pure):
