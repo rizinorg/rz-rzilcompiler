@@ -147,7 +147,7 @@ class RZILTransformer(Transformer):
         ta: Pure = items[1]
         return self.chk_hybrid_dep(Jump(f'jump_{ta.pure_var()}', ta))
 
-    def data_type(self, items):
+    def type_specifier(self, items):
         self.ext.set_token_meta_data('data_type')
         return self.ext.get_value_type_by_resource_type(items)
 
@@ -360,7 +360,7 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('mem_store')
         va = items[3]
         data: Pure = items[4]
-        operation_value_type = ValueType(items[1] != 'u', int(items[2]))
+        operation_value_type = items[1]
         if operation_value_type != data.value_type:
             # STOREW determines from the data type how many bytes are written.
             # Cast the data type to the mem store type
@@ -370,7 +370,7 @@ class RZILTransformer(Transformer):
     # SPECIFIC FOR: Hexagon
     def mem_load(self, items):
         self.ext.set_token_meta_data('mem_load')
-        vt = ValueType(items[1] != 'u', int(items[2]))
+        vt = items[1]
         mem_acc_type = MemAccessType(vt, True)
         va = items[3]
         if not isinstance(va, Pure):

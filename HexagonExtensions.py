@@ -129,6 +129,8 @@ class HexagonTransformerExtension(TransformerExtension):
         return imm
 
     def get_value_type_by_resource_type(self, items):
+        if items[0] == 'int':
+            return ValueType(True, 32)
         items: Tree = items[0]
         rule = items.data
         tokens = items.children

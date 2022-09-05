@@ -160,7 +160,7 @@ gcc_extended_expr: "{" [block_item_list] expr_stmt "}"
 	| AUTO
 	| REGISTER
 
-?type_specifier: VOID
+type_specifier: VOID
 	| CHAR
 	| SHORT
 	| INTEGER
@@ -403,10 +403,10 @@ _reg_alias_new: "_NEW"
 float_number: COMMON_FLOAT
         | COMMON_SIGNED_FLOAT
 
-c_size_type: "size" BIT_WIDTH SIGN_TYPE "_t"
-c_int_type: SIGN_TYPE_INT BIT_WIDTH "_t"
+?c_size_type: "size" BIT_WIDTH SIGN_TYPE "_t"
+?c_int_type: SIGN_TYPE_INT BIT_WIDTH "_t"
 
-data_type: c_size_type
+?data_type: c_size_type
     | c_int_type
 
 imm: IMMEDIATE
