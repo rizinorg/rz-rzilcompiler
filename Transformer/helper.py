@@ -28,7 +28,7 @@ def exc_if_types_not_match(a: ValueType, b: ValueType):
 
 def cast_operands(immutable_a: bool, **ops) -> (Pure, Pure):
     """ Casts two operands to a common type according to C11 standard.
-        If immutable_op_a = True operand b is casted to the operand a type
+        If immutable_op_a = True operand b is cast to the operand a type
         (Useful for assignments to global vars like registers).
         Operand are names in the order: a, b, c, ...
     """
