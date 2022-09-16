@@ -14,11 +14,10 @@ class ForLoop(Effect):
     for (init ; control ; after_cycle) { compound }
     """
 
-    def __init__(self, name: str, init: Effect, control: Pure, compound: Sequence):
-        self.init = init  # declaration/assignment
+    def __init__(self, name: str, control: Pure, compound: Sequence):
         self.control = control  # Condition
         self.compound = compound
-        self.effect_ops = [self.init, self.control, self.compound]
+        self.effect_ops = [self.control, self.compound]
         Effect.__init__(self, name, EffectType.LOOP)
 
     def il_write(self):
@@ -31,6 +30,5 @@ class ForLoop(Effect):
         else:
             control = f'NON_ZERO({self.control.il_read()})'
 
-        return f'SEQ2({self.init.effect_var()}, ' \
-               f'REPEAT({control}, ' \
-               f'{self.compound.effect_var()}))'
+        return f'REPEAT({control}, ' \
+               f'{self.compound.effect_var()})'
