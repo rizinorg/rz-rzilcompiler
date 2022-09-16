@@ -100,11 +100,11 @@ class Assignment(Effect):
         else:
             read = self.src.il_read()
         if self.type == EffectType.SETG:
-            return f'SETG({self.dest.vm_id(True)}, {read})'
+            return f'HEX_WRITE_GLOBAL({self.dest.vm_id(True)}, {read})'
         elif self.type == EffectType.SETL:
             return f'SETL({self.dest.vm_id(True)}, {read})'
         else:
-            raise NotImplementedError(f'Effect ype {self.type} not handled.')
+            raise NotImplementedError(f'Effect type {self.type} not handled.')
 
     def set_dest_type(self, t: ValueType):
         """ For "<type> Assignment" declarations the Assignment gets parsed first.
