@@ -75,14 +75,14 @@ class Register(GlobalVar):
         """
         if self.is_reg_alias:
             return self.il_reg_alias_to_hw_reg(write_usage)
-        return f'const char *{self.get_assoc_name(write_usage)} = {isa_to_reg_fnc}({", ".join(isa_to_reg_args)}, \'{self.get_isa_name()[1]}\', {str(self.is_new).lower()});'
+        return f'const char *{self.get_assoc_name(write_usage)} = {isa_to_reg_fnc}({", ".join(isa_to_reg_args)}, \'{self.get_isa_name()[1]}\', {str(self.is_new or write_usage).lower()});'
 
     def il_reg_alias_to_hw_reg(self, write_usage: bool) -> str:
         """ Some registers are an alias for another register (PC = C9, GP = C11, SP = R29 etc.
             Unfortunately those alias can change from ISA version to ISA version.
             So the plugin needs to translate these. Here we return the code for this translation.
         """
-        return f'const char *{self.get_assoc_name(write_usage)} = {isa_alias_to_reg}({", ".join(isa_alias_to_reg_args)}{", " if isa_alias_to_reg_args else ""}{self.get_alias_enum(self.name)}, {str(write_usage).lower()});'
+        return f'const char *{self.get_assoc_name(write_usage)} = {isa_alias_to_reg}({", ".join(isa_alias_to_reg_args)}{", " if isa_alias_to_reg_args else ""}{self.get_alias_enum(self.name)}, {str(self.is_new or write_usage).lower()});'
 
     def il_read(self) -> str:
         # There is a tricky case where write only register are read any ways in the semantic definitions.
