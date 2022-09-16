@@ -408,7 +408,7 @@ class RZILTransformer(Transformer):
         if len(items) != 5:
             raise NotImplementedError(f'For loops with {len(items)} elements is not supported yet.')
         compound = self.chk_hybrid_dep(Sequence(f'seq_{self.get_op_id()}', flatten_list(items[4]) + [items[3]]))
-        return self.chk_hybrid_dep(ForLoop(f'for_{self.get_op_id()}', self.chk_hybrid_dep(items[1]), self.resolve_hybrid(items[2]), compound))
+        return self.chk_hybrid_dep(ForLoop(f'for_{self.get_op_id()}', items[1], items[2], compound))
 
     def iteration_stmt(self, items):
         self.ext.set_token_meta_data('iteration_stmt')
