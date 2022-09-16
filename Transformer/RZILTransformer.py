@@ -61,7 +61,6 @@ class RZILTransformer(Transformer):
         OpCounter().reset()
         self.ext.reset_flags()
         self.gcc_ext_effects.clear()
-        self.hybrid_op_count = 0
         self.hybrid_effect_list.clear()
         self.imm_set_effect_list.clear()
 
