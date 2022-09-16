@@ -6,8 +6,8 @@ from Transformer.ILOpsHolder import OpCounter
 from Transformer.PluginInfo import hexagon_c_call_prefix
 from Transformer.Pures.Cast import Cast
 from Transformer.Pures.Pure import ValueType
+from Transformer.Pures.Register import Register
 from Transformer.Pures.LetVar import LetVar, resolve_lets
-from Transformer.Pures.Variable import Variable
 
 
 class Call(Hybrid):
@@ -40,6 +40,8 @@ class Call(Hybrid):
 
             if isinstance(arg, LetVar):
                 return resolve_lets([arg], arg)
+            elif isinstance(arg, Register) and arg.get_name()[0] == 'P':
+                return f'"{arg.get_name()}"'
             return arg.il_read()
 
         code = f'{hexagon_c_call_prefix + self.fcn_name.upper()}({", ".join([read_arg(arg) for arg in self.ops])})'
