@@ -3,6 +3,7 @@
 
 from enum import Enum
 from Exceptions import OverloadException
+from Transformer.Pures.PureExec import PureExec
 
 
 class EffectType(Enum):
@@ -22,6 +23,7 @@ class EffectType(Enum):
 class Effect:
     name: str = ''
     type: EffectType = None
+    effect_ops: list = None
 
     def __init__(self, name: str, effect_type: EffectType):
         from Transformer.ILOpsHolder import ILOpsHolder
@@ -49,3 +51,22 @@ class Effect:
     def effect_var(self) -> str:
         """ Returns the C variable name which holds the IL effect."""
         return self.get_name()
+
+    def get_op_list(self):
+        """ Returns all Global, Local and LetPure operands this effect depends on as list. """
+        from Transformer.Hybrids.Hybrid import Hybrid
+
+        def get_ops(x):
+            if isinstance(x, PureExec):
+                ops = x.ops
+            elif isinstance(x, Hybrid):
+                ops = x.ops
+            elif isinstance(x, Effect):
+                return x.get_op_list()
+            else:
+                return x
+            return [get_ops(y) for y in ops]
+
+        from Transformer.helper import flatten_list
+
+        return flatten_list([get_ops(o) for o in self.effect_ops])

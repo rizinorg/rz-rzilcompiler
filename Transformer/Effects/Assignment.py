@@ -36,6 +36,7 @@ class Assignment(Effect):
         self.assign_type = assign_type
         self.dest = dest
         self.src = src
+        self.effect_ops = [self.dest, self.src]
 
         if dest.type == PureType.LOCAL:
             Effect.__init__(self, name, EffectType.SETL)

@@ -17,6 +17,7 @@ class Sequence(Effect):
             eff = [Empty(f'empty_seq_{OpCounter().get_op_count()}')]
 
         self.effects = eff
+        self.effect_ops = self.effects
         Effect.__init__(self, name, EffectType.SEQUENCE)
 
     def il_write(self):

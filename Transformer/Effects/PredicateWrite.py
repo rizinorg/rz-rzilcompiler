@@ -11,6 +11,7 @@ class PredicateWrite(Effect):
     def __init__(self, name, p_reg: Register, val: Pure):
         self.p_reg = p_reg
         self.val = val
+        self.effect_ops = [self.p_reg, self.val]
         Effect.__init__(self, name, EffectType.SETG)
 
     def il_write(self):

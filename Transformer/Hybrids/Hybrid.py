@@ -25,6 +25,7 @@ class Hybrid(PureExec, Effect):
     seq_order: HybridSeqOrder = HybridSeqOrder.NOT_SET
 
     def __init__(self, name: str, operands: [Pure], value_type: ValueType):
+        self.effect_ops = operands
         PureExec.__init__(self, name, operands, value_type)
         Effect.__init__(self, name, EffectType.SET)
 

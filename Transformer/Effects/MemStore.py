@@ -10,6 +10,7 @@ class MemStore(Effect):
     def __init__(self, name: str, va: Pure, data_var: Pure):
         self.va = va
         self.data_var = data_var
+        self.effect_ops = [self.va, self.data_var]
         Effect.__init__(self, name, EffectType.STOREW)
 
     def il_write(self):

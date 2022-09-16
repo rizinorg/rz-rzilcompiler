@@ -13,6 +13,7 @@ class Branch(Effect):
         self.cond = cond
         self.then = then
         self.otherwise = otherwise
+        self.effect_ops = [self.cond, self.then, self.otherwise]
         Effect.__init__(self, name, EffectType.BRANCH)
 
     def il_write(self):

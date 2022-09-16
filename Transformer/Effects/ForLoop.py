@@ -18,6 +18,7 @@ class ForLoop(Effect):
         self.init = init  # declaration/assignment
         self.control = control  # Condition
         self.compound = compound
+        self.effect_ops = [self.init, self.control, self.compound]
         Effect.__init__(self, name, EffectType.LOOP)
 
     def il_write(self):

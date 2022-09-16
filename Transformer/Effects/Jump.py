@@ -9,6 +9,7 @@ class Jump(Effect):
 
     def __init__(self, name: str, target: Pure):
         self.target = target
+        self.effect_ops = [self.target]
         Effect.__init__(self, name, EffectType.JUMP)
 
     def il_write(self):

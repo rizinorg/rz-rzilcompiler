@@ -8,6 +8,7 @@ from Transformer.Pures.Pure import Pure
 class NOP(Effect):
 
     def __init__(self, name):
+        self.effect_ops = []
         Effect.__init__(self, name, EffectType.NOP)
 
     def il_write(self):

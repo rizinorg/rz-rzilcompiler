@@ -43,7 +43,7 @@ class RZILTransformer(Transformer):
     """
     # Total count of hybrids seen during transformation
     hybrid_op_count = 0
-    hybrid_effect_list = list()
+    hybrid_effect_dict = dict()
     imm_set_effect_list = list()
 
     def __init__(self, arch: ArchEnum):
@@ -61,7 +61,7 @@ class RZILTransformer(Transformer):
         OpCounter().reset()
         self.ext.reset_flags()
         self.gcc_ext_effects.clear()
-        self.hybrid_effect_list.clear()
+        self.hybrid_effect_dict.clear()
         self.imm_set_effect_list.clear()
 
     @staticmethod
@@ -90,7 +90,11 @@ class RZILTransformer(Transformer):
                 res += op.il_init_var() + '\n'
                 continue
             res += op.il_init_var() + '\n'
-        instruction_sequence = Sequence(f'instruction_sequence', [op for op in self.imm_set_effect_list + self.hybrid_effect_list + flatten_list(items) + self.gcc_ext_effects if isinstance(op, Effect)])
+        left_hybrids = list()
+
+        for hid in [k for k in self.hybrid_effect_dict.keys()]:
+            left_hybrids.append(self.hybrid_effect_dict.pop(hid))
+        instruction_sequence = Sequence(f'instruction_sequence', [op for op in self.imm_set_effect_list + left_hybrids + flatten_list(items) + self.gcc_ext_effects if isinstance(op, Effect)])
         res += instruction_sequence.il_init_var() + '\n'
         res += f'\nreturn {instruction_sequence.effect_var()};'
         return res
@@ -404,7 +408,7 @@ class RZILTransformer(Transformer):
         if len(items) != 5:
             raise NotImplementedError(f'For loops with {len(items)} elements is not supported yet.')
         compound = self.chk_hybrid_dep(Sequence(f'seq_{self.get_op_id()}', flatten_list(items[4]) + [items[3]]))
-        return self.chk_hybrid_dep(ForLoop(f'for_{self.get_op_id()}', items[1], items[2], compound))
+        return self.chk_hybrid_dep(ForLoop(f'for_{self.get_op_id()}', self.chk_hybrid_dep(items[1]), self.resolve_hybrid(items[2]), compound))
 
     def iteration_stmt(self, items):
         self.ext.set_token_meta_data('iteration_stmt')
@@ -450,9 +454,16 @@ class RZILTransformer(Transformer):
         """ Check hybrid dependency. Checks if a hybrid effect must be executed before the given effect and returns
             a sequence of Sequence(hybrid, given effect) if so. Otherwise, the original effect.
         """
-        if len(self.hybrid_effect_list) == 0:
+        if len(self.hybrid_effect_dict) == 0:
             return effect
-        return Sequence(f'seq_{self.get_op_id()}', drain_list(self.hybrid_effect_list) + [effect])
+        hybrid_deps = list()
+        for o in effect.get_op_list():
+            if not isinstance(o, str) and o.get_name() in self.hybrid_effect_dict:
+                hybrid_deps.append(self.hybrid_effect_dict.pop(o.get_name()))
+
+        if len(hybrid_deps) == 0:
+            return effect
+        return Sequence(f'seq_{self.get_op_id()}', hybrid_deps + [effect])
 
     def resolve_hybrid(self, hybrid: Hybrid) -> Pure:
         """ Splits a hybrid in a Pure and Effect part.
@@ -479,6 +490,6 @@ class RZILTransformer(Transformer):
         seq = Sequence(f'seq_{self.get_op_id()}', h_seq)
         seq = self.chk_hybrid_dep(seq)
 
-        self.hybrid_effect_list.append(seq)
+        self.hybrid_effect_dict[tmp_x_name] = seq
         # Return local tX
         return tmp_x
