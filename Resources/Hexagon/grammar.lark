@@ -45,13 +45,10 @@ pred_write: WRITE_PRED "(" reg "," expr ")"
 _argument_expr_list: assignment_expr
 	| _argument_expr_list "," assignment_expr
 
-?logical_not_expr: "!" cast_expr
-
 ?unary_expr: postfix_expr
 	| INC_OP unary_expr
 	| DEC_OP unary_expr
 	| UNARY_OPERATOR cast_expr
-	| logical_not_expr
 	| SIZEOF unary_expr
 	| SIZEOF "(" type_name ")"
 	| ALIGNOF "(" type_name ")"
@@ -61,6 +58,7 @@ UNARY_OPERATOR: "&"
 	| "+"
 	| "-"
 	| "~"
+	| "!"
 
 ?cast_expr: unary_expr
 	| "(" type_name ")" cast_expr

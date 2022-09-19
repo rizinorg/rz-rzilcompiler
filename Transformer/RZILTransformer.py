@@ -299,16 +299,17 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('logical_or_expr')
         return self.boolean_expr(items)
 
-    def logical_not_expr(self, items):
-        self.ext.set_token_meta_data('logical_not_expr')
-        return self.boolean_expr(items)
-
     def boolean_expr(self, items):
-        a = items[0]
-        t = BooleanOpType(items[1])
-        b = items[2] if len(items) == 3 else None
-        name = f'op_{t}_{self.get_op_id()}'
-        v = BooleanOp(name, a, b, t)
+        if items[0] == '!':
+            t = BooleanOpType(items[0])
+            name = f'op_INV_{self.get_op_id()}'
+            v = BooleanOp(name, items[1], None, t)
+        else:
+            t = BooleanOpType(items[1])
+            name = f'op_{t}_{self.get_op_id()}'
+            a = items[0]
+            b = items[2] if len(items) == 3 else None
+            v = BooleanOp(name, a, b, t)
         return v
 
     def shift_expr(self, items):
@@ -322,6 +323,8 @@ class RZILTransformer(Transformer):
             v = self.bit_operations(items, BitOperationType.NOT)
         elif items[0] == '-':
             v = self.bit_operations(items, BitOperationType.NEG)
+        elif items[0] == '!':
+            v = self.boolean_expr(items)
         else:
             raise NotImplementedError(f'Unary expression {items[0]} not handler.')
         return v

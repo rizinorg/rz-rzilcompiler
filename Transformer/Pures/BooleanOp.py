@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from enum import StrEnum
 
+from Transformer.Pures.CompareOp import CompareOp
 from Transformer.Pures.Pure import Pure
 from Transformer.Pures.PureExec import PureExec
 from Transformer.helper import cast_operands
@@ -10,7 +11,7 @@ from Transformer.helper import cast_operands
 class BooleanOpType(StrEnum):
     AND = '&&'
     OR = '||'
-    INV = '~'
+    INV = '!'
 
 
 class BooleanOp(PureExec):
@@ -27,11 +28,14 @@ class BooleanOp(PureExec):
             PureExec.__init__(self, name, [a], a.value_type)
 
     def il_exec(self):
+        a = self.ops[0].il_read() if (isinstance(self.ops[0], BooleanOp) or isinstance(self.ops[0], CompareOp)) else f'NON_ZERO({self.ops[0].il_read()})'
+        if self.op_type == BooleanOpType.INV:
+            return f'INV({a})'
+
+        b = self.ops[1].il_read() if (isinstance(self.ops[1], BooleanOp) or isinstance(self.ops[1], CompareOp)) else f'NON_ZERO({self.ops[1].il_read()})'
         if self.op_type == BooleanOpType.AND:
-            return f'AND({self.ops[0].il_read()}, {self.ops[1].il_read()})'
+            return f'AND({a}, {b})'
         elif self.op_type == BooleanOpType.OR:
-            return f'OR({self.ops[0].il_read()}, {self.ops[1].il_read()})'
-        elif self.op_type == BooleanOpType.INV:
-            return f'INV({self.ops[0].il_read()})'
+            return f'OR({a}, {b})'
         else:
             raise NotImplementedError(f'Boolean operation {self.op_type} not implemented.')
