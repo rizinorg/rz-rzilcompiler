@@ -25,7 +25,8 @@ def get_value_type_from_reg_type(token_list: list) -> ValueType:
 
     if 'PAIR' in reg_access:
         size *= 2
-    return ValueType(False, size)
+    # Register content is signed by default (see QEMUs tcg functions generating scripts).
+    return ValueType(True, size)
 
 
 def get_c_type_by_value_type(val_type: ValueType) -> str:
