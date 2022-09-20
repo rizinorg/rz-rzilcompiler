@@ -36,7 +36,7 @@ class HexagonTransformerExtension(TransformerExtension):
     def set_writes_pred(self, num: int):
         if not self.writes_predicate:
             self.writes_predicate = True
-        if num not in self.preds_written:
+        if num in range(4) and num not in self.preds_written:
             self.preds_written.append(num)
 
     def set_writes_mem(self):
@@ -191,8 +191,6 @@ class HexagonTransformerExtension(TransformerExtension):
             # lie entirely within the 64 bit word. It is valid to request that
             # all 64 bits are returned (ie @length 64 and @start 0).
             return ValueType(False, 64)
-        elif fcn_name == "WRITE_PRED":
-            return ValueType(False, 0)
         else:
             raise NotImplementedError(f"No value type for function {fcn_name} defined.")
         # TODO

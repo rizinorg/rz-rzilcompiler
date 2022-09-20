@@ -54,6 +54,8 @@ class Register(GlobalVar):
             # PC is never present as IL variable. Get it from the pkt.
             return 'RzILOpPure *pc = U32(pkt->pkt_addr);'
         if self.is_explicit and not self.is_reg_alias:
+            if self.access in [RegisterAccessType.W, RegisterAccessType.PW]:
+                return f'// Write only explicit: {self.get_name()}'
             return f'RzILOpPure *{self.pure_var()} = VARG({self.vm_id(False)});'
 
         # Registers which are only written do not need their own RzILOpPure.
@@ -110,7 +112,10 @@ class Register(GlobalVar):
         elif self.access == RegisterAccessType.PR:
             self.access = RegisterAccessType.PRW
         elif self.access == RegisterAccessType.UNKNOWN:
-            self.access = RegisterAccessType.W
+            if self.get_isa_name()[0] == 'P':
+                self.access = RegisterAccessType.PW
+            else:
+                self.access = RegisterAccessType.W
 
     @staticmethod
     def get_alias_enum(alias: str) -> str:

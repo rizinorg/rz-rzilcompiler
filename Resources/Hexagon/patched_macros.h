@@ -25,7 +25,7 @@
 #define HEX_REG_FP   HEX_REG_ALIAS_FP
 #define HEX_REG_SP   HEX_REG_ALIAS_SP
 #define HEX_REG_SA0   HEX_REG_ALIAS_SA0
-#define HEX_REG_R31   HEX_REG_ALIAS_R31
+#define HEX_REG_R31   R31
 #define HEX_REG_LR   HEX_REG_ALIAS_LR
 #define RF_OFFSET HEX_RF_OFFSET
 #define RF_WIDTH HEX_RF_WIDTH
@@ -33,7 +33,7 @@
 #define READ_REG(NUM)                    NUM
 #define READ_PREG(NUM)                   P##NUM
 #define WRITE_RREG(NUM, VAL)             (NUM = VAL);
-#define WRITE_PREG(NUM, VAL)             WRITE_PRED(READ_PREG(NUM), VAL)
+#define WRITE_PREG(NUM, VAL)             READ_PREG(NUM) = VAL
 #define PCALIGN 4
 #define PCALIGN_MASK (PCALIGN - 1)
 #define GET_FIELD(FIELD, REGIN)     fEXTRACTU_BITS(REGIN, REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD),                    REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))

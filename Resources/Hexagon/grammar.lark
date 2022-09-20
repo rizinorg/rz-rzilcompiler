@@ -16,8 +16,6 @@ mem_load: MEM_LOAD SIGN_TYPE BIT_WIDTH "(" _argument_expr_list ")"
 
 mem_store: MEM_STORE SIGN_TYPE BIT_WIDTH "(" _argument_expr_list ")" ";"
 
-pred_write: WRITE_PRED "(" reg "," expr ")"
-
 ?enumeration_constant: IDENTIFIER
 
 ?generic_selection: GENERIC "(" assignment_expr "," generic_assoc_list ")"
@@ -321,7 +319,6 @@ type_specifier: VOID
 	| iteration_stmt
 	| jump_stmt
 	| mem_store
-	| pred_write
 	| cancel_slot_stmt ";"
 
 cancel_slot_stmt: "cancel_slot"

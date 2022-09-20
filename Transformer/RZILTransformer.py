@@ -11,7 +11,6 @@ from Transformer.Effects.ForLoop import ForLoop
 from Transformer.Effects.Jump import Jump
 from Transformer.Effects.MemStore import MemStore
 from Transformer.Effects.NOP import NOP
-from Transformer.Effects.PredicateWrite import PredicateWrite
 from Transformer.Effects.Sequence import Sequence
 from HexagonExtensions import HexagonTransformerExtension
 from Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
@@ -251,6 +250,10 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data('assignment_expr')
 
         dest: Pure = items[0]
+        if isinstance(dest, Register) and dest.get_isa_name()[0] == 'P':
+            dname = dest.get_isa_name().upper()
+            # Predicates need special handling.
+            self.ext.set_token_meta_data('pred_write', pred_num=dest.get_pred_num() if dname[1] in ['0', '1', '2', '3'] else -1)
         op_type = AssignmentType(items[1])
         src: Pure = items[2]
         name = f'op_{op_type.name}_{self.get_op_id()}'
@@ -328,12 +331,6 @@ class RZILTransformer(Transformer):
         else:
             raise NotImplementedError(f'Unary expression {items[0]} not handler.')
         return v
-
-    def pred_write(self, items):
-        pred_reg: Register = items[1]
-        self.ext.set_token_meta_data('pred_write', pred_num=pred_reg.get_pred_num())
-        name = f'op_PRED_WRITE_{self.get_op_id()}'
-        return self.chk_hybrid_dep(PredicateWrite(name, items[1], items[2]))
 
     def postfix_expr(self, items):
         self.ext.set_token_meta_data('postfix_expr')
