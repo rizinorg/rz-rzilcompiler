@@ -56,7 +56,7 @@ class Register(GlobalVar):
         if self.is_explicit and not self.is_reg_alias:
             if self.access in [RegisterAccessType.W, RegisterAccessType.PW]:
                 return f'// Write only explicit: {self.get_name()}'
-            return f'RzILOpPure *{self.pure_var()} = VARG({self.vm_id(False)});'
+            return f'RzILOpPure *{self.pure_var()} = VARG({self.vm_id(self.is_new)});'
 
         # Registers which are only written do not need their own RzILOpPure.
         if self.access == RegisterAccessType.W or self.access == RegisterAccessType.PW:
