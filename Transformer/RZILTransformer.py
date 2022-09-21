@@ -199,10 +199,8 @@ class RZILTransformer(Transformer):
         elif isinstance(items[1], Sequence):
             # This is an assignment which has a hybrid dependency. Iterate over sequence ops and find Assignment.
             items[1]: Sequence
-            for e in items[1]:
+            for e in items[1].effects:
                 if isinstance(e, Assignment):
-                    if e.dest.value_type:
-                        raise ValueError(f'Variable {e.dest.get_name()} was declared before.')
                     e.set_dest_type(t)
                     return items[1]
             raise NotImplementedError('declaration without Assignment are not implemented.')
