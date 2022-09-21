@@ -29,6 +29,7 @@ from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from Transformer.Pures.PureExec import PureExec
 from Transformer.Pures.Register import Register
+from Transformer.Pures.Sizeof import Sizeof
 from Transformer.Pures.Ternary import Ternary
 from Transformer.Pures.Variable import Variable
 from Transformer.helper import flatten_list, drain_list
@@ -380,6 +381,9 @@ class RZILTransformer(Transformer):
     def c_call(self, items):
         self.ext.set_token_meta_data('c_call')
         prefix = items[0]
+        if prefix == 'sizeof':
+            op = items[1]
+            return Sizeof(f'op_sizeof_{op.get_name()}_{self.get_op_id()}', op)
         val_type = self.ext.get_val_type_by_fcn(prefix)
         return self.resolve_hybrid(Call(f'c_call_{self.get_op_id()}', val_type, items))
 
