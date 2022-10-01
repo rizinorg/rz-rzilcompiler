@@ -1,3 +1,7 @@
+#define fSTORE_LOCKED(NUM, SIZE, EA, SRC, PRED)     gen_store_conditional##SIZE(ctx, PRED, EA, SRC);
+#define fLOAD_LOCKED(NUM, SIZE, SIGN, EA, DST)     gen_load_locked##SIZE##SIGN(DST, EA, ctx->mem_idx);
+#define PRED_LOAD_CANCEL(PRED, EA)     gen_pred_cancel(PRED, insn->is_endloop ? 4 : insn->slot)
+#define ALIAS_NEW_VAL(A) A##_NEW
 #define HEX_REG_UTIMERHI   HEX_REG_ALIAS_UTIMERHI
 #define HEX_REG_UTIMERLO   HEX_REG_ALIAS_UTIMERLO
 #define HEX_REG_PKTCNTHI   HEX_REG_ALIAS_PKTCNTHI
@@ -18,19 +22,23 @@
 #define HEX_REG_LC1   HEX_REG_ALIAS_LC1
 #define HEX_REG_SA1   HEX_REG_ALIAS_SA1
 #define HEX_REG_LC0   HEX_REG_ALIAS_LC0
+#define HEX_REG_FP   HEX_REG_ALIAS_FP
+#define HEX_REG_SP   HEX_REG_ALIAS_SP
 #define HEX_REG_SA0   HEX_REG_ALIAS_SA0
-#define HEX_REG_R31   HEX_REG_ALIAS_R31
+#define HEX_REG_R31   R31
 #define HEX_REG_LR   HEX_REG_ALIAS_LR
+#define RF_OFFSET HEX_RF_OFFSET
+#define RF_WIDTH HEX_RF_WIDTH
 #define HEXAGON_MACROS_H
 #define READ_REG(NUM)                    NUM
 #define READ_PREG(NUM)                   P##NUM
-#define WRITE_RREG(NUM, VAL)             log_reg_write(env, NUM, VAL, slot)
-#define WRITE_PREG(NUM, VAL)             log_pred_write(env, NUM, VAL)
+#define WRITE_RREG(NUM, VAL)             (NUM = VAL);
+#define WRITE_PREG(NUM, VAL)             READ_PREG(NUM) = VAL
 #define PCALIGN 4
 #define PCALIGN_MASK (PCALIGN - 1)
-#define GET_FIELD(FIELD, REGIN)    fEXTRACTU_BITS(REGIN, reg_field_info[FIELD].width,                   reg_field_info[FIELD].offset)
-#define GET_USR_FIELD(FIELD)    fEXTRACTU_BITS(env->gpr[HEX_REG_USR], reg_field_info[FIELD].width,                   reg_field_info[FIELD].offset)
-#define SET_USR_FIELD(FIELD, VAL)    fINSERT_BITS(env->new_value[HEX_REG_USR], reg_field_info[FIELD].width,                 reg_field_info[FIELD].offset, (VAL))
+#define GET_FIELD(FIELD, REGIN)     fEXTRACTU_BITS(REGIN, REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD),                    REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
+#define GET_USR_FIELD(FIELD)     fEXTRACTU_BITS(HEX_REG_ALIAS_USR, REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD),                    REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
+#define SET_USR_FIELD(FIELD, VAL)     fINSERT_BITS(ALIAS_NEW_VAL(HEX_REG_ALIAS_USR), REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD),                  REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD), (VAL))
 #define MEM_LOAD1s(VA) (mem_load_s8(VA))
 #define MEM_LOAD1u(VA) (mem_load_u8(VA))
 #define MEM_LOAD2s(VA) (mem_load_s16(VA))
@@ -57,8 +65,8 @@
 #define f8BITSOF(VAL) ((VAL) ? 0xff : 0x00)
 #define fLSBOLD(VAL)  ((VAL) & 1)
 #define fLSBNEW(PVAL)   ((PVAL) & 1)
-#define fLSBNEW0        (env->new_pred_value[0] & 1)
-#define fLSBNEW1        (env->new_pred_value[1] & 1)
+#define fLSBNEW0        (ALIAS_NEW_VAL(P0) & 1)
+#define fLSBNEW1        (ALIAS_NEW_VAL(P1) & 1)
 #define fLSBNEWNOT(PNUM) (!fLSBNEW(PNUM))
 #define fLSBOLDNOT(VAL) (!fLSBOLD(VAL))
 #define fLSBNEW0NOT (!fLSBNEW0)
@@ -84,7 +92,7 @@
 #define fSATB(VAL) (fSATN(8, VAL))
 #define fVSATUB(VAL) (fVSATUN(8, VAL))
 #define fVSATB(VAL) (fVSATN(8, VAL))
-#define fIMMEXT(IMM)
+#define fIMMEXT(IMM) (IMM)
 #define fMUST_IMMEXT(IMM) fIMMEXT(IMM)
 #define fPCALIGN(IMM) IMM = (IMM & ~PCALIGN_MASK)
 #define fREAD_IREG(VAL)    (fSXTN(11, 64, (((VAL) & 0xf0000000) >> 21) | ((VAL >> 17) & 0x7f)))
@@ -101,7 +109,7 @@
 #define fREAD_GP()     (insn->extension_valid ? 0 : READ_REG(HEX_REG_GP))
 #define fREAD_GP() READ_REG(HEX_REG_GP)
 #define fREAD_PC() (READ_REG(HEX_REG_PC))
-#define fREAD_NPC() (env->next_PC & (0xfffffffe))
+#define fREAD_NPC() (get_npc(pkt) & (0xfffffffe))
 #define fREAD_P0() (READ_PREG(0))
 #define fREAD_P3() (READ_PREG(3))
 #define fCHECK_PCALIGN(A)
@@ -203,8 +211,7 @@
 #define fGET_FRAMEKEY() READ_REG(HEX_REG_FRAMEKEY)
 #define fFRAME_SCRAMBLE(VAL) ((VAL) ^ (fCAST8u(fGET_FRAMEKEY()) << 32))
 #define fFRAME_UNSCRAMBLE(VAL) fFRAME_SCRAMBLE(VAL)
-#define fFRAMECHECK(ADDR, EA) do { } while (0) /* Not modelled in linux-user */
-#define fFRAMECHECK(ADDR, EA)  g_assert_not_reached();
+#define fFRAMECHECK(ADDR, EA)
 #define fSTORE(NUM, SIZE, EA, SRC) MEM_STORE##SIZE(EA, SRC, slot)
 #define fGETBYTE(N, SRC) ((int8_t)((SRC >> ((N) * 8)) & 0xff))
 #define fGETUBYTE(N, SRC) ((uint8_t)((SRC >> ((N) * 8)) & 0xff))
@@ -235,9 +242,9 @@
 #define fECHO(A) (A)
 #define fTRAP(TRAPTYPE, IMM) helper_raise_exception(env, HEX_EXCP_TRAP0)
 #define fPAUSE(IMM)
-#define fALIGN_REG_FIELD_VALUE(FIELD, VAL)    ((VAL) << reg_field_info[FIELD].offset)
-#define fGET_REG_FIELD_MASK(FIELD)    (((1 << reg_field_info[FIELD].width) - 1) << reg_field_info[FIELD].offset)
-#define fREAD_REG_FIELD(REG, FIELD)    fEXTRACTU_BITS(env->gpr[HEX_REG_##REG],                   reg_field_info[FIELD].width,                   reg_field_info[FIELD].offset)
+#define fALIGN_REG_FIELD_VALUE(FIELD, VAL)     ((VAL) << REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
+#define fGET_REG_FIELD_MASK(FIELD)     (((1 << REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD)) - 1) << REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
+#define fREAD_REG_FIELD(REG, FIELD)     fEXTRACTU_BITS(READ_REG(REG),                    REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD),                    REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
 #define fGET_FIELD(VAL, FIELD)
 #define fSET_FIELD(VAL, FIELD, NEWVAL)
 #define fBARRIER()

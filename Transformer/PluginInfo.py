@@ -1,12 +1,13 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
+hexagon_c_call_prefix = 'HEX_'
 hexagon_isa_to_reg = 'ISA2REG'
 hexagon_isa_to_reg_args = ['hi']
 hexagon_isa_to_imm = 'ISA2IMM'
 hexagon_isa_to_imm_args = ['hi']
 hexagon_isa_alias_to_reg = 'ALIAS2REG'
-hexagon_isa_alias_to_reg_args = ['hi']
+hexagon_isa_alias_to_reg_args = []
 # This function gets a register placeholder name from the ISA manual (e.g. "Rs")
 # and returns the actual register name as string (e.g. "R3")
 isa_to_reg_fnc = hexagon_isa_to_reg

@@ -9,4 +9,4 @@ class Number(LetVar):
     def __init__(self, name: str, val: int, v_type: ValueType):
         self.name = name
         self.v_type = v_type
-        super().__init__(name, val, v_type)
+        LetVar.__init__(self, name, val, v_type)

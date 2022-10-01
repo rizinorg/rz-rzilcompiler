@@ -12,7 +12,7 @@ def get_value_type_from_reg_type(token_list: list) -> ValueType:
     reg_type: Token = token_list[0].value  # R, P, V, Q etc.
     reg_access = token_list[1].type  # SRC/DEST/DEST_PAIR etc.
 
-    if reg_type == 'R' or reg_type == 'C':
+    if reg_type in ['R', 'C', 'M', 'N']:
         size = 32
     elif reg_type == 'P':
         size = 8
@@ -25,16 +25,8 @@ def get_value_type_from_reg_type(token_list: list) -> ValueType:
 
     if 'PAIR' in reg_access:
         size *= 2
-    return ValueType(False, size)
-
-
-def get_value_type_by_c_type(c_type: str) -> ValueType:
-    """ Returns the value type for the given C integer type. """
-
-    if c_type == 'short':
-        return ValueType(True, 16)
-    else:
-        raise NotImplementedError(f'Type {c_type} not implemented.')
+    # Register content is signed by default (see QEMUs tcg functions generating scripts).
+    return ValueType(True, size)
 
 
 def get_c_type_by_value_type(val_type: ValueType) -> str:
@@ -69,7 +61,7 @@ def get_value_type_by_c_number(items: [Token]) -> ValueType:
     postfix = items[2] if items[2] else ''
 
     c_signed_types_postfix = ['LL']
-    c_unsigned_types_postfix = ['ULL']
+    c_unsigned_types_postfix = ['ULL', 'U']
 
     if postfix != '' and (postfix not in c_signed_types_postfix and postfix not in c_unsigned_types_postfix):
         raise NotImplementedError(f'Unsupported number postfix {postfix}')

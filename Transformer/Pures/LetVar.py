@@ -9,15 +9,33 @@ class LetVar(Pure):
 
     def __init__(self, name: str, value: int, value_type: ValueType):
         self.value = value
-        super().__init__(name, PureType.LET, value_type)
+        Pure.__init__(self, name, PureType.LET, value_type)
 
     def get_val(self):
         """ Returns the value of the variable. """
-        raise self.value
+        return self.value
 
     def il_init_var(self):
-        return f'RzILOpPure *{self.get_name()} = {self.value_type.il_op(self.value)};'
+        return f'RzILOpPure *{self.pure_var()} = {self.value_type.il_op(self.value)};'
 
     def il_read(self):
         """ Returns the code to read the let variable for the VM. """
-        return f'VARLP("{self.get_name()}")'
+        self.reads += 1
+        return f'VARLP({self.vm_id(False)})'
+
+    def vm_id(self, write_usage: bool):
+        return f'"{self.get_name()}"'
+
+
+def resolve_lets(lets: [LetVar], consumer):
+    """ Wraps LET(...) around the consumer. """
+    from Transformer.Pures.PureExec import PureExec
+
+    code = ''
+    for let in lets:
+        let_read = let.pure_var() if let.reads < 1 else f'DUP({let.pure_var()})'
+        code += f'LET({let.vm_id(True)}, {let_read}, '
+        let.reads += 1
+    code += consumer.il_exec() if isinstance(consumer, PureExec) else consumer.il_read()
+    code += ')' * len(lets)
+    return code

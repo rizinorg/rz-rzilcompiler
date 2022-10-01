@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from Exceptions import OverloadException
-from Transformer.Pures.LetVar import LetVar
+from Transformer.Pures.LetVar import LetVar, resolve_lets
 from Transformer.Pures.Pure import Pure, PureType, ValueType
 
 
@@ -17,7 +17,7 @@ class PureExec(Pure):
         # Add LETs to a list for use during initialization.
         self.lets = [op for op in operands if isinstance(op, LetVar)]
         self.ops = operands
-        super().__init__(name, PureType.EXEC, val_type)
+        Pure.__init__(self, name, PureType.EXEC, val_type)
 
     def il_exec(self):
         """ Returns the RZIL ops to execute the operation.
@@ -27,13 +27,15 @@ class PureExec(Pure):
 
     def il_init_var(self):
         if len(self.lets) == 0:
-            init = f'RzIlOpPure *{self.get_name()} = {self.il_exec()});'
+            init = f'RzILOpPure *{self.pure_var()} = {self.il_exec()};'
             return init
-        init = f'RzIlOpPure *{self.get_name()} = '
-        for let in self.lets:
-            init += f'LET("{let.get_name()}", {let.get_name()}, '
-        init += self.il_exec() + ')' * len(self.lets) + ');'
+        init = f'RzILOpPure *{self.pure_var()} = '
+        init += resolve_lets(self.lets, self) + ';'
         return init
 
     def il_read(self):
-        return f'{self.name}'
+        self.reads += 1
+        return self.pure_var()
+
+    def vm_id(self, write_usage):
+        return f'"{self.get_name()}"'

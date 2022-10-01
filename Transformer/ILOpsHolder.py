@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from Transformer.Effects.Effect import Effect
+from Transformer.Hybrids.Hybrid import Hybrid
 from Transformer.Pures.Pure import Pure, PureType
 
 
@@ -17,17 +18,24 @@ def singleton(cls, *args, **kw):
 
 
 @singleton
-class ILOpsHolder(object):
-    read_ops: dict
-    exec_ops: dict
-    write_ops: dict
-    let_ops: dict  # immutable LET vars.
+class OpCounter(object):
+    op_count = 0
 
-    def __init__(self):
-        self.read_ops = dict()
-        self.exec_ops = dict()
-        self.write_ops = dict()
-        self.let_ops = dict()
+    def get_op_count(self):
+        cnt = self.op_count
+        self.op_count += 1
+        return cnt
+
+    def reset(self):
+        self.op_count = 0
+
+
+@singleton
+class ILOpsHolder(object):
+    read_ops = dict()
+    exec_ops = dict()
+    write_ops = dict()
+    let_ops = dict()  # immutable LET vars.
 
     def add_pure(self, pure: Pure):
         if pure.type == PureType.GLOBAL or pure.type == PureType.LOCAL:
@@ -36,6 +44,9 @@ class ILOpsHolder(object):
             self.exec_ops[pure.get_name()] = pure
         elif pure.type == PureType.LET:
             self.read_ops[pure.get_name()] = pure
+        elif pure.type == PureType.C_CODE:
+            # C code used only inline
+            pass
         else:
             raise NotImplementedError(f'Can not add Pure of type {pure.type}')
 
@@ -51,3 +62,10 @@ class ILOpsHolder(object):
             return self.write_ops[name]
         else:
             raise ValueError(f'Did not find op: "{name}"!')
+
+    def clear(self):
+        """ Removes all previously added ops. """
+        self.read_ops.clear()
+        self.exec_ops.clear()
+        self.write_ops.clear()
+        self.let_ops.clear()

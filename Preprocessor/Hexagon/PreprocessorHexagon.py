@@ -19,6 +19,7 @@ class PreprocessorHexagon:
     def run_preprocess_steps(self):
         self.preprocess_macros()
         self.preprocess_shortcode()
+        self.postprocess_shortcode()
 
     def preprocess_macros(self):
         """ Remove includes. Decide between QEMU_GENERATE or not. Patch certain macros with ou version."""
@@ -36,24 +37,30 @@ class PreprocessorHexagon:
                 is_vec_macro_file = False
             with open(mp) as f:
                 in_qemu_gen = False
+                in_user_only = False
                 for line in f.readlines():
                     if line == '\n':
                         continue
                     if re.match(r'#ifdef QEMU_GENERATE', line):
                         in_qemu_gen = True
                         continue
+                    if re.match(r'#ifdef CONFIG_USER_ONLY', line):
+                        in_user_only = True
+                        continue
                     if re.match(r'#ifndef|#ifdef', line):
                         continue
                     if re.match(r'#include', line):
                         continue
                     if re.match(r'(#else)|(#endif)', line):
-                        if in_qemu_gen:
+                        if in_qemu_gen or in_user_only:
+                            in_user_only = False
                             in_qemu_gen = False
                         continue
                     if in_qemu_gen and is_vec_macro_file:
+                        # QEMU_GENERATE macros of the vector macro file are included.
                         res.append(line.strip('\n'))
                         continue
-                    elif in_qemu_gen:
+                    elif in_qemu_gen or in_user_only:
                         continue
                     if re.match(r'(\s*//)|(/\*)|(\s*\*)', line):  # Ignore comments
                         continue
@@ -110,8 +117,11 @@ class PreprocessorHexagon:
             f.write('\n')
             with open(self.shortcode_path) as g:
                 f.writelines(g.readlines())
-        argv = ['script_name', combined_path, '-o', self.out_dir + '/Preprocessor/shortcode_resolved.h']
+        argv = ['script_name', combined_path, '-o', self.out_dir + '/Preprocessor/shortcode_resolved_tmp.h']
         print('* Resolve macros of shortcode with pcpp...')
+        pcpp.pcmd.CmdPreprocessor(argv)
+        print('* Do it again due to https://github.com/ned14/pcpp/issues/71')
+        argv = ['script_name', self.out_dir + '/patched_macros.h', self.out_dir + '/Preprocessor/shortcode_resolved_tmp.h', '-o', self.out_dir + '/Preprocessor/shortcode_resolved.h']
         pcpp.pcmd.CmdPreprocessor(argv)
 
     def load_insn_behavior(self):
@@ -146,7 +156,7 @@ class PreprocessorHexagon:
 
         match = re.match(r'\{.*__COMPOUND_PART1__(\{.+})__COMPOUND_PART1__(.*)}$', insn_beh)
         beh_p1 = match.group(1)
-        beh_p2 = match.group(2)
+        beh_p2 = '{' + match.group(2) + '}'  # brackets were excluded in regex.
         return beh_p1, beh_p2
 
     @staticmethod
@@ -157,6 +167,30 @@ class PreprocessorHexagon:
         if not match:
             raise ValueError(f'Could not split shrtcode line: {line}')
         return match.group(1), match.group(2)
+
+    @staticmethod
+    def replace_do_while_0(code: str) -> str:
+        m = re.search(r'(.*)do\s*\{(.*)}\s*while\s*\(0\)(.*)', code)
+        if not m:
+            return code
+        tmp = ''
+        while m:
+            tmp = m.group(1) + m.group(2) + m.group(3)
+            m = re.search(r'(.*)do\s*\{(.*)}\s*while\s*\(0\)(.*)', tmp)
+        return tmp + '\n'
+
+    def postprocess_shortcode(self):
+        self.remove_onetime_do_whiles()
+
+    def remove_onetime_do_whiles(self):
+        """ Removes the `do {...} while(0)` pattern from the shortcode. """
+        path = self.out_dir + '/Preprocessor/shortcode_resolved.h'
+        res = []
+        with open(path) as f:
+            for line in f.readlines():
+                res.append(self.replace_do_while_0(line))
+        with open(path, 'w') as f:
+            f.writelines(res)
 
 
 if __name__ == '__main__':

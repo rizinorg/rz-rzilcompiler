@@ -5,11 +5,16 @@ fbody: stmt* -> fbody
 	| "(" expr ")"
 	| generic_selection
 
-mem_load: "mem_load_" SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")"
+MEM_LOAD.10: "mem_load_"
+MEM_STORE.10: "mem_store_"
+WRITE_PRED.10: "WRITE_PRED"
+JUMP.10: "JUMP"
 
-mem_store: "mem_store_" SIGN_TYPE BIT_WIDTH "(" argument_expr_list ")" ";"
+jump: JUMP "(" expr ")"
 
-jump: "JUMP" "(" expr ")"
+mem_load: MEM_LOAD SIGN_TYPE BIT_WIDTH "(" _argument_expr_list ")"
+
+mem_store: MEM_STORE SIGN_TYPE BIT_WIDTH "(" _argument_expr_list ")" ";"
 
 ?enumeration_constant: IDENTIFIER
 
@@ -21,9 +26,12 @@ jump: "JUMP" "(" expr ")"
 ?generic_association: type_name ":" assignment_expr
 	| DEFAULT ":" assignment_expr
 
+?c_call: identifier "(" [_argument_expr_list] ")"
+
 ?postfix_expr: primary_expr
 	| postfix_expr "[" expr "]"
 	| postfix_expr "(" ")"
+	| c_call
 	| mem_load
 	| postfix_expr "." IDENTIFIER
 	| postfix_expr PTR_OP IDENTIFIER
@@ -32,8 +40,8 @@ jump: "JUMP" "(" expr ")"
 	| "(" type_name ")" "{" initializer_list "}"
 	| "(" type_name ")" "{" initializer_list "," "}"
 
-?argument_expr_list: assignment_expr
-	| argument_expr_list "," assignment_expr
+_argument_expr_list: assignment_expr
+	| _argument_expr_list "," assignment_expr
 
 ?unary_expr: postfix_expr
 	| INC_OP unary_expr
@@ -109,9 +117,14 @@ ASSIGN_OP: "="
 	| XOR_ASSIGN
 	| OR_ASSIGN
 
+// GCC extension which allows compound statements and declarations within expressions.
+// See: https://gcc.gnu.org/onlinedocs/gcc-2.95.3/gcc_4.html#SEC62
+// In this an ambiguity to the compound statement.
+gcc_extended_expr: "{" [block_item_list] expr_stmt "}"
+
 ?expr: assignment_expr
 	| expr "," assignment_expr
-	| cancel_slot_expr
+	| gcc_extended_expr
 
 ?constant_expr: conditional_expr
 
@@ -143,7 +156,7 @@ ASSIGN_OP: "="
 	| AUTO
 	| REGISTER
 
-?type_specifier: VOID
+type_specifier: VOID
 	| CHAR
 	| SHORT
 	| INTEGER
@@ -158,6 +171,7 @@ ASSIGN_OP: "="
 	| atomic_type_specifier
 	| struct_or_union_specifier
 	| enum_specifier
+	| data_type
 
 ?struct_or_union_specifier: struct_or_union "{" struct_declaration_list "}"
 	| struct_or_union IDENTIFIER "{" struct_declaration_list "}"
@@ -305,20 +319,21 @@ ASSIGN_OP: "="
 	| iteration_stmt
 	| jump_stmt
 	| mem_store
+	| cancel_slot_stmt ";"
 
-cancel_slot_expr: "cancel_slot"
+cancel_slot_stmt: "cancel_slot"
 
 ?labeled_stmt: IDENTIFIER ":" stmt
 	| CASE constant_expr ":" stmt
 	| DEFAULT ":" stmt
 
 ?compound_stmt: "{" "}"
-	| "{"  block_item_list "}"
+	| "{"  block_item_list "}" [";"]
 
 ?block_item_list: block_item
 	| block_item_list block_item
 
-?block_item: declaration
+block_item: declaration
 	| stmt
 
 ?expr_stmt: ";"
@@ -328,14 +343,14 @@ cancel_slot_expr: "cancel_slot"
 	| IF "(" expr ")" stmt
 	| SWITCH "(" expr ")" stmt
 
-?iteration_stmt: WHILE "(" expr ")" stmt
+iteration_stmt: WHILE "(" expr ")" stmt
 	| DO stmt WHILE "(" expr ")" ";"
 	| FOR "(" expr_stmt expr_stmt ")" stmt
 	| FOR "(" expr_stmt expr_stmt expr ")" stmt
 	| FOR "(" declaration expr_stmt ")" stmt
 	| FOR "(" declaration expr_stmt expr ")" stmt
 
-?jump_stmt: jump ";"
+?jump_stmt: jump
     | GOTO IDENTIFIER ";"
 	| CONTINUE ";"
 	| BREAK ";"
@@ -354,15 +369,19 @@ cancel_slot_expr: "cancel_slot"
 ?declaration_list: declaration
 	| declaration_list declaration
 
-?op: reg "V"
-    | new_reg "N"
+?op: _reg_variant
     | imm "iV"
-    | explicit_reg
-    | reg_alias
     | number
     | identifier
 
 identifier: IDENTIFIER
+
+_reg_variant: "HEX_REG_ALIAS_" reg_alias
+    | new_reg "N"
+    | reg "V"
+    | explicit_reg
+
+!explicit_reg: ("R31" | "P0" | "P1" | "P2" | "P3") ["_NEW"]
 
 new_reg: _reg
 reg: _reg
@@ -370,11 +389,20 @@ reg: _reg
 _reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
     | REG_TYPE (SRC_REG_PAIR | DEST_REG_PAIR | SRC_DEST_REG_PAIR)
 
-explicit_reg: "R31" | "P0" | "P1" | "P2" | "P3"
-
-reg_alias: "HEX_REG_ALIAS_" /[A-Z0-9]+/
+reg_alias: /[A-Z0-9]+/ [_reg_alias_new]
+_reg_alias_new: "_NEW"
 
 ?number: [NUM_SIGN] (HEX_NUMBER | DEC_NUMBER) [INT_POST_TYPE]
+        | float_number
+
+float_number: COMMON_FLOAT
+        | COMMON_SIGNED_FLOAT
+
+?c_size_type: "size" BIT_WIDTH SIGN_TYPE "_t"
+?c_int_type: SIGN_TYPE_INT BIT_WIDTH "_t"
+
+?data_type: c_size_type
+    | c_int_type
 
 imm: IMMEDIATE
 // Patterns from:
@@ -391,84 +419,85 @@ DEST_REG_PAIR: "dd"
 SRC_DEST_REG: /[xyz]/
 SRC_DEST_REG_PAIR: "xx" | "yy"
 
-INT_POST_TYPE: "LL" | "ULL"
+INT_POST_TYPE: "LL" | "ULL" | "U"
 HEX_NUMBER: /0x[\da-f]*/i
 DEC_NUMBER: /0|[1-9][\d_]*/i
 NUM_SIGN: /[-+]/i
 
 SIGN_TYPE: /[su]/
-BIT_WIDTH: "8" | "16" | "32" | "64"
+BIT_WIDTH: "1" | "2" | "4" | "8" | "16" | "32" | "64"
+SIGN_TYPE_INT: "uint" | "int"
 
-AUTO: "auto" 
-BREAK: "break" 
-CASE: "case" 
-CHAR: "char" 
-CONST: "const" 
-CONTINUE: "continue" 
-DEFAULT: "default" 
-DO: "do" 
-DOUBLE: "double" 
-ELSE: "else" 
-ENUM: "enum" 
-EXTERN: "extern" 
-FLOAT: "float" 
-FOR: "for" 
-GOTO: "goto" 
-IF: "if" 
-INLINE: "inline" 
-INTEGER: "int" 
-LONG: "long" 
-REGISTER: "register" 
-RESTRICT: "restrict" 
-RETURN: "return" 
-SHORT: "short" 
-SIGNED: "signed" 
-SIZEOF: "sizeof" 
-STATIC: "static" 
-STRUCT: "struct" 
-SWITCH: "switch" 
-TYPEDEF: "typedef" 
-UNION: "union" 
-UNSIGNED: "unsigned" 
-VOID: "void" 
-VOLATILE: "volatile" 
-WHILE: "while" 
-ALIGNAS: "_Alignas" 
-ALIGNOF: "_Alignof" 
-ATOMIC: "_Atomic" 
-BOOL: "_Bool" 
-COMPLEX: "_Complex" 
-GENERIC: "_Generic" 
-IMAGINARY: "_Imaginary" 
-NORETURN: "_Noreturn" 
-STATIC_ASSERT: "_Static_assert" 
-THREAD_LOCAL: "_Thread_local" 
-FUNC_NAME: "__func__" 
+AUTO: "auto"
+BREAK: "break"
+CASE: "case"
+CHAR: "char"
+CONST: "const"
+CONTINUE: "continue"
+DEFAULT: "default"
+DO: "do"
+DOUBLE: "double"
+ELSE: "else"
+ENUM: "enum"
+EXTERN: "extern"
+FLOAT: "float"
+FOR: "for"
+GOTO: "goto"
+IF: "if"
+INLINE: "inline"
+INTEGER: "int"
+LONG: "long"
+REGISTER: "register"
+RESTRICT: "restrict"
+RETURN: "return"
+SHORT: "short"
+SIGNED: "signed"
+SIZEOF: "sizeof"
+STATIC: "static"
+STRUCT: "struct"
+SWITCH: "switch"
+TYPEDEF: "typedef"
+UNION: "union"
+UNSIGNED: "unsigned"
+VOID: "void"
+VOLATILE: "volatile"
+WHILE: "while"
+ALIGNAS: "_Alignas"
+ALIGNOF: "_Alignof"
+ATOMIC: "_Atomic"
+BOOL: "_Bool"
+COMPLEX: "_Complex"
+GENERIC: "_Generic"
+IMAGINARY: "_Imaginary"
+NORETURN: "_Noreturn"
+STATIC_ASSERT: "_Static_assert"
+THREAD_LOCAL: "_Thread_local"
+FUNC_NAME: "__func__"
 STRING_LITERAL: IDENTIFIER
 
-ELLIPSIS: "..." 
-RIGHT_ASSIGN: ">>=" 
-LEFT_ASSIGN: "<<=" 
-ADD_ASSIGN: "+=" 
-SUB_ASSIGN: "-=" 
-MUL_ASSIGN: "*=" 
-DIV_ASSIGN: "/=" 
-MOD_ASSIGN: "%=" 
-AND_ASSIGN: "&=" 
-XOR_ASSIGN: "^=" 
-OR_ASSIGN: "|=" 
-RIGHT_OP: ">>" 
-LEFT_OP: "<<" 
-INC_OP: "++" 
-DEC_OP: "--" 
-PTR_OP: "->" 
-AND_OP: "&&" 
-OR_OP: "||" 
+ELLIPSIS: "..."
+RIGHT_ASSIGN: ">>="
+LEFT_ASSIGN: "<<="
+ADD_ASSIGN: "+="
+SUB_ASSIGN: "-="
+MUL_ASSIGN: "*="
+DIV_ASSIGN: "/="
+MOD_ASSIGN: "%="
+AND_ASSIGN: "&="
+XOR_ASSIGN: "^="
+OR_ASSIGN: "|="
+RIGHT_OP: ">>"
+LEFT_OP: "<<"
+INC_OP: "++"
+DEC_OP: "--"
+PTR_OP: "->"
+AND_OP: "&&"
+OR_OP: "||"
 LT_OP: "<"
 GT_OP: ">"
-LE_OP: "<=" 
-GE_OP: ">=" 
-EQ_OP: "==" 
+LE_OP: "<="
+GE_OP: ">="
+EQ_OP: "=="
 NE_OP: "!="
 MUL_OP: "*"
 DIV_OP: "/"
@@ -479,7 +508,7 @@ BIT_OR_OP: "|"
 BIT_AND_OP: "&"
 BIT_XOR_OP: "^"
 
-IDENTIFIER: /[A-Za-z_]+\w*/
+IDENTIFIER.0: /[A-Za-z_]+\w*/
 
 %import common.ESCAPED_STRING
 %import common.WORD
@@ -488,3 +517,5 @@ IDENTIFIER: /[A-Za-z_]+\w*/
 %import common.SIGNED_NUMBER
 %import common.WS
 %ignore WS
+%import common.FLOAT -> COMMON_FLOAT
+%import common.SIGNED_FLOAT -> COMMON_SIGNED_FLOAT

@@ -2,37 +2,40 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from enum import StrEnum
 
+from Transformer.Pures.CompareOp import CompareOp
 from Transformer.Pures.Pure import Pure
 from Transformer.Pures.PureExec import PureExec
+from Transformer.helper import cast_operands
 
 
-class BooleanType(StrEnum):
-    ADD = '+'
-    SUB = '-'
-    MUL = '*'
-    DIV = '/'
-    MOD = '%'
+class BooleanOpType(StrEnum):
+    AND = '&&'
+    OR = '||'
+    INV = '!'
 
 
-class ArithmeticOp(PureExec):
+class BooleanOp(PureExec):
 
-    def __init__(self, name: str, a: Pure, b: Pure, a_type: ArithmeticType):
-        self.a = a
-        self.b = b
-        self.a_type = a_type
+    def __init__(self, name: str, a: Pure, b: Pure, op_type: BooleanOpType):
+        self.op_type = op_type
+        if a and b:
+            # No need to check for single operand operations.
+            a, b = cast_operands(a=a, b=b, immutable_a=False)
 
-        super().__init__(name, max(self.avalue_type.bit_width, self.bvalue_type.bit_width))
+        if b:
+            PureExec.__init__(self, name, [a, b], a.value_type)
+        else:
+            PureExec.__init__(self, name, [a], a.value_type)
 
     def il_exec(self):
-        if self.a_type == ArithmeticType.ADD:
-            return f'ADD({self.a.il_read()}, {self.b.il_read()}'
-        elif self.a_type == ArithmeticType.SUB:
-            return f'SUB({self.a.il_read()}, {self.b.il_read()}'
-        elif self.a_type == ArithmeticType.MUL:
-            return f'MUL({self.a.il_read()}, {self.b.il_read()}'
-        elif self.a_type == ArithmeticType.DIV:
-            return f'DIV({self.a.il_read()}, {self.b.il_read()}'
-        elif self.a_type == ArithmeticType.MOD:
-            return f'MOD({self.a.il_read()}, {self.b.il_read()}'
+        a = self.ops[0].il_read() if (isinstance(self.ops[0], BooleanOp) or isinstance(self.ops[0], CompareOp)) else f'NON_ZERO({self.ops[0].il_read()})'
+        if self.op_type == BooleanOpType.INV:
+            return f'INV({a})'
+
+        b = self.ops[1].il_read() if (isinstance(self.ops[1], BooleanOp) or isinstance(self.ops[1], CompareOp)) else f'NON_ZERO({self.ops[1].il_read()})'
+        if self.op_type == BooleanOpType.AND:
+            return f'AND({a}, {b})'
+        elif self.op_type == BooleanOpType.OR:
+            return f'OR({a}, {b})'
         else:
-            raise NotImplementedError(f'')
+            raise NotImplementedError(f'Boolean operation {self.op_type} not implemented.')

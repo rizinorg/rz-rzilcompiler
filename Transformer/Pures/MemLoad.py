@@ -18,7 +18,7 @@ class MemLoad(PureExec):
     def __init__(self, name: str, va: Pure, acc_type: MemAccessType):
         self.acc_type = acc_type
         self.va = va
-        super().__init__(name, [va], acc_type.val_type)
+        PureExec.__init__(self, name, [va], acc_type.val_type)
 
     def il_exec(self):
         return f'LOADW({self.acc_type.val_type.bit_width}, {self.va.il_read()})'

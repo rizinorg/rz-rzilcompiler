@@ -25,3 +25,22 @@ RzILOpPure *rs = VARG(rs_assoc);
 #### Local Pures and Effects
 
 Those need only a single variable.
+
+# Method description
+
+The `il_` methods return the compiled C code.
+This is a quick overview what kind of code each method returns.
+
+**Pure/PureExec exclusive**
+- `il_read`: RZIL code to read the RZIL variable (`VARL(<name>)` etc.)
+- `il_exec`: RZIL code which does the computation (`ADD(<op1>, <op2>)` etc.)
+
+**Effect exclusive**
+- `il_write`: RZIL code to execute the effect (`SETL(<name>, <val>)` etc.).
+
+**Effect and Pures**
+- `il_init_var`: Generates a C variable which holds the RZIL ops.
+  - `RzILOpPure/RzILOpsEffect <name> = <il_read/il_write/il_exec>`
+- `get_name`: Returns the name of the RZIL op.
+
+**NOTE**: `Hybrid.il_init_var()` will always call the `Effect.il_init_var()` method.

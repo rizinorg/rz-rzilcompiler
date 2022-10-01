@@ -4,7 +4,7 @@ from enum import StrEnum
 
 from Transformer.Pures.Pure import Pure
 from Transformer.Pures.PureExec import PureExec
-from Transformer.helper import exc_if_types_not_match
+from Transformer.helper import cast_operands
 
 
 class ArithmeticType(StrEnum):
@@ -18,23 +18,23 @@ class ArithmeticType(StrEnum):
 class ArithmeticOp(PureExec):
 
     def __init__(self, name: str, a: Pure, b: Pure, arith_type: ArithmeticType):
+        self.arith_type = arith_type
         if arith_type != ArithmeticType.MOD:
             # Modular operations don't need matching types.
-            exc_if_types_not_match(a.value_type, b.value_type)
-        self.arith_type = arith_type
+            a, b = cast_operands(a=a, b=b, immutable_a=False)
 
-        super().__init__(name, [a, b], a.value_type)
+        PureExec.__init__(self, name, [a, b], a.value_type)
 
     def il_exec(self):
         if self.arith_type == ArithmeticType.ADD:
-            return f'ADD({self.ops[0].il_read()}, {self.ops[1].il_read()}'
+            return f'ADD({self.ops[0].il_read()}, {self.ops[1].il_read()})'
         elif self.arith_type == ArithmeticType.SUB:
-            return f'SUB({self.ops[0].il_read()}, {self.ops[1].il_read()}'
+            return f'SUB({self.ops[0].il_read()}, {self.ops[1].il_read()})'
         elif self.arith_type == ArithmeticType.MUL:
-            return f'MUL({self.ops[0].il_read()}, {self.ops[1].il_read()}'
+            return f'MUL({self.ops[0].il_read()}, {self.ops[1].il_read()})'
         elif self.arith_type == ArithmeticType.DIV:
-            return f'DIV({self.ops[0].il_read()}, {self.ops[1].il_read()}'
+            return f'DIV({self.ops[0].il_read()}, {self.ops[1].il_read()})'
         elif self.arith_type == ArithmeticType.MOD:
-            return f'MOD({self.ops[0].il_read()}, {self.ops[1].il_read()}'
+            return f'MOD({self.ops[0].il_read()}, {self.ops[1].il_read()})'
         else:
-            raise NotImplementedError(f'Arithmethic type {self.arith_type} not handled.')
+            raise NotImplementedError(f'Arithmetic type {self.arith_type} not handled.')
