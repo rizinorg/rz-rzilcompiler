@@ -3,6 +3,8 @@
 
 // Macros in this file fill replace the qualcomm macros from the Qemu source.
 
+#define DEF_SHORTCODE(TAG, SHORTCODE) insn(TAG, SHORTCODE)
+
 #define RF_WIDTH HEX_RF_WIDTH
 #define RF_OFFSET HEX_RF_OFFSET
 

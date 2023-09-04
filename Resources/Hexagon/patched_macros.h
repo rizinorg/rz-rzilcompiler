@@ -1,6 +1,9 @@
 #define fSTORE_LOCKED(NUM, SIZE, EA, SRC, PRED)     gen_store_conditional##SIZE(ctx, PRED, EA, SRC);
 #define fLOAD_LOCKED(NUM, SIZE, SIGN, EA, DST)     gen_load_locked##SIZE##SIGN(DST, EA, ctx->mem_idx);
 #define PRED_LOAD_CANCEL(PRED, EA)     gen_pred_cancel(PRED, insn->is_endloop ? 4 : insn->slot)
+#define fLSBNEW1        (ALIAS_NEW_VAL(P1) & 1)
+#define fLSBNEW0        (ALIAS_NEW_VAL(P0) & 1)
+#define fREAD_NPC() (get_npc(pkt) & (0xfffffffe))
 #define ALIAS_NEW_VAL(A) A##_NEW
 #define HEX_REG_UTIMERHI   HEX_REG_ALIAS_UTIMERHI
 #define HEX_REG_UTIMERLO   HEX_REG_ALIAS_UTIMERLO
@@ -27,13 +30,14 @@
 #define HEX_REG_SA0   HEX_REG_ALIAS_SA0
 #define HEX_REG_R31   R31
 #define HEX_REG_LR   HEX_REG_ALIAS_LR
+#define WRITE_PREG(NUM, VAL)             READ_PREG(NUM) = VAL
+#define WRITE_RREG(NUM, VAL)             (NUM = VAL);
+#define READ_PREG(NUM)                   P##NUM
+#define READ_REG(NUM)                    NUM
 #define RF_OFFSET HEX_RF_OFFSET
 #define RF_WIDTH HEX_RF_WIDTH
+#define DEF_SHORTCODE(TAG, SHORTCODE) insn(TAG, SHORTCODE)
 #define HEXAGON_MACROS_H
-#define READ_REG(NUM)                    NUM
-#define READ_PREG(NUM)                   P##NUM
-#define WRITE_RREG(NUM, VAL)             (NUM = VAL);
-#define WRITE_PREG(NUM, VAL)             READ_PREG(NUM) = VAL
 #define PCALIGN 4
 #define PCALIGN_MASK (PCALIGN - 1)
 #define GET_FIELD(FIELD, REGIN)     fEXTRACTU_BITS(REGIN, REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD),                    REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
@@ -65,8 +69,6 @@
 #define f8BITSOF(VAL) ((VAL) ? 0xff : 0x00)
 #define fLSBOLD(VAL)  ((VAL) & 1)
 #define fLSBNEW(PVAL)   ((PVAL) & 1)
-#define fLSBNEW0        (ALIAS_NEW_VAL(P0) & 1)
-#define fLSBNEW1        (ALIAS_NEW_VAL(P1) & 1)
 #define fLSBNEWNOT(PNUM) (!fLSBNEW(PNUM))
 #define fLSBOLDNOT(VAL) (!fLSBOLD(VAL))
 #define fLSBNEW0NOT (!fLSBNEW0)
@@ -95,41 +97,25 @@
 #define fIMMEXT(IMM) (IMM)
 #define fMUST_IMMEXT(IMM) fIMMEXT(IMM)
 #define fPCALIGN(IMM) IMM = (IMM & ~PCALIGN_MASK)
-#define fREAD_IREG(VAL)    (fSXTN(11, 64, (((VAL) & 0xf0000000) >> 21) | ((VAL >> 17) & 0x7f)))
-#define fREAD_LR() (READ_REG(HEX_REG_LR))
-#define fWRITE_LR(A) WRITE_RREG(HEX_REG_LR, A)
-#define fWRITE_FP(A) WRITE_RREG(HEX_REG_FP, A)
-#define fWRITE_SP(A) WRITE_RREG(HEX_REG_SP, A)
-#define fREAD_SP() (READ_REG(HEX_REG_SP))
-#define fREAD_LC0 (READ_REG(HEX_REG_LC0))
-#define fREAD_LC1 (READ_REG(HEX_REG_LC1))
-#define fREAD_SA0 (READ_REG(HEX_REG_SA0))
-#define fREAD_SA1 (READ_REG(HEX_REG_SA1))
-#define fREAD_FP() (READ_REG(HEX_REG_FP))
+#define fREAD_LR() (env->gpr[HEX_REG_LR])
+#define fREAD_SP() (env->gpr[HEX_REG_SP])
+#define fREAD_LC0 (env->gpr[HEX_REG_LC0])
+#define fREAD_LC1 (env->gpr[HEX_REG_LC1])
+#define fREAD_SA0 (env->gpr[HEX_REG_SA0])
+#define fREAD_SA1 (env->gpr[HEX_REG_SA1])
+#define fREAD_FP() (env->gpr[HEX_REG_FP])
 #define fREAD_GP()     (insn->extension_valid ? 0 : READ_REG(HEX_REG_GP))
-#define fREAD_GP() READ_REG(HEX_REG_GP)
-#define fREAD_PC() (READ_REG(HEX_REG_PC))
-#define fREAD_NPC() (get_npc(pkt) & (0xfffffffe))
-#define fREAD_P0() (READ_PREG(0))
-#define fREAD_P3() (READ_PREG(3))
+#define fREAD_GP() (env->gpr[HEX_REG_GP])
+#define fREAD_PC() (PC)
+#define fREAD_P0() (env->pred[0])
 #define fCHECK_PCALIGN(A)
 #define fWRITE_NPC(A) JUMP(A)
 #define fBRANCH(LOC, TYPE)          fWRITE_NPC(LOC)
 #define fJUMPR(REGNO, TARGET, TYPE) fBRANCH(TARGET, COF_TYPE_JUMPR)
 #define fHINTJR(TARGET) { /* Not modelled in qemu */}
-#define fCALL(A)    do {        fWRITE_LR(fREAD_NPC());        fBRANCH(A, COF_TYPE_CALL);    } while (0)
-#define fCALLR(A)    do {        fWRITE_LR(fREAD_NPC());        fBRANCH(A, COF_TYPE_CALLR);    } while (0)
-#define fWRITE_LOOP_REGS0(START, COUNT)    do {        WRITE_RREG(HEX_REG_LC0, COUNT);        WRITE_RREG(HEX_REG_SA0, START);    } while (0)
-#define fWRITE_LOOP_REGS1(START, COUNT)    do {        WRITE_RREG(HEX_REG_LC1, COUNT);        WRITE_RREG(HEX_REG_SA1, START);    } while (0)
-#define fWRITE_LC0(VAL) WRITE_RREG(HEX_REG_LC0, VAL)
-#define fWRITE_LC1(VAL) WRITE_RREG(HEX_REG_LC1, VAL)
 #define fSET_OVERFLOW() SET_USR_FIELD(USR_OVF, 1)
 #define fSET_LPCFG(VAL) SET_USR_FIELD(USR_LPCFG, (VAL))
 #define fGET_LPCFG (GET_USR_FIELD(USR_LPCFG))
-#define fWRITE_P0(VAL) WRITE_PREG(0, VAL)
-#define fWRITE_P1(VAL) WRITE_PREG(1, VAL)
-#define fWRITE_P2(VAL) WRITE_PREG(2, VAL)
-#define fWRITE_P3(VAL) WRITE_PREG(3, VAL)
 #define fPART1(WORK) __COMPOUND_PART1__{ WORK; }__COMPOUND_PART1__
 #define fCAST4u(A) ((uint32_t)(A))
 #define fCAST4s(A) ((int32_t)(A))
@@ -208,7 +194,7 @@
 #define fASHIFTL(SRC, SHAMT, REGSTYPE)    (((SHAMT) >= (sizeof(SRC) * 8)) ? 0 : (fCAST##REGSTYPE##s(SRC) << (SHAMT)))
 #define fLOAD(NUM, SIZE, SIGN, EA, DST)    DST = (size##SIZE##SIGN##_t)MEM_LOAD##SIZE##SIGN(EA)
 #define fMEMOP(NUM, SIZE, SIGN, EA, FNTYPE, VALUE)
-#define fGET_FRAMEKEY() READ_REG(HEX_REG_FRAMEKEY)
+#define fGET_FRAMEKEY() (env->gpr[HEX_REG_FRAMEKEY])
 #define fFRAME_SCRAMBLE(VAL) ((VAL) ^ (fCAST8u(fGET_FRAMEKEY()) << 32))
 #define fFRAME_UNSCRAMBLE(VAL) fFRAME_SCRAMBLE(VAL)
 #define fFRAMECHECK(ADDR, EA)
@@ -245,17 +231,6 @@
 #define fALIGN_REG_FIELD_VALUE(FIELD, VAL)     ((VAL) << REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
 #define fGET_REG_FIELD_MASK(FIELD)     (((1 << REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD)) - 1) << REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
 #define fREAD_REG_FIELD(REG, FIELD)     fEXTRACTU_BITS(READ_REG(REG),                    REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD),                    REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
-#define fGET_FIELD(VAL, FIELD)
-#define fSET_FIELD(VAL, FIELD, NEWVAL)
-#define fBARRIER()
-#define fSYNCH()
-#define fISYNC()
-#define fDCFETCH(REG)    do { (void)REG; } while (0) /* Nothing to do in qemu */
-#define fICINVA(REG)    do { (void)REG; } while (0) /* Nothing to do in qemu */
-#define fL2FETCH(ADDR, HEIGHT, WIDTH, STRIDE, FLAGS)
-#define fDCCLEANA(REG)    do { (void)REG; } while (0) /* Nothing to do in qemu */
-#define fDCCLEANINVA(REG)    do { (void)REG; } while (0) /* Nothing to do in qemu */
-#define fDCZEROA(REG) do { env->dczero_addr = (REG); } while (0)
 #define fBRANCH_SPECULATE_STALL(DOTNEWVAL, JUMP_COND, SPEC_DIR, HINTBITNUM,                                STRBITNUM) /* Nothing */
 #define HEXAGON_MMVEC_MACROS_H
 #define VdV      (*(MMVector *)(VdV_void))
@@ -327,10 +302,10 @@
 #define fSTORERELEASE(EA, TYPE)    do {        fV_AL_CHECK(EA, fVECSIZE() - 1);    } while (0)
 #define fLOADMMV(EA, DST) gen_vreg_load(ctx, DST##_off, EA, true)
 #define fLOADMMVU(EA, DST) gen_vreg_load(ctx, DST##_off, EA, false)
-#define fSTOREMMV(EA, SRC)    gen_vreg_store(ctx, insn, pkt, EA, SRC##_off, insn->slot, true)
+#define fSTOREMMV(EA, SRC)    gen_vreg_store(ctx, EA, SRC##_off, insn->slot, true)
 #define fSTOREMMVQ(EA, SRC, MASK)    gen_vreg_masked_store(ctx, EA, SRC##_off, MASK##_off, insn->slot, false)
 #define fSTOREMMVNQ(EA, SRC, MASK)    gen_vreg_masked_store(ctx, EA, SRC##_off, MASK##_off, insn->slot, true)
-#define fSTOREMMVU(EA, SRC)    gen_vreg_store(ctx, insn, pkt, EA, SRC##_off, insn->slot, false)
+#define fSTOREMMVU(EA, SRC)    gen_vreg_store(ctx, EA, SRC##_off, insn->slot, false)
 #define fVFOREACH(WIDTH, VAR) for (VAR = 0; VAR < fVELEM(WIDTH); VAR++)
 #define fVARRAY_ELEMENT_ACCESS(ARRAY, TYPE, INDEX)    ARRAY.v[(INDEX) / (fVECSIZE() / (sizeof(ARRAY.TYPE[0])))].TYPE[(INDEX) %    (fVECSIZE() / (sizeof(ARRAY.TYPE[0])))]
 #define fVSATDW(U, V) fVSATW(((((long long)U) << 32) | fZXTN(32, 64, V)))
@@ -355,3 +330,4 @@
 #define fUARCH_NOTE_PUMP_4X()
 #define fUARCH_NOTE_PUMP_2X()
 #define IV1DEAD()
+#define fGET10BIT(COE, VAL, POS)    do {        COE = (sextract32(VAL, 24 + 2 * POS, 2) << 8) |               extract32(VAL, POS * 8, 8);    } while (0);
