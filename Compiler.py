@@ -209,10 +209,7 @@ class Compiler:
         raise ValueError(f'Instruction {insn_name} not found.')
 
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        sys.argv += ["--help"]
-
+def parse_args() -> argparse.Namespace:
     argp = argparse.ArgumentParser(
         prog="RZIL Compiler", description="Compiles RZIL instructions from varies architectures."
     )
@@ -231,8 +228,11 @@ if __name__ == "__main__":
         help="Try to compile all instructions from the resources and print a statistic about it.",
     )
     argp.add_argument("-s", dest="skip_pp", action="store_true", help="Skip file processing steps of the preprocessor.")
+    return argp.parse_args()
 
-    args = argp.parse_args(sys.argv[1:])
+
+if __name__ == "__main__":
+    args = parse_args()
     res_path = f"./Resources/{args.arch}/" if not args.resources else args.resources
     c = Compiler(ArchEnum[args.arch.upper()], res_path)
     if not args.skip_pp:
