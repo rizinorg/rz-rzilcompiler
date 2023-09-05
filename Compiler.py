@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 import argparse
-import sys
 import traceback
 
 from lark import UnexpectedToken, UnexpectedCharacters, UnexpectedEOF
@@ -12,6 +11,7 @@ from lark.lark import Lark
 from tqdm import tqdm
 
 from ArchEnum import ArchEnum
+from Configuration import Conf, InputFile
 from HexagonExtensions import HexagonCompilerExtension
 from Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
 from Transformer.ILOpsHolder import ILOpsHolder
@@ -25,9 +25,8 @@ class Compiler:
     compiled_insns = dict()
     ext = None
 
-    def __init__(self, arch: ArchEnum, path_resources: str):
+    def __init__(self, arch: ArchEnum):
         self.arch: ArchEnum = arch
-        self.path_resources: str = path_resources
 
         self.set_extension()
         self.set_parser()
@@ -42,7 +41,7 @@ class Compiler:
 
     def set_parser(self):
         print("* Set up Lark parser.")
-        with open(self.path_resources + "/grammar.lark") as f:
+        with open(Conf.get_path(InputFile.GRAMMAR, self.arch)) as f:
             grammar = "".join(f.readlines())
 
         self.parser = Lark(grammar, start="fbody", parser="earley")
@@ -53,14 +52,13 @@ class Compiler:
     def set_preprocessor(self):
         print(f"* Set up preprocessor for: {self.arch.name}")
         if self.arch == ArchEnum.HEXAGON:
-            shortcode = self.path_resources + "/Preprocessor/shortcode.h"
+            shortcode = Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_H)
             macros = {
-                'standard': self.path_resources + "/Preprocessor/macros.h",
-                'vec': self.path_resources + "/Preprocessor/macros_mmvec.h",
-                'patches': self.path_resources + "/Preprocessor/macro_patches.h",
+                "standard": Conf.get_path(InputFile.HEXAGON_PP_MACROS_H),
+                "vec": Conf.get_path(InputFile.HEXAGON_PP_MACROS_MMVEC_H),
+                "patches": Conf.get_path(InputFile.HEXAGON_PP_MACROS_PATCHES_H),
             }
-            out_dir = self.path_resources
-            self.preprocessor = PreprocessorHexagon(shortcode, macros, out_dir)
+            self.preprocessor = PreprocessorHexagon(shortcode, macros)
         else:
             raise NotImplementedError(f"Preprocessor for arch: {self.arch.name} not known.")
 
@@ -214,13 +212,12 @@ def parse_args() -> argparse.Namespace:
         prog="RZIL Compiler", description="Compiles RZIL instructions from varies architectures."
     )
     argp.add_argument(
-        "-r",
-        dest="resources",
-        metavar="path",
-        required=False,
-        help='Path to resources. Defaults to: "./Resources/<Arch name>"',
+        "-a",
+        dest="arch",
+        choices=["Hexagon"],
+        required=True,
+        help="Architecture to compile for.",
     )
-    argp.add_argument("-a", dest="arch", choices=["Hexagon"], required=True, help="Architecture to compile for.")
     argp.add_argument(
         "-t",
         dest="test_all",
@@ -233,8 +230,7 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == "__main__":
     args = parse_args()
-    res_path = f"./Resources/{args.arch}/" if not args.resources else args.resources
-    c = Compiler(ArchEnum[args.arch.upper()], res_path)
+    c = Compiler(ArchEnum[args.arch.upper()])
     if not args.skip_pp:
         c.run_preprocessor()
     c.preprocessor.load_insn_behavior()

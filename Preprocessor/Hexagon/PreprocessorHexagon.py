@@ -5,16 +5,18 @@
 import re
 import pcpp
 
+from pathlib import Path
+
+from Configuration import InputFile, Conf
+
 
 class PreprocessorHexagon:
-
     behaviors = dict()
     patched_macros = []
 
-    def __init__(self, shortcode_path: str, macros_paths: {str: str}, out_dir: str):
-        self.shortcode_path = shortcode_path
-        self.macros_paths = macros_paths
-        self.out_dir = out_dir
+    def __init__(self, shortcode_path: Path, macros_paths: dict[str, Path]):
+        self.shortcode_path: Path = shortcode_path
+        self.macros_paths: dict[str, Path] = macros_paths
 
     def run_preprocess_steps(self):
         self.preprocess_macros()
@@ -24,14 +26,14 @@ class PreprocessorHexagon:
     def preprocess_macros(self):
         """ Remove includes. Decide between QEMU_GENERATE or not. Patch certain macros with ou version."""
         m = self.cleanup_macros()
-        with open(self.out_dir + '/patched_macros.h', 'w') as f:
-            f.writelines('\n'.join(self.patch_macros(m)))
+        with open(Conf.get_path(InputFile.HEXAGON_PP_MACROS_PATCHES_H), "w") as f:
+            f.writelines("\n".join(self.patch_macros(m)))
 
     def cleanup_macros(self) -> [str]:
         """ Removes all guards, includes and comments from the macro files."""
         res = []
-        for mp in [self.macros_paths['standard'], self.macros_paths['vec']]:
-            if 'mmvec' in mp:
+        for mp in [self.macros_paths["standard"], self.macros_paths["vec"]]:
+            if "mmvec" in mp.name:
                 is_vec_macro_file = True
             else:
                 is_vec_macro_file = False
@@ -109,24 +111,35 @@ class PreprocessorHexagon:
         return patched
 
     def preprocess_shortcode(self):
-        """ Run pcpp on shortcode + macro files. """
-        combined_path = self.out_dir + '/Preprocessor/combined.h'
-        with open(combined_path, 'w') as f:
-            with open(self.out_dir + '/patched_macros.h') as g:
+        """Run pcpp on shortcode + macro files."""
+        combined_path = Conf.get_path(InputFile.HEXAGON_PP_COMBINED_H)
+        with open(combined_path, "w") as f:
+            with open(Conf.get_path(InputFile.HEXAGON_PP_PATCHED_MACROS_H)) as g:
                 f.writelines(g.readlines())
             f.write('\n')
             with open(self.shortcode_path) as g:
                 f.writelines(g.readlines())
-        argv = ['script_name', combined_path, '-o', self.out_dir + '/Preprocessor/shortcode_resolved_tmp.h']
-        print('* Resolve macros of shortcode with pcpp...')
+        argv = [
+            "script_name",
+            str(combined_path),
+            "-o",
+            str(Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_RESOLVED_TMP_H)),
+        ]
+        print("* Resolve macros of shortcode with pcpp...")
         pcpp.pcmd.CmdPreprocessor(argv)
-        print('* Do it again due to https://github.com/ned14/pcpp/issues/71')
-        argv = ['script_name', self.out_dir + '/patched_macros.h', self.out_dir + '/Preprocessor/shortcode_resolved_tmp.h', '-o', self.out_dir + '/Preprocessor/shortcode_resolved.h']
+        print("* Do it again due to https://github.com/ned14/pcpp/issues/71")
+        argv = [
+            "script_name",
+            str(Conf.get_path(InputFile.HEXAGON_PP_PATCHED_MACROS_H)),
+            str(Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_RESOLVED_TMP_H)),
+            "-o",
+            str(Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_RESOLVED_H)),
+        ]
         pcpp.pcmd.CmdPreprocessor(argv)
 
     def load_insn_behavior(self):
-        print('* Load instruction/behavior pairs.')
-        with open(self.out_dir + '/Preprocessor/shortcode_resolved.h') as f:
+        print("* Load instruction/behavior pairs.")
+        with open(Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_RESOLVED_H)) as f:
             for line in f.readlines():
                 if line[0] == '#':
                     continue
