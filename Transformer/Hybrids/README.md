@@ -53,7 +53,7 @@ depends                 +
    │                 │
    ▼                 │
   ┌──────────────────┴──────────────┐
-  │Effect r1   h_tmp1 = i             │
+  │Effect r1   h_tmp1 = i           │
   │            i    = i + 1         │
   └──────────────────┬──────────────┘
                      │
@@ -67,21 +67,24 @@ And in RZIL:
 ```c
 Effect r1 = SEQ(
                 SETL(h_tmp1, VARL(i)),         // h_tmp1 = i
-                SETL(i, ADD(VARL(i), 1))     // i = i + 1
+                SETL(i, ADD(VARL(i), 1))       // i = i + 1
                 );
 Pure a1 = ADD(VARL(x), VARL(h_tmp1));          // (x + h_tmp1)
-Pure a2 = ADD(a1, VARL(i));                  // (x + h_tmp1) + i
+Pure a2 = ADD(a1, VARL(i));                    // (x + h_tmp1) + i
 
 // First execute r1 to back up originla i value, then a1, a2 and set z' (execute r2)
 Effect r2 = SEQ(r1, SETL(z', a2));
 ```
+
 Note that the effect `r2` depends on the previous effect `r1` which increments `i` and sets
 the `LocalVar(h_tmp1)`.
 
 So to solve these dependencies during the Transformation we:
+
 - Call a `resolve_hybrid` on Hybrid which is initialized in a Transformer method.
 The hybrid's effect is added to a `hybrid_effect_list` and a `LocalVar(h_tmp1)` is returned for the parent to consume it.
 `LocalVar(h_tmp1)` holds the value the parent should consume and is set in the just added effect.
+
 - Call `check_hybrid_dependencies` on each effect returned from a Transformer method.
 If the original effect has a dependency on a hybrid effect (`len(hybrid_effect_list) != 0`)
 it returns `Sequence(r1, r2)` instead of only the original effect.
