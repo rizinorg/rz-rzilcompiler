@@ -3,14 +3,15 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 import traceback
-from Transformer.ILOpsHolder import ILOpsHolder
+import unittest
 
+from Transformer.ILOpsHolder import ILOpsHolder
+from Transformer.RZILTransformer import RZILTransformer
+from ArchEnum import ArchEnum
+
+from lark import Lark
 from lark.exceptions import VisitError
 
-from ArchEnum import ArchEnum
-from Transformer.RZILTransformer import RZILTransformer
-from Tests.testcases import transform_test
-from lark import Lark
 
 
 class TestTransformer:

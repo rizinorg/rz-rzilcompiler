@@ -5,11 +5,10 @@ from Exceptions import OverloadException
 
 
 class CompilerExtension:
-
     def transform_insn_name(self, insn_name: str) -> str:
-        """ Some instruction names possibly need to be transformed.
-            For example if the program which invokes the compiler has different
-            instruction names than the resources.
-            E.g. dep_A2_tfs -> A2_tfs
+        """Some instruction names possibly need to be transformed.
+        For example if the program which invokes the compiler has different
+        instruction names than the resources.
+        E.g. dep_A2_tfs -> A2_tfs
         """
-        raise OverloadException('Please overload this method.')
+        raise OverloadException("Please overload this method.")

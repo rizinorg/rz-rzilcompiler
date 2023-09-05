@@ -8,7 +8,6 @@ from Transformer.Pures.CompareOp import CompareOp
 
 
 class Branch(Effect):
-
     def __init__(self, name: str, cond: Pure, then: Effect, otherwise: Effect):
         self.cond = cond
         self.then = then
@@ -17,11 +16,13 @@ class Branch(Effect):
         Effect.__init__(self, name, EffectType.BRANCH)
 
     def il_write(self):
-        """ Returns the RZIL ops to write the variable value.
+        """Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
         """
         if isinstance(self.cond, BooleanOp) or isinstance(self.cond, CompareOp):
             cond = self.cond.pure_var()
         else:
-            cond = f'NON_ZERO({self.cond.pure_var()})'
-        return f'BRANCH({cond}, {self.then.effect_var()}, {self.otherwise.effect_var()})'
+            cond = f"NON_ZERO({self.cond.pure_var()})"
+        return (
+            f"BRANCH({cond}, {self.then.effect_var()}, {self.otherwise.effect_var()})"
+        )

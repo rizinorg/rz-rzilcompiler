@@ -9,7 +9,6 @@ from Transformer.helper import cast_operands
 
 
 class Ternary(PureExec):
-
     def __init__(self, name: str, cond: Pure, then_p: Pure, else_p: Pure):
         then_p, else_p = cast_operands(a=then_p, b=else_p, immutable_a=False)
         PureExec.__init__(self, name, [cond, then_p, else_p], then_p.value_type)
@@ -18,5 +17,5 @@ class Ternary(PureExec):
         if isinstance(self.ops[0], BooleanOp) or isinstance(self.ops[0], CompareOp):
             cond = self.ops[0].il_read()
         else:
-            cond = f'NON_ZERO({self.ops[0].il_read()})'
-        return f'ITE({cond}, {self.ops[1].il_read()}, {self.ops[2].il_read()})'
+            cond = f"NON_ZERO({self.ops[0].il_read()})"
+        return f"ITE({cond}, {self.ops[1].il_read()}, {self.ops[2].il_read()})"

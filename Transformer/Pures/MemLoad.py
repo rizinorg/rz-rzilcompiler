@@ -6,7 +6,8 @@ from Transformer.Pures.PureExec import PureExec
 
 
 class MemAccessType:
-    """ Stores information about the memory access. """
+    """Stores information about the memory access."""
+
     def __init__(self, val_type: ValueType, reads_mem: bool):
         self.val_type = val_type  # Type of the value read or written
         self.reads = reads_mem  # Flag: Memory is read
@@ -14,11 +15,10 @@ class MemAccessType:
 
 
 class MemLoad(PureExec):
-
     def __init__(self, name: str, va: Pure, acc_type: MemAccessType):
         self.acc_type = acc_type
         self.va = va
         PureExec.__init__(self, name, [va], acc_type.val_type)
 
     def il_exec(self):
-        return f'LOADW({self.acc_type.val_type.bit_width}, {self.va.il_read()})'
+        return f"LOADW({self.acc_type.val_type.bit_width}, {self.va.il_read()})"

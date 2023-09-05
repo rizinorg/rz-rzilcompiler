@@ -7,7 +7,6 @@ from Transformer.ILOpsHolder import OpCounter
 
 
 class Sequence(Effect):
-
     def __init__(self, name, effects: list[Effect]):
         eff = list()
         self.effect_ops = list()
@@ -17,7 +16,7 @@ class Sequence(Effect):
             else:
                 self.effect_ops.append(e)
         if len(eff) == 0:
-            eff = [Empty(f'empty_seq_{OpCounter().get_op_count()}')]
+            eff = [Empty(f"empty_seq_{OpCounter().get_op_count()}")]
 
         self.effects = eff
         self.effect_ops += self.effects

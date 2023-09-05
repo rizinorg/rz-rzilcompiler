@@ -11,12 +11,14 @@ from Transformer.Pures.Pure import ValueType
 from Transformer.Pures.Register import RegisterAccessType, Register
 from Transformer.Pures.Variable import Variable
 from Transformer.TransformerExtension import TransformerExtension
-from Transformer.helper_hexagon import get_value_type_from_reg_type, get_value_type_by_isa_imm
+from Transformer.helper_hexagon import (
+    get_value_type_from_reg_type,
+    get_value_type_by_isa_imm,
+)
 from lark import Token, Tree
 
 
 class HexagonTransformerExtension(TransformerExtension):
-
     uses_new = False
     writes_mem = False
     reads_mem = False
@@ -79,7 +81,9 @@ class HexagonTransformerExtension(TransformerExtension):
                 self.set_uses_new()
         elif token == "pred_write":
             if len(kwargs) != 1:
-                raise NotImplementedError("If a predicate is written it always needs to give its number.")
+                raise NotImplementedError(
+                    "If a predicate is written it always needs to give its number."
+                )
             num = kwargs["pred_num"]
             self.set_writes_pred(num)
 
@@ -96,7 +100,9 @@ class HexagonTransformerExtension(TransformerExtension):
         else:
             size = 32
         v_type = ValueType(False, size)
-        return Register(alias, RegisterAccessType.UNKNOWN, v_type, is_new=is_new, is_reg_alias=True)
+        return Register(
+            alias, RegisterAccessType.UNKNOWN, v_type, is_new=is_new, is_reg_alias=True
+        )
 
     def reg(self, items):
         return self.hex_reg(items, False)
@@ -119,7 +125,9 @@ class HexagonTransformerExtension(TransformerExtension):
             access_t = RegisterAccessType(items[1].type)  # src, dest, both
         v_type = get_value_type_from_reg_type(items)
 
-        v = Register(name, access=access_t, v_type=v_type, is_new=is_new, is_explicit=is_explicit)
+        v = Register(
+            name, access=access_t, v_type=v_type, is_new=is_new, is_explicit=is_explicit
+        )
         return v
 
     def imm(self, items):
@@ -129,7 +137,7 @@ class HexagonTransformerExtension(TransformerExtension):
         return imm
 
     def get_value_type_by_resource_type(self, items):
-        if items[0] == 'int':
+        if items[0] == "int":
             return ValueType(True, 32)
         items: Tree = items[0]
         rule = items.data
@@ -256,7 +264,7 @@ class HexagonCompilerExtension(CompilerExtension):
 
 
 def get_fcn_arg_types(fcn_name: str) -> [ValueType]:
-    """ Returns a list of ValueTypes for each function argument (from left to right).
+    """Returns a list of ValueTypes for each function argument (from left to right).
     If an argument has no IL type (strings for example) the type is None.
     """
     if fcn_name == "get_npc":
@@ -271,7 +279,12 @@ def get_fcn_arg_types(fcn_name: str) -> [ValueType]:
         # QEMU function
         # uint64_t deposit64(uint64_t value, int start, int length, uint64_t fieldval)
         # Sets the bits from 'start' to 'start+length' in 'value' with 'fieldvar'
-        return [ValueType(False, 64), ValueType(True, 64), ValueType(True, 64), ValueType(False, 64)]
+        return [
+            ValueType(False, 64),
+            ValueType(True, 64),
+            ValueType(True, 64),
+            ValueType(False, 64),
+        ]
     elif fcn_name == "sextract64":
         # QEMU function
         # int64_t sextract64(uint64_t value, int start, int length)

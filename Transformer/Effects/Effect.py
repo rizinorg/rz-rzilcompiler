@@ -21,7 +21,7 @@ class EffectType(Enum):
 
 
 class Effect:
-    name: str = ''
+    name: str = ""
     type: EffectType = None
     effect_ops: list = None
 
@@ -40,20 +40,20 @@ class Effect:
         return self.name
 
     def il_write(self) -> str:
-        """ Returns the RZIL ops to write the variable value.
+        """Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
         """
-        raise OverloadException('')
+        raise OverloadException("")
 
     def il_init_var(self) -> str:
-        return f'RzILOpEffect *{self.effect_var()} = {self.il_write()};'
+        return f"RzILOpEffect *{self.effect_var()} = {self.il_write()};"
 
     def effect_var(self) -> str:
-        """ Returns the C variable name which holds the IL effect."""
+        """Returns the C variable name which holds the IL effect."""
         return self.get_name()
 
     def get_op_list(self):
-        """ Returns all Global, Local and LetPure operands this effect depends on as list. """
+        """Returns all Global, Local and LetPure operands this effect depends on as list."""
         from Transformer.Hybrids.Hybrid import Hybrid
 
         def get_ops(x):

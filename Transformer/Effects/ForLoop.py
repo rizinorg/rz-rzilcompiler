@@ -21,14 +21,13 @@ class ForLoop(Effect):
         Effect.__init__(self, name, EffectType.LOOP)
 
     def il_write(self):
-        """ Returns the RZIL ops to write the variable value.
+        """Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
         """
 
         if isinstance(self.control, BooleanOp) or isinstance(self.control, CompareOp):
             control = self.control.il_read()
         else:
-            control = f'NON_ZERO({self.control.il_read()})'
+            control = f"NON_ZERO({self.control.il_read()})"
 
-        return f'REPEAT({control}, ' \
-               f'{self.compound.effect_var()})'
+        return f"REPEAT({control}, " f"{self.compound.effect_var()})"

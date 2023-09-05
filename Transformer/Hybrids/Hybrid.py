@@ -9,9 +9,9 @@ from Transformer.Pures.PureExec import PureExec
 
 
 class HybridType(StrEnum):
-    INC = '++'
-    DEC = '--'
-    CALL = 'call'
+    INC = "++"
+    DEC = "--"
+    CALL = "call"
 
 
 class HybridSeqOrder(Enum):
@@ -21,7 +21,6 @@ class HybridSeqOrder(Enum):
 
 
 class Hybrid(PureExec, Effect):
-
     seq_order: HybridSeqOrder = HybridSeqOrder.NOT_SET
 
     def __init__(self, name: str, operands: [Pure], value_type: ValueType):

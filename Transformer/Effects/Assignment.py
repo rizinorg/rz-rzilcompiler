@@ -13,21 +13,21 @@ from Transformer.Pures.Register import Register
 
 
 class AssignmentType(StrEnum):
-    ASSIGN = '='
-    ASSIGN_ADD = '+='
-    ASSIGN_SUB = '-='
-    ASSIGN_MUL = '*='
-    ASSIGN_DIV = '/='
-    ASSIGN_RIGHT = '>>='
-    ASSIGN_LEFT = '<<='
-    ASSIGN_MOD = '%='
-    ASSIGN_AND = '&='
-    ASSIGN_XOR = '^='
-    ASSIGN_OR = '|='
+    ASSIGN = "="
+    ASSIGN_ADD = "+="
+    ASSIGN_SUB = "-="
+    ASSIGN_MUL = "*="
+    ASSIGN_DIV = "/="
+    ASSIGN_RIGHT = ">>="
+    ASSIGN_LEFT = "<<="
+    ASSIGN_MOD = "%="
+    ASSIGN_AND = "&="
+    ASSIGN_XOR = "^="
+    ASSIGN_OR = "|="
 
 
 class Assignment(Effect):
-    name = ''
+    name = ""
     type = None
     dest = None
     src = None
@@ -43,51 +43,91 @@ class Assignment(Effect):
         elif dest.type == PureType.GLOBAL:
             Effect.__init__(self, name, EffectType.SETG)
         else:
-            raise NotImplementedError(f'Dest type {self.dest.type} not handled.')
+            raise NotImplementedError(f"Dest type {self.dest.type} not handled.")
         if isinstance(self.dest, Register):
             self.dest.add_write_property()
         self.set_src()
         self.dest, self.src = cast_operands(a=self.dest, b=self.src, immutable_a=True)
 
     def set_src(self):
-        """ Update the src in case of +=, -= and similar assignments. """
+        """Update the src in case of +=, -= and similar assignments."""
         if self.assign_type == AssignmentType.ASSIGN:
             return
         elif self.assign_type == AssignmentType.ASSIGN_ADD:
-            self.src = ArithmeticOp(f'add{self.src.get_name()}{self.dest.get_name()}',
-                                    self.src, self.dest, ArithmeticType.ADD)
+            self.src = ArithmeticOp(
+                f"add{self.src.get_name()}{self.dest.get_name()}",
+                self.src,
+                self.dest,
+                ArithmeticType.ADD,
+            )
         elif self.assign_type == AssignmentType.ASSIGN_SUB:
-            self.src = ArithmeticOp(f'sub{self.src.get_name()}{self.dest.get_name()}',
-                                    self.src, self.dest, ArithmeticType.SUB)
+            self.src = ArithmeticOp(
+                f"sub{self.src.get_name()}{self.dest.get_name()}",
+                self.src,
+                self.dest,
+                ArithmeticType.SUB,
+            )
         elif self.assign_type == AssignmentType.ASSIGN_MUL:
-            self.src = ArithmeticOp(f'mul{self.src.get_name()}{self.dest.get_name()}',
-                                    self.src, self.dest, ArithmeticType.MUL)
+            self.src = ArithmeticOp(
+                f"mul{self.src.get_name()}{self.dest.get_name()}",
+                self.src,
+                self.dest,
+                ArithmeticType.MUL,
+            )
         elif self.assign_type == AssignmentType.ASSIGN_MOD:
-            self.src = ArithmeticOp(f'mod{self.src.get_name()}{self.dest.get_name()}',
-                                    self.src, self.dest, ArithmeticType.MOD)
+            self.src = ArithmeticOp(
+                f"mod{self.src.get_name()}{self.dest.get_name()}",
+                self.src,
+                self.dest,
+                ArithmeticType.MOD,
+            )
         elif self.assign_type == AssignmentType.ASSIGN_DIV:
-            self.src = ArithmeticOp(f'div{self.src.get_name()}{self.dest.get_name()}',
-                                    self.src, self.dest, ArithmeticType.DIV)
+            self.src = ArithmeticOp(
+                f"div{self.src.get_name()}{self.dest.get_name()}",
+                self.src,
+                self.dest,
+                ArithmeticType.DIV,
+            )
         elif self.assign_type == AssignmentType.ASSIGN_RIGHT:
-            self.src = BitOp(f'shiftr{self.src.get_name()}{self.dest.get_name()}',
-                                    self.src, self.dest, BitOperationType.RSHIFT)
+            self.src = BitOp(
+                f"shiftr{self.src.get_name()}{self.dest.get_name()}",
+                self.src,
+                self.dest,
+                BitOperationType.RSHIFT,
+            )
         elif self.assign_type == AssignmentType.ASSIGN_LEFT:
-            self.src = BitOp(f'shiftl{self.src.get_name()}{self.dest.get_name()}',
-                             self.src, self.dest, BitOperationType.LSHIFT)
+            self.src = BitOp(
+                f"shiftl{self.src.get_name()}{self.dest.get_name()}",
+                self.src,
+                self.dest,
+                BitOperationType.LSHIFT,
+            )
         elif self.assign_type == AssignmentType.ASSIGN_AND:
-            self.src = BitOp(f'and{self.src.get_name()}{self.dest.get_name()}',
-                             self.src, self.dest, BitOperationType.AND)
+            self.src = BitOp(
+                f"and{self.src.get_name()}{self.dest.get_name()}",
+                self.src,
+                self.dest,
+                BitOperationType.AND,
+            )
         elif self.assign_type == AssignmentType.ASSIGN_OR:
-            self.src = BitOp(f'or{self.src.get_name()}{self.dest.get_name()}',
-                             self.src, self.dest, BitOperationType.OR)
+            self.src = BitOp(
+                f"or{self.src.get_name()}{self.dest.get_name()}",
+                self.src,
+                self.dest,
+                BitOperationType.OR,
+            )
         elif self.assign_type == AssignmentType.ASSIGN_XOR:
-            self.src = BitOp(f'xor{self.src.get_name()}{self.dest.get_name()}',
-                             self.src, self.dest, BitOperationType.XOR)
+            self.src = BitOp(
+                f"xor{self.src.get_name()}{self.dest.get_name()}",
+                self.src,
+                self.dest,
+                BitOperationType.XOR,
+            )
         else:
-            raise NotImplementedError(f'Assign type {self.assign_type} not handled.')
+            raise NotImplementedError(f"Assign type {self.assign_type} not handled.")
 
     def il_write(self):
-        """ Returns the RZIL ops to write the variable value.
+        """Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
         """
         from Transformer.Pures.Immediate import Immediate
@@ -100,17 +140,19 @@ class Assignment(Effect):
         else:
             read = self.src.il_read()
         if self.type == EffectType.SETG:
-            return f'HEX_WRITE_GLOBAL({self.dest.vm_id(True)}, {read})'
+            return f"HEX_WRITE_GLOBAL({self.dest.vm_id(True)}, {read})"
         elif self.type == EffectType.SETL:
-            return f'SETL({self.dest.vm_id(True)}, {read})'
+            return f"SETL({self.dest.vm_id(True)}, {read})"
         else:
-            raise NotImplementedError(f'Effect type {self.type} not handled.')
+            raise NotImplementedError(f"Effect type {self.type} not handled.")
 
     def set_dest_type(self, t: ValueType):
-        """ For "<type> Assignment" declarations the Assignment gets parsed first.
+        """For "<type> Assignment" declarations the Assignment gets parsed first.
         Afterwards the type. Here we update the type of the destination variable.
         """
         if self.dest.type != PureType.LOCAL and self.dest.type != PureType.LET:
-            raise NotImplementedError(f"Updating the type of a {self.dest.type} is not allowed.")
+            raise NotImplementedError(
+                f"Updating the type of a {self.dest.type} is not allowed."
+            )
         self.dest.set_value_type(t)
         self.dest, self.src = cast_operands(a=self.dest, b=self.src, immutable_a=True)

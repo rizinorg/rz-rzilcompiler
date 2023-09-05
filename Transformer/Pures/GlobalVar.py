@@ -5,7 +5,6 @@ from Transformer.Pures.Pure import Pure, PureType, ValueType
 
 
 class GlobalVar(Pure):
-
     def __init__(self, name: str, v_type: ValueType):
         Pure.__init__(self, name, PureType.GLOBAL, v_type)
 
@@ -13,7 +12,7 @@ class GlobalVar(Pure):
         if self.reads < 1:  # First use of this variable
             ret = self.pure_var()
         else:
-            ret = f'DUP({self.pure_var()})'
+            ret = f"DUP({self.pure_var()})"
 
         self.reads += 1
         return ret

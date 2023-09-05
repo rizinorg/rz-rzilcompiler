@@ -37,7 +37,7 @@ class Compiler:
         if self.arch == ArchEnum.HEXAGON:
             self.ext = HexagonCompilerExtension()
         else:
-            raise NotImplementedError(f'No compiler extension for {self.arch} given.')
+            raise NotImplementedError(f"No compiler extension for {self.arch} given.")
 
     def set_parser(self):
         print("* Set up Lark parser.")
@@ -60,7 +60,9 @@ class Compiler:
             }
             self.preprocessor = PreprocessorHexagon(shortcode, macros)
         else:
-            raise NotImplementedError(f"Preprocessor for arch: {self.arch.name} not known.")
+            raise NotImplementedError(
+                f"Preprocessor for arch: {self.arch.name} not known."
+            )
 
     def run_preprocessor(self):
         print("* Run preprocessor...")
@@ -104,7 +106,7 @@ class Compiler:
                 try:
                     tree = self.parser.parse(behavior[0]).pretty()
                 except Exception:
-                    tree = 'No tree present'
+                    tree = "No tree present"
                 tup = (insn, behavior, e, tree)
                 if e_name in excs:
                     excs[e_name].append(tup)
@@ -112,22 +114,22 @@ class Compiler:
                     excs[e_name] = [tup]
 
         if len(excs) == 0:
-            print('* All instructions compiled successfully!')
+            print("* All instructions compiled successfully!")
             return
 
         for k, v in stats.items():
             print(f'{k} = {v["count"]}')
         stats = dict()
-        for v_exc in excs['VisitError']:
+        for v_exc in excs["VisitError"]:
             err: VisitError = v_exc[2]
             exc_str = str(err.orig_exc)
             if exc_str in stats:
                 stats[exc_str] += 1
             else:
                 stats[exc_str] = 1
-        print('Visit Errors:')
+        print("Visit Errors:")
         for k, x in stats.items():
-            print(f'\t{x} - {k}')
+            print(f"\t{x} - {k}")
 
         self.fix_compile_exceptions(excs)
 
@@ -138,7 +140,7 @@ class Compiler:
         i = 0
         while True:
             inp = input("Choose exception type print (number or q: quit)\n > ")
-            if inp == 'q':
+            if inp == "q":
                 exit()
             try:
                 i = int(inp)
@@ -166,29 +168,33 @@ class Compiler:
                     h += 1
                 elif cmd == "q":
                     exit()
-                elif cmd == 'b':
+                elif cmd == "b":
                     Compiler.fix_compile_exceptions(exceptions)
 
     def compile_insn(self, insn_name: str) -> [str]:
-        """ Compiles the instruction <insn_name> and returns the RZIL code.
-            An instruction of certain architectures can have multiple behaviors,
-            so this method returns a list of compiled behaviors.
-            For most instructions this list has a length of 1.
+        """Compiles the instruction <insn_name> and returns the RZIL code.
+        An instruction of certain architectures can have multiple behaviors,
+        so this method returns a list of compiled behaviors.
+        For most instructions this list has a length of 1.
         """
         try:
             insn = self.ext.transform_insn_name(insn_name)
             behaviors = self.preprocessor.get_insn_behavior(insn)
             if not behaviors:
-                raise NotImplementedError(f"Behavior for instruction {insn_name} not known by the preprocessor.")
+                raise NotImplementedError(
+                    f"Behavior for instruction {insn_name} not known by the preprocessor."
+                )
 
             parse_trees = [self.parser.parse(behavior) for behavior in behaviors]
-            self.compiled_insns[insn] = {'rzil': [], 'meta': [], 'parse_trees': []}
+            self.compiled_insns[insn] = {"rzil": [], "meta": [], "parse_trees": []}
             for pt in parse_trees:
                 self.transformer.reset()
                 ILOpsHolder().clear()
-                self.compiled_insns[insn]['rzil'].append(self.transformer.transform(pt))
-                self.compiled_insns[insn]['meta'].append(self.transformer.ext.get_meta())
-                self.compiled_insns[insn]['parse_trees'].append(pt.pretty())
+                self.compiled_insns[insn]["rzil"].append(self.transformer.transform(pt))
+                self.compiled_insns[insn]["meta"].append(
+                    self.transformer.ext.get_meta()
+                )
+                self.compiled_insns[insn]["parse_trees"].append(pt.pretty())
             return self.compiled_insns[insn]
         except Exception as e:
             raise e
@@ -198,18 +204,19 @@ class Compiler:
 
     def get_insn_rzil(self, insn_name: str) -> [str]:
         if insn_name in self.compiled_insns:
-            return self.compiled_insns[insn_name]['behavior']
-        raise ValueError(f'Instruction {insn_name} not found.')
+            return self.compiled_insns[insn_name]["behavior"]
+        raise ValueError(f"Instruction {insn_name} not found.")
 
     def get_insn_meta(self, insn_name: str) -> str:
         if insn_name in self.compiled_insns:
-            return self.compiled_insns[insn_name]['meta']
-        raise ValueError(f'Instruction {insn_name} not found.')
+            return self.compiled_insns[insn_name]["meta"]
+        raise ValueError(f"Instruction {insn_name} not found.")
 
 
 def parse_args() -> argparse.Namespace:
     argp = argparse.ArgumentParser(
-        prog="RZIL Compiler", description="Compiles RZIL instructions from varies architectures."
+        prog="RZIL Compiler",
+        description="Compiles RZIL instructions from varies architectures.",
     )
     argp.add_argument(
         "-a",
@@ -224,7 +231,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Try to compile all instructions from the resources and print a statistic about it.",
     )
-    argp.add_argument("-s", dest="skip_pp", action="store_true", help="Skip file processing steps of the preprocessor.")
+    argp.add_argument(
+        "-s",
+        dest="skip_pp",
+        action="store_true",
+        help="Skip file processing steps of the preprocessor.",
+    )
     return argp.parse_args()
 
 

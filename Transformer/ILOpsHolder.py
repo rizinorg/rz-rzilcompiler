@@ -48,7 +48,7 @@ class ILOpsHolder(object):
             # C code used only inline
             pass
         else:
-            raise NotImplementedError(f'Can not add Pure of type {pure.type}')
+            raise NotImplementedError(f"Can not add Pure of type {pure.type}")
 
     def add_effect(self, effect: Effect):
         self.write_ops[effect.get_name()] = effect
@@ -64,7 +64,7 @@ class ILOpsHolder(object):
             raise ValueError(f'Did not find op: "{name}"!')
 
     def clear(self):
-        """ Removes all previously added ops. """
+        """Removes all previously added ops."""
         self.read_ops.clear()
         self.exec_ops.clear()
         self.write_ops.clear()
