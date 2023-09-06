@@ -1,8 +1,6 @@
 #define fSTORE_LOCKED(NUM, SIZE, EA, SRC, PRED)     gen_store_conditional##SIZE(ctx, PRED, EA, SRC);
 #define fLOAD_LOCKED(NUM, SIZE, SIGN, EA, DST)     gen_load_locked##SIZE##SIGN(DST, EA, ctx->mem_idx);
 #define PRED_LOAD_CANCEL(PRED, EA)     gen_pred_cancel(PRED, insn->is_endloop ? 4 : insn->slot)
-#define fLSBNEW1        (ALIAS_NEW_VAL(P1) & 1)
-#define fLSBNEW0        (ALIAS_NEW_VAL(P0) & 1)
 #define fREAD_NPC() (get_npc(pkt) & (0xfffffffe))
 #define ALIAS_NEW_VAL(A) A##_NEW
 #define HEX_REG_UTIMERHI   HEX_REG_ALIAS_UTIMERHI
@@ -37,6 +35,70 @@
 #define RF_OFFSET HEX_RF_OFFSET
 #define RF_WIDTH HEX_RF_WIDTH
 #define DEF_SHORTCODE(TAG, SHORTCODE) insn(TAG, SHORTCODE)
+#define fLSBOLD(VAL) (fGETBIT(0, VAL))
+#define fSATH(VAL) fSATN(16, VAL)
+#define fSATUH(VAL) fSATUN(16, VAL)
+#define fVSATH(VAL) fVSATN(16, VAL)
+#define fVSATUH(VAL) fVSATUN(16, VAL)
+#define fSATUB(VAL) fSATUN(8, VAL)
+#define fSATB(VAL) fSATN(8, VAL)
+#define fVSATUB(VAL) fVSATUN(8, VAL)
+#define fVSATB(VAL) fVSATN(8, VAL)
+#define fCALL(A) fWRITE_LR(fREAD_NPC()); fWRITE_NPC(A);
+#define fCALLR(A) fWRITE_LR(fREAD_NPC()); fWRITE_NPC(A);
+#define fCAST2_8s(A) fSXTN(16, 64, A)
+#define fCAST2_8u(A) fZXTN(16, 64, A)
+#define fVSATW(A) fVSATN(32, fCAST8_8s(A))
+#define fSATW(A) fSATN(32, fCAST8_8s(A))
+#define fVSAT(A) fVSATN(32, A)
+#define fSAT(A) fSATN(32, A)
+#define f8BITSOF(VAL) ((VAL) ? 0xff : 0x00)
+#define fREAD_GP()     (insn->extension_valid ? 0 : READ_REG(HEX_REG_GP))
+#define fCLIP(DST, SRC, U) (DST = fMIN((1 << U) - 1, fMAX(SRC, -(1 << U))))
+#define fBIDIR_ASHIFTL(SRC, SHAMT, REGSTYPE)    ((SHAMT > 0) ?     (fCAST##REGSTYPE##s(SRC) << SHAMT) :     (fCAST##REGSTYPE##s(SRC) >> -SHAMT))
+#define fBIDIR_LSHIFTL(SRC, SHAMT, REGSTYPE)    ((SHAMT > 0) ?     (fCAST##REGSTYPE##u(SRC) << SHAMT) :     (fCAST##REGSTYPE##u(SRC) >>> -SHAMT))
+#define fBIDIR_ASHIFTR(SRC, SHAMT, REGSTYPE)    ((SHAMT > 0) ?     (fCAST##REGSTYPE##s(SRC) >> SHAMT) :     (fCAST##REGSTYPE##s(SRC) << -SHAMT))
+#define fBIDIR_SHIFTR(SRC, SHAMT, REGSTYPE)    (((SHAMT) < 0) ? ((fCAST##REGSTYPE(SRC) << ((-(SHAMT)) - 1)) << 1)                   : (fCAST##REGSTYPE(SRC) >> (SHAMT)))
+#define fBIDIR_LSHIFTR(SRC, SHAMT, REGSTYPE)    fBIDIR_SHIFTR(SRC, SHAMT, REGSTYPE##u)
+#define fSATVALN(N, VAL)    fSET_OVERFLOW(        ((VAL) < 0) ? (-(1LL << ((N) - 1))) : ((1LL << ((N) - 1)) - 1)    )
+#define fSAT_ORIG_SHL(A, ORIG_REG)    (((fCAST4s((fSAT(A)) ^ (fCAST4s(ORIG_REG)))) < 0)        ? fSATVALN(32, (fCAST4s(ORIG_REG)))        : ((((ORIG_REG) > 0) && ((A) == 0)) ? fSATVALN(32, (ORIG_REG))                                            : fSAT(A)))
+#define fBIDIR_ASHIFTR_SAT(SRC, SHAMT, REGSTYPE)    (((SHAMT) < 0) ? fSAT_ORIG_SHL((fCAST##REGSTYPE##s(SRC)                        << ((-(SHAMT)) - 1)) << 1, (SRC))                   : (fCAST##REGSTYPE##s(SRC) >> (SHAMT)))
+#define fBIDIR_ASHIFTL_SAT(SRC, SHAMT, REGSTYPE)    (((SHAMT) < 0)     ? ((fCAST##REGSTYPE##s(SRC) >> ((-(SHAMT)) - 1)) >> 1)     : fSAT_ORIG_SHL(fCAST##REGSTYPE##s(SRC) << (SHAMT), (SRC)))
+#define fEXTRACTU_BIDIR(INREG, WIDTH, OFFSET)    (fZXTN(WIDTH, 32, fBIDIR_LSHIFTR((INREG), (OFFSET), 4_8)))
+#define fLSBNEW0        (ALIAS_NEW_VAL(P0) & 1)
+#define fLSBNEW1        (ALIAS_NEW_VAL(P1) & 1)
+#define fLSBOLDNOT(VAL) fGETBIT(0, ~VAL)
+#define fLSBNEWNOT(PRED) (fLSBNEW(~PRED))
+#define fLSBNEW0NOT fLSBNEW(~P0N)
+#define fLSBNEW1NOT fLSBNEW(~P1N)
+#define fPCALIGN(IMM) (IMM = IMM & ~3)
+#define fWRITE_LR(A) (LR = A)
+#define fWRITE_FP(A) (FP = A)
+#define fWRITE_SP(A) (SP = A)
+#define fWRITE_LOOP_REGS0(START, COUNT) SA0 = START; (LC0 = COUNT)
+#define fWRITE_LOOP_REGS1(START, COUNT) SA1 = START; (LC1 = COUNT)
+#define fWRITE_LC1(VAL) (LC1 = VAL)
+#define fSET_LPCFG(VAL) (USR.LPCFG = VAL)
+#define fWRITE_P0(VAL) P0 = VAL;
+#define fWRITE_P1(VAL) P1 = VAL;
+#define fWRITE_P3(VAL) P3 = VAL;
+#define fEA_RI(REG, IMM) (EA = REG + IMM)
+#define fEA_RRs(REG, REG2, SCALE) (EA = REG + (REG2 << SCALE))
+#define fEA_IRs(IMM, REG, SCALE) (EA = IMM + (REG << SCALE))
+#define fEA_IMM(IMM) (EA = IMM)
+#define fEA_REG(REG) (EA = REG)
+#define fEA_BREVR(REG) (EA = fbrev(REG))
+#define fEA_GPI(IMM) (EA = fREAD_GP() + IMM)
+#define fPM_I(REG, IMM) (REG = REG + IMM)
+#define fPM_M(REG, MVAL) (REG = REG + MVAL)
+#define fROUND(A) (A + 0x8000)
+#define fSCALE(N, A) (A << N)
+#define fASHIFTR(SRC, SHAMT, REGSTYPE) (fCAST##REGSTYPE##s(SRC) >> SHAMT)
+#define fLSHIFTR(SRC, SHAMT, REGSTYPE) (SRC >>> SHAMT)
+#define fROTL(SRC, SHAMT, REGSTYPE) fROTL(SRC, SHAMT)
+#define fASHIFTL(SRC, SHAMT, REGSTYPE) (fCAST##REGSTYPE##s(SRC) << SHAMT)
+#define fHIDE(A) A
+#define fBRANCH_SPECULATE_STALL(A, B, C, D, E)
 #define HEXAGON_MACROS_H
 #define PCALIGN 4
 #define PCALIGN_MASK (PCALIGN - 1)
@@ -104,7 +166,7 @@
 #define fREAD_SA0 (env->gpr[HEX_REG_SA0])
 #define fREAD_SA1 (env->gpr[HEX_REG_SA1])
 #define fREAD_FP() (env->gpr[HEX_REG_FP])
-#define fREAD_GP()     (insn->extension_valid ? 0 : READ_REG(HEX_REG_GP))
+#define fREAD_GP()    (insn->extension_valid ? 0 : env->gpr[HEX_REG_GP])
 #define fREAD_GP() (env->gpr[HEX_REG_GP])
 #define fREAD_PC() (PC)
 #define fREAD_P0() (env->pred[0])

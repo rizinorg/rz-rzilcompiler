@@ -32,6 +32,7 @@ class PreprocessorHexagon:
         """Removes all guards, includes and comments from the macro files."""
         res = []
         for mp in [
+            Conf.get_path(InputFile.HEXAGON_PP_MACROS_INC),
             Conf.get_path(InputFile.HEXAGON_PP_MACROS_H),
             Conf.get_path(InputFile.HEXAGON_PP_MACROS_MMVEC_H),
         ]:

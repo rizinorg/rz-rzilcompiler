@@ -19,6 +19,7 @@ class InputFile(StrEnum):
     HEXAGON_PP_COMBINED_H = "<REPO>/Resources/Hexagon/Preprocessor/combined.h"
     HEXAGON_PP_MACROS_H = "<REPO>/Resources/Hexagon/Preprocessor/macros.h"
     HEXAGON_PP_MACROS_MMVEC_H = "<REPO>/Resources/Hexagon/Preprocessor/macros_mmvec.h"
+    HEXAGON_PP_MACROS_INC = "<REPO>/Resources/Hexagon/Preprocessor/macros.inc"
     HEXAGON_PP_PATCHES_MACROS_H = (
         "<REPO>/Resources/Hexagon/Preprocessor/patches_macros.h"
     )
