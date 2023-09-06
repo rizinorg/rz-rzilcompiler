@@ -53,12 +53,7 @@ class Compiler:
         print(f"* Set up preprocessor for: {self.arch.name}")
         if self.arch == ArchEnum.HEXAGON:
             shortcode = Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_H)
-            macros = {
-                "standard": Conf.get_path(InputFile.HEXAGON_PP_MACROS_H),
-                "vec": Conf.get_path(InputFile.HEXAGON_PP_MACROS_MMVEC_H),
-                "patches": Conf.get_path(InputFile.HEXAGON_PP_MACROS_PATCHES_H),
-            }
-            self.preprocessor = PreprocessorHexagon(shortcode, macros)
+            self.preprocessor = PreprocessorHexagon(shortcode)
         else:
             raise NotImplementedError(
                 f"Preprocessor for arch: {self.arch.name} not known."

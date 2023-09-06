@@ -14,9 +14,8 @@ class PreprocessorHexagon:
     behaviors = dict()
     patched_macros = []
 
-    def __init__(self, shortcode_path: Path, macros_paths: dict[str, Path]):
+    def __init__(self, shortcode_path: Path):
         self.shortcode_path: Path = shortcode_path
-        self.macros_paths: dict[str, Path] = macros_paths
 
     def run_preprocess_steps(self):
         self.preprocess_macros()
@@ -26,13 +25,16 @@ class PreprocessorHexagon:
     def preprocess_macros(self):
         """Remove includes. Decide between QEMU_GENERATE or not. Patch certain macros with ou version."""
         m = self.cleanup_macros()
-        with open(Conf.get_path(InputFile.HEXAGON_PP_MACROS_PATCHES_H), "w") as f:
+        with open(Conf.get_path(InputFile.HEXAGON_PP_MACROS_PATCHED_H), "w") as f:
             f.writelines("\n".join(self.patch_macros(m)))
 
     def cleanup_macros(self) -> [str]:
         """Removes all guards, includes and comments from the macro files."""
         res = []
-        for mp in [self.macros_paths["standard"], self.macros_paths["vec"]]:
+        for mp in [
+            Conf.get_path(InputFile.HEXAGON_PP_MACROS_H),
+            Conf.get_path(InputFile.HEXAGON_PP_MACROS_MMVEC_H),
+        ]:
             if "mmvec" in mp.name:
                 is_vec_macro_file = True
             else:
@@ -83,7 +85,7 @@ class PreprocessorHexagon:
 
     def patch_macros(self, macros: [str]):
         # Read macro patches
-        with open(self.macros_paths["patches"]) as f:
+        with open(Conf.get_path(InputFile.HEXAGON_PP_PATCHES_MACROS_H)) as f:
             cont = "".join(f.readlines())
             cont = re.sub(r"\\\s*\n", "", cont)
 
@@ -114,7 +116,7 @@ class PreprocessorHexagon:
         """Run pcpp on shortcode + macro files."""
         combined_path = Conf.get_path(InputFile.HEXAGON_PP_COMBINED_H)
         with open(combined_path, "w") as f:
-            with open(Conf.get_path(InputFile.HEXAGON_PP_PATCHED_MACROS_H)) as g:
+            with open(Conf.get_path(InputFile.HEXAGON_PP_MACROS_PATCHED_H)) as g:
                 f.writelines(g.readlines())
             f.write("\n")
             with open(self.shortcode_path) as g:
@@ -130,7 +132,7 @@ class PreprocessorHexagon:
         print("* Do it again due to https://github.com/ned14/pcpp/issues/71")
         argv = [
             "script_name",
-            str(Conf.get_path(InputFile.HEXAGON_PP_PATCHED_MACROS_H)),
+            str(Conf.get_path(InputFile.HEXAGON_PP_MACROS_PATCHED_H)),
             str(Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_RESOLVED_TMP_H)),
             "-o",
             str(Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_RESOLVED_H)),

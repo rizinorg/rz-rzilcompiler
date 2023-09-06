@@ -19,8 +19,8 @@ class InputFile(StrEnum):
     HEXAGON_PP_COMBINED_H = "<REPO>/Resources/Hexagon/Preprocessor/combined.h"
     HEXAGON_PP_MACROS_H = "<REPO>/Resources/Hexagon/Preprocessor/macros.h"
     HEXAGON_PP_MACROS_MMVEC_H = "<REPO>/Resources/Hexagon/Preprocessor/macros_mmvec.h"
-    HEXAGON_PP_MACROS_PATCHES_H = (
-        "<REPO>/Resources/Hexagon/Preprocessor/macros_patches.h"
+    HEXAGON_PP_PATCHES_MACROS_H = (
+        "<REPO>/Resources/Hexagon/Preprocessor/patches_macros.h"
     )
     HEXAGON_PP_SHORTCODE_H = "<REPO>/Resources/Hexagon/Preprocessor/shortcode.h"
     HEXAGON_PP_SHORTCODE_RESOLVED_H = (
@@ -29,8 +29,8 @@ class InputFile(StrEnum):
     HEXAGON_PP_SHORTCODE_RESOLVED_TMP_H = (
         "<REPO>/Resources/Hexagon/Preprocessor/shortcode_resolved_tmp.h"
     )
-    HEXAGON_PP_PATCHED_MACROS_H = (
-        "<REPO>/Resources/Hexagon/Preprocessor/patched_macros.h"
+    HEXAGON_PP_MACROS_PATCHED_H = (
+        "<REPO>/Resources/Hexagon/Preprocessor/macros_patched.h"
     )
 
 
