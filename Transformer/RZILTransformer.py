@@ -315,7 +315,7 @@ class RZILTransformer(Transformer):
         return v
 
     def multiplicative_expr(self, items):
-        self.ext.set_token_meta_data("additive_expr")
+        self.ext.set_token_meta_data("multiplicative_expr")
 
         a = items[0]
         b = items[2]
