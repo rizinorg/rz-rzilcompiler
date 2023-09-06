@@ -164,7 +164,7 @@ class PreprocessorHexagon:
         return None
 
     @staticmethod
-    def split_compounds(insn_beh: str) -> (str, str, str, str):
+    def split_compounds(insn_beh: str) -> tuple[str, str]:
         """Compound instructions have two parts. In the shortcode the first part is surrounded
         with "__COMPOUND_PART1__".
         We move this part to its own instruction and return <insn>_part1, <insn>_part2
