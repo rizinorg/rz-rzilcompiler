@@ -21,7 +21,7 @@ from lark.exceptions import (
 
 
 class TestTransformer(unittest.TestCase):
-    debug = True
+    debug = False
 
     def test_transform_insns_hexagon(self):
         """
@@ -37,6 +37,7 @@ class TestTransformer(unittest.TestCase):
             exc_visit_error_raised = False
             exc_general_raised = False
             exception = None
+            print(f"Compile: {insn}")
             try:
                 tree = parser.parse(behavior)
                 RZILTransformer(ArchEnum.HEXAGON).transform(tree)
