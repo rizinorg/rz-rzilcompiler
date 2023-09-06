@@ -170,7 +170,7 @@
 #define fREAD_GP()    (insn->extension_valid ? 0 : env->gpr[HEX_REG_GP])
 #define fREAD_GP() (env->gpr[HEX_REG_GP])
 #define fREAD_PC() (PC)
-#define fREAD_P0 READ_PREG(0)
+#define fREAD_P0() READ_PREG(0)
 #define fCHECK_PCALIGN(A)
 #define fWRITE_NPC(A) JUMP(A)
 #define fBRANCH(LOC, TYPE)          fWRITE_NPC(LOC)

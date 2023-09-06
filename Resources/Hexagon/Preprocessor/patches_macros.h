@@ -38,7 +38,7 @@
 #define fREAD_GP() \
     (insn->extension_valid ? 0 : READ_REG(HEX_REG_GP))
 
-#define fREAD_P0 READ_PREG(0)
+#define fREAD_P0() READ_PREG(0)
 
 #define fREAD_LR() (READ_REG(HEX_REG_LR))
 #define fREAD_SP() (READ_REG(HEX_REG_SP))
