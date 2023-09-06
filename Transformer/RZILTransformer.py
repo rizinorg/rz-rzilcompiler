@@ -444,7 +444,7 @@ class RZILTransformer(Transformer):
         if identifier in holder.read_ops:
             return holder.read_ops[identifier]
         if self.ext.is_special_id(identifier):
-            return self.ext.special_identifier_to_local_var(identifier)
+            return self.ext.special_identifier_to_var(identifier)
         # Return string. It could be a variable or a function call.
         return identifier
 

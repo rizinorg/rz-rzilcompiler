@@ -29,7 +29,11 @@ class HexagonTransformerExtension(TransformerExtension):
 
     def __init__(self):
         # Variables names used in the shortcode with special meaning.
-        self.spec_ids = {"EffectiveAddress": "EA", "iterator_vars": ["i", "k", "j"]}
+        self.spec_ids = {
+            "EffectiveAddress": "EA",
+            "iterator_vars": ["i", "k", "j"],
+            "program_counter": ["pc", "PC"],
+        }
 
     def set_uses_new(self):
         if not self.uses_new:
@@ -230,14 +234,24 @@ class HexagonTransformerExtension(TransformerExtension):
             return True
         elif ident in self.spec_ids["iterator_vars"]:
             return True
+        elif ident in self.spec_ids["program_counter"]:
+            return True
         else:
             return False
 
-    def special_identifier_to_local_var(self, identifier):
+    def special_identifier_to_var(self, identifier):
         if identifier == self.spec_ids["EffectiveAddress"]:
             return Variable("EA", ValueType(False, 32))
         elif identifier in self.spec_ids["iterator_vars"]:
             return Variable(identifier, ValueType(False, 32))
+        elif identifier in self.spec_ids["program_counter"]:
+            return Register(
+                "pc",
+                access=RegisterAccessType.R,
+                v_type=ValueType(False, 32),
+                is_new=False,
+                is_explicit=True,
+            )
         raise NotImplementedError(f"Special identifier {identifier} not handled.")
 
 
