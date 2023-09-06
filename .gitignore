@@ -1,5 +1,6 @@
 .idea/
 .venv/
+.coverage
 .vscode/
 *.egg-info/
 **/__pycache__/
