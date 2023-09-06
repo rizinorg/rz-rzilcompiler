@@ -17,7 +17,7 @@ pip3 install -e .
 **Compile all instructions and show exceptions which occurred.**
 
 ```bash
-./Compile.py -a Hexagon -t
+./Compiler.py -a Hexagon -t
 ```
 
 **Run tests**

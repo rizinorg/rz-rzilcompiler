@@ -22,7 +22,7 @@ from lark.exceptions import (
 
 class TestTransformer(unittest.TestCase):
     debug = False
-    insns_bahvior: dict[str:tuple] = dict()
+    insn_behavior: dict[str:tuple] = dict()
 
     @classmethod
     def setUpClass(cls):
@@ -39,7 +39,7 @@ class TestTransformer(unittest.TestCase):
                 else:
                     behaviors = [insn_behavior]
 
-                cls.insns_bahvior[insn_name] = behaviors
+                cls.insn_behavior[insn_name] = behaviors
 
         # Setup parser
         with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
@@ -74,246 +74,246 @@ class TestTransformer(unittest.TestCase):
         return exception
 
     def test_J2_jump(self):
-        behavior = self.insns_bahvior["J2_jump"][0]
+        behavior = self.insn_behavior["J2_jump"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_J2_jumpr(self):
-        behavior = self.insns_bahvior["J2_jumpr"][0]
+        behavior = self.insn_behavior["J2_jumpr"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_J2_jumpt(self):
-        behavior = self.insns_bahvior["J2_jumpt"][0]
+        behavior = self.insn_behavior["J2_jumpt"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_J2_jumpf(self):
-        behavior = self.insns_bahvior["J2_jumpf"][0]
+        behavior = self.insn_behavior["J2_jumpf"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_J2_jumprt(self):
-        behavior = self.insns_bahvior["J2_jumprt"][0]
+        behavior = self.insn_behavior["J2_jumprt"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_J2_jumprf(self):
-        behavior = self.insns_bahvior["J2_jumprf"][0]
+        behavior = self.insn_behavior["J2_jumprf"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_J4_cmpgti_tp0_jump_t(self):
-        behavior = self.insns_bahvior["J4_cmpgti_tp0_jump_t"][0]
+        behavior = self.insn_behavior["J4_cmpgti_tp0_jump_t"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
-        behavior = self.insns_bahvior["J4_cmpgti_tp0_jump_t"][1]
+        behavior = self.insn_behavior["J4_cmpgti_tp0_jump_t"][1]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_J2_call(self):
-        behavior = self.insns_bahvior["J2_call"][0]
+        behavior = self.insn_behavior["J2_call"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_J2_loop0r(self):
-        behavior = self.insns_bahvior["J2_loop0r"][0]
+        behavior = self.insn_behavior["J2_loop0r"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_L2_loadrd_io(self):
-        behavior = self.insns_bahvior["L2_loadrd_io"][0]
+        behavior = self.insn_behavior["L2_loadrd_io"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_S2_storeri_io(self):
-        behavior = self.insns_bahvior["S2_storeri_io"][0]
+        behavior = self.insn_behavior["S2_storeri_io"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_S2_storerd_io(self):
-        behavior = self.insns_bahvior["S2_storerd_io"][0]
+        behavior = self.insn_behavior["S2_storerd_io"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_L4_return(self):
-        behavior = self.insns_bahvior["L4_return"][0]
+        behavior = self.insn_behavior["L4_return"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_S4_storeiri_io(self):
-        behavior = self.insns_bahvior["S4_storeiri_io"][0]
+        behavior = self.insn_behavior["S4_storeiri_io"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_C2_cmpgtu(self):
-        behavior = self.insns_bahvior["C2_cmpgtu"][0]
+        behavior = self.insn_behavior["C2_cmpgtu"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_C2_cmpgti(self):
-        behavior = self.insns_bahvior["C2_cmpgti"][0]
+        behavior = self.insn_behavior["C2_cmpgti"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_C2_xor(self):
-        behavior = self.insns_bahvior["C2_xor"][0]
+        behavior = self.insn_behavior["C2_xor"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_C2_muxii(self):
-        behavior = self.insns_bahvior["C2_muxii"][0]
+        behavior = self.insn_behavior["C2_muxii"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_M2_mpyi(self):
-        behavior = self.insns_bahvior["M2_mpyi"][0]
+        behavior = self.insn_behavior["M2_mpyi"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_A2_sub(self):
-        behavior = self.insns_bahvior["A2_sub"][0]
+        behavior = self.insn_behavior["A2_sub"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_A2_paddfnew(self):
-        behavior = self.insns_bahvior["A2_paddfnew"][0]
+        behavior = self.insn_behavior["A2_paddfnew"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_A2_psubfnew(self):
-        behavior = self.insns_bahvior["A2_psubfnew"][0]
+        behavior = self.insn_behavior["A2_psubfnew"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_A2_paddit(self):
-        behavior = self.insns_bahvior["A2_paddit"][0]
+        behavior = self.insn_behavior["A2_paddit"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_A2_addi(self):
-        behavior = self.insns_bahvior["A2_addi"][0]
+        behavior = self.insn_behavior["A2_addi"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_A2_abs(self):
-        behavior = self.insns_bahvior["A2_abs"][0]
+        behavior = self.insn_behavior["A2_abs"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_A2_nop(self):
-        behavior = self.insns_bahvior["A2_nop"][0]
+        behavior = self.insn_behavior["A2_nop"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_A4_ext(self):
-        behavior = self.insns_bahvior["A4_ext"][0]
+        behavior = self.insn_behavior["A4_ext"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_A2_tfr(self):
-        behavior = self.insns_bahvior["A2_tfr"][0]
+        behavior = self.insn_behavior["A2_tfr"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_A2_tfrsi(self):
-        behavior = self.insns_bahvior["A2_tfrsi"][0]
+        behavior = self.insn_behavior["A2_tfrsi"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_A2_combinew(self):
-        behavior = self.insns_bahvior["A2_combinew"][0]
+        behavior = self.insn_behavior["A2_combinew"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_A2_combineii(self):
-        behavior = self.insns_bahvior["A2_combineii"][0]
+        behavior = self.insn_behavior["A2_combineii"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_A2_subri(self):
-        behavior = self.insns_bahvior["A2_subri"][0]
+        behavior = self.insn_behavior["A2_subri"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_S2_lsr_i_vw(self):
-        behavior = self.insns_bahvior["S2_lsr_i_vw"][0]
+        behavior = self.insn_behavior["S2_lsr_i_vw"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_S2_lsl_r_vw(self):
-        behavior = self.insns_bahvior["S2_lsl_r_vw"][0]
+        behavior = self.insn_behavior["S2_lsl_r_vw"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_S2_cl0(self):
-        behavior = self.insns_bahvior["S2_cl0"][0]
+        behavior = self.insn_behavior["S2_cl0"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_SA1_addi(self):
-        behavior = self.insns_bahvior["SA1_addi"][0]
+        behavior = self.insn_behavior["SA1_addi"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_SA1_tfr(self):
-        behavior = self.insns_bahvior["SA1_tfr"][0]
+        behavior = self.insn_behavior["SA1_tfr"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_SA1_seti(self):
-        behavior = self.insns_bahvior["SA1_seti"][0]
+        behavior = self.insn_behavior["SA1_seti"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_SA1_combinezr(self):
-        behavior = self.insns_bahvior["SA1_combinezr"][0]
+        behavior = self.insn_behavior["SA1_combinezr"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_SA1_combine1i(self):
-        behavior = self.insns_bahvior["SA1_combine1i"][0]
+        behavior = self.insn_behavior["SA1_combine1i"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_SL1_loadri_io(self):
-        behavior = self.insns_bahvior["SL1_loadri_io"][0]
+        behavior = self.insn_behavior["SL1_loadri_io"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_SL2_loadrh_io(self):
-        behavior = self.insns_bahvior["SL2_loadrh_io"][0]
+        behavior = self.insn_behavior["SL2_loadrh_io"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_SL2_loadrd_sp(self):
-        behavior = self.insns_bahvior["SL2_loadrd_sp"][0]
+        behavior = self.insn_behavior["SL2_loadrd_sp"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_SL2_jumpr31_t(self):
-        behavior = self.insns_bahvior["SL2_jumpr31_t"][0]
+        behavior = self.insn_behavior["SL2_jumpr31_t"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_SS2_storeh_io(self):
-        behavior = self.insns_bahvior["SS2_storeh_io"][0]
+        behavior = self.insn_behavior["SS2_storeh_io"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_SS2_stored_sp(self):
-        behavior = self.insns_bahvior["SS2_stored_sp"][0]
+        behavior = self.insn_behavior["SS2_stored_sp"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_SS2_storew_sp(self):
-        behavior = self.insns_bahvior["SS2_storew_sp"][0]
+        behavior = self.insn_behavior["SS2_storew_sp"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
     def test_SS2_allocframe(self):
-        behavior = self.insns_bahvior["SS2_allocframe"][0]
+        behavior = self.insn_behavior["SS2_allocframe"][0]
         exc = self.compile_behavior(behavior)
         self.assertIsNone(exc)
 
@@ -326,8 +326,7 @@ if __name__ == "__main__":
     tester.test_J2_jumpf()
     tester.test_J2_jumprt()
     tester.test_J2_jumprf()
-    tester.test_J4_cmpgti_tp0_jump_t_part0()
-    tester.test_J4_cmpgti_tp0_jump_t_part1()
+    tester.test_J4_cmpgti_tp0_jump_t()
     tester.test_J2_call()
     tester.test_J2_loop0r()
     tester.test_L2_loadrd_io()
