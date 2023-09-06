@@ -28,15 +28,36 @@
 
 #define fIMMEXT(IMM) (IMM)
 
-#define fREAD_GP() \
-    (insn->extension_valid ? 0 : READ_REG(HEX_REG_GP))
-
 #define fWRITE_NPC(A) JUMP(A)
 
 #define READ_REG(NUM)                    NUM
 #define READ_PREG(NUM)                   P##NUM
 #define WRITE_RREG(NUM, VAL)             (NUM = VAL);
 #define WRITE_PREG(NUM, VAL)             READ_PREG(NUM) = VAL
+
+#define fREAD_GP() \
+    (insn->extension_valid ? 0 : READ_REG(HEX_REG_GP))
+
+#define fREAD_P0 READ_PREG(0)
+
+#define fREAD_LR() (READ_REG(HEX_REG_LR))
+#define fREAD_SP() (READ_REG(HEX_REG_SP))
+#define fREAD_LC0 (READ_REG(HEX_REG_LC0))
+#define fREAD_LC1 (READ_REG(HEX_REG_LC1))
+#define fREAD_SA0 (READ_REG(HEX_REG_SA0))
+#define fREAD_SA1 (READ_REG(HEX_REG_SA1))
+#define fREAD_FP() (READ_REG(HEX_REG_FP))
+#define fGET_FRAMEKEY() (READ_REG(HEX_REG_FRAMEKEY))
+
+#define PC HEX_REG_ALIAS_PC
+
+#define fWRITE_LR(A) (HEX_REG_ALIAS_LR = A)
+#define fWRITE_FP(A) (HEX_REG_ALIAS_FP = A)
+#define fWRITE_SP(A) (HEX_REG_ALIAS_SP = A)
+#define fWRITE_LOOP_REGS0(START, COUNT) HEX_REG_ALIAS_SA0 = START; (HEX_REG_ALIAS_LC0 = COUNT)
+#define fWRITE_LOOP_REGS1(START, COUNT) HEX_REG_ALIAS_SA1 = START; (HEX_REG_ALIAS_LC1 = COUNT)
+#define fWRITE_LC1(VAL) (HEX_REG_ALIAS_LC1 = VAL)
+#define fSET_LPCFG(VAL) SET_USR_FIELD(LPCFG, VAL)
 
 #define HEX_REG_LR   HEX_REG_ALIAS_LR
 #define HEX_REG_R31   R31

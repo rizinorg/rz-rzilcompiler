@@ -28,6 +28,7 @@
 #define HEX_REG_SA0   HEX_REG_ALIAS_SA0
 #define HEX_REG_R31   R31
 #define HEX_REG_LR   HEX_REG_ALIAS_LR
+#define PC HEX_REG_ALIAS_PC
 #define WRITE_PREG(NUM, VAL)             READ_PREG(NUM) = VAL
 #define WRITE_RREG(NUM, VAL)             (NUM = VAL);
 #define READ_PREG(NUM)                   P##NUM
@@ -72,13 +73,13 @@
 #define fLSBNEW0NOT fLSBNEW(~P0N)
 #define fLSBNEW1NOT fLSBNEW(~P1N)
 #define fPCALIGN(IMM) (IMM = IMM & ~3)
-#define fWRITE_LR(A) (LR = A)
-#define fWRITE_FP(A) (FP = A)
-#define fWRITE_SP(A) (SP = A)
-#define fWRITE_LOOP_REGS0(START, COUNT) SA0 = START; (LC0 = COUNT)
-#define fWRITE_LOOP_REGS1(START, COUNT) SA1 = START; (LC1 = COUNT)
-#define fWRITE_LC1(VAL) (LC1 = VAL)
-#define fSET_LPCFG(VAL) (USR.LPCFG = VAL)
+#define fWRITE_LR(A) (HEX_REG_ALIAS_LR = A)
+#define fWRITE_FP(A) (HEX_REG_ALIAS_FP = A)
+#define fWRITE_SP(A) (HEX_REG_ALIAS_SP = A)
+#define fWRITE_LOOP_REGS0(START, COUNT) HEX_REG_ALIAS_SA0 = START; (HEX_REG_ALIAS_LC0 = COUNT)
+#define fWRITE_LOOP_REGS1(START, COUNT) HEX_REG_ALIAS_SA1 = START; (HEX_REG_ALIAS_LC1 = COUNT)
+#define fWRITE_LC1(VAL) (HEX_REG_ALIAS_LC1 = VAL)
+#define fSET_LPCFG(VAL) SET_USR_FIELD(LPCFG, VAL)
 #define fWRITE_P0(VAL) P0 = VAL;
 #define fWRITE_P1(VAL) P1 = VAL;
 #define fWRITE_P3(VAL) P3 = VAL;
@@ -159,17 +160,17 @@
 #define fIMMEXT(IMM) (IMM)
 #define fMUST_IMMEXT(IMM) fIMMEXT(IMM)
 #define fPCALIGN(IMM) IMM = (IMM & ~PCALIGN_MASK)
-#define fREAD_LR() (env->gpr[HEX_REG_LR])
-#define fREAD_SP() (env->gpr[HEX_REG_SP])
-#define fREAD_LC0 (env->gpr[HEX_REG_LC0])
-#define fREAD_LC1 (env->gpr[HEX_REG_LC1])
-#define fREAD_SA0 (env->gpr[HEX_REG_SA0])
-#define fREAD_SA1 (env->gpr[HEX_REG_SA1])
-#define fREAD_FP() (env->gpr[HEX_REG_FP])
+#define fREAD_LR() (READ_REG(HEX_REG_LR))
+#define fREAD_SP() (READ_REG(HEX_REG_SP))
+#define fREAD_LC0 (READ_REG(HEX_REG_LC0))
+#define fREAD_LC1 (READ_REG(HEX_REG_LC1))
+#define fREAD_SA0 (READ_REG(HEX_REG_SA0))
+#define fREAD_SA1 (READ_REG(HEX_REG_SA1))
+#define fREAD_FP() (READ_REG(HEX_REG_FP))
 #define fREAD_GP()    (insn->extension_valid ? 0 : env->gpr[HEX_REG_GP])
 #define fREAD_GP() (env->gpr[HEX_REG_GP])
 #define fREAD_PC() (PC)
-#define fREAD_P0() (env->pred[0])
+#define fREAD_P0 READ_PREG(0)
 #define fCHECK_PCALIGN(A)
 #define fWRITE_NPC(A) JUMP(A)
 #define fBRANCH(LOC, TYPE)          fWRITE_NPC(LOC)
@@ -256,7 +257,7 @@
 #define fASHIFTL(SRC, SHAMT, REGSTYPE)    (((SHAMT) >= (sizeof(SRC) * 8)) ? 0 : (fCAST##REGSTYPE##s(SRC) << (SHAMT)))
 #define fLOAD(NUM, SIZE, SIGN, EA, DST)    DST = (size##SIZE##SIGN##_t)MEM_LOAD##SIZE##SIGN(EA)
 #define fMEMOP(NUM, SIZE, SIGN, EA, FNTYPE, VALUE)
-#define fGET_FRAMEKEY() (env->gpr[HEX_REG_FRAMEKEY])
+#define fGET_FRAMEKEY() (READ_REG(HEX_REG_FRAMEKEY))
 #define fFRAME_SCRAMBLE(VAL) ((VAL) ^ (fCAST8u(fGET_FRAMEKEY()) << 32))
 #define fFRAME_UNSCRAMBLE(VAL) fFRAME_SCRAMBLE(VAL)
 #define fFRAMECHECK(ADDR, EA)
