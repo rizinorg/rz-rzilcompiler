@@ -128,9 +128,9 @@ class PreprocessorHexagon:
             "-o",
             str(Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_RESOLVED_TMP_H)),
         ]
-        print("* Resolve macros of shortcode with pcpp...")
+        log("Resolve macros of shortcode with pcpp...")
         pcpp.pcmd.CmdPreprocessor(argv)
-        print("* Do it again due to https://github.com/ned14/pcpp/issues/71")
+        log("Do it again due to https://github.com/ned14/pcpp/issues/71")
         argv = [
             "script_name",
             str(Conf.get_path(InputFile.HEXAGON_PP_MACROS_PATCHED_H)),
@@ -141,7 +141,7 @@ class PreprocessorHexagon:
         pcpp.pcmd.CmdPreprocessor(argv)
 
     def load_insn_behavior(self):
-        print("* Load instruction/behavior pairs.")
+        log("Load instruction/behavior pairs.")
         with open(Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_RESOLVED_H)) as f:
             for line in f.readlines():
                 if line[0] == "#":
@@ -212,4 +212,4 @@ class PreprocessorHexagon:
 
 
 if __name__ == "__main__":
-    print("Not implemented.")
+    log("Not implemented.")

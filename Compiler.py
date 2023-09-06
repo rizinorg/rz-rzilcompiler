@@ -12,6 +12,7 @@ from tqdm import tqdm
 
 from ArchEnum import ArchEnum
 from Configuration import Conf, InputFile
+from Helper import log
 from HexagonExtensions import HexagonCompilerExtension
 from Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
 from Transformer.ILOpsHolder import ILOpsHolder
@@ -40,7 +41,7 @@ class Compiler:
             raise NotImplementedError(f"No compiler extension for {self.arch} given.")
 
     def set_parser(self):
-        print("* Set up Lark parser.")
+        log("Set up Lark parser.")
         with open(Conf.get_path(InputFile.GRAMMAR, self.arch)) as f:
             grammar = "".join(f.readlines())
 
@@ -50,7 +51,7 @@ class Compiler:
         self.transformer = RZILTransformer(self.arch)
 
     def set_preprocessor(self):
-        print(f"* Set up preprocessor for: {self.arch.name}")
+        log(f"Set up preprocessor for: {self.arch.name}")
         if self.arch == ArchEnum.HEXAGON:
             shortcode = Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_H)
             self.preprocessor = PreprocessorHexagon(shortcode)
@@ -60,11 +61,11 @@ class Compiler:
             )
 
     def run_preprocessor(self):
-        print("* Run preprocessor...")
+        log("Run preprocessor...")
         self.preprocessor.run_preprocess_steps()
 
     def test_compile_all(self):
-        print("* Test: Compile all instructions.")
+        log("Test: Compile all instructions.")
         keys = ["no_term", "no_char", "eof", "visit", "other", "ok"]
         stats = {k: {"count": 0} for k in keys}
         excs = dict()
@@ -109,7 +110,7 @@ class Compiler:
                     excs[e_name] = [tup]
 
         if len(excs) == 0:
-            print("* All instructions compiled successfully!")
+            log("All instructions compiled successfully!")
             return
 
         for k, v in stats.items():
@@ -122,7 +123,7 @@ class Compiler:
                 stats[exc_str] += 1
             else:
                 stats[exc_str] = 1
-        print("Visit Errors:")
+        log("Visit Errors:")
         for k, x in stats.items():
             print(f"\t{x} - {k}")
 
