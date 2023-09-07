@@ -89,12 +89,17 @@ class HexagonTransformerExtension(TransformerExtension):
 
     def reg_alias(self, items):
         alias = items[0].lower()
+        is_new = False
+
+        if items[1]:
+            is_new = True
+            self.set_token_meta_data("new_reg")
         holder = ILOpsHolder()
         if alias in holder.read_ops:
             return holder.read_ops[alias]
-        is_new = False
-        if len(items) == 2:
-            is_new = True
+        elif is_new and f"{alias}_tmp" in holder.read_ops:
+            return holder.read_ops[f"{alias}_tmp"]
+
         if alias == "upcycle" or alias == "pktcount" or alias == "utimer":
             size = 64
         else:
@@ -149,7 +154,7 @@ class HexagonTransformerExtension(TransformerExtension):
         else:
             raise NotImplementedError(f"Data type {rule} is not handled.")
 
-    def get_meta(self):
+    def get_meta(self) -> list[str]:
         flags = []
         if self.is_conditional:
             flags.append("HEX_IL_INSN_ATTR_COND")

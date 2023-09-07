@@ -389,8 +389,8 @@ reg: _reg
 _reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
     | REG_TYPE (SRC_REG_PAIR | DEST_REG_PAIR | SRC_DEST_REG_PAIR)
 
-reg_alias: /[A-Z0-9]+/ [_reg_alias_new]
-_reg_alias_new: "_NEW"
+reg_alias: /[A-Z0-9]+/ [reg_alias_new_postfix]
+reg_alias_new_postfix: "_NEW"
 
 ?number: [NUM_SIGN] (HEX_NUMBER | DEC_NUMBER) [INT_POST_TYPE]
         | float_number
