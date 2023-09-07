@@ -35,6 +35,16 @@ class InputFile(StrEnum):
     )
 
 
+def is_submodule() -> bool:
+    """Test if there is a submodule rzil-compiler present."""
+    res = subprocess.run(
+        ["git", "submodule"],
+        check=True,
+        stdout=subprocess.PIPE,
+    )
+    return "rzil-compiler" in res.stdout.decode("utf8").strip("\n")
+
+
 class Conf:
     """
     Holds all the configurable values like paths.
@@ -48,9 +58,13 @@ class Conf:
                 check=True,
                 stdout=subprocess.PIPE,
             )
-            path_str = path_str.replace(
-                "<REPO>", root.stdout.decode("utf8").strip("\n")
-            )
+            root_dir = Path(root.stdout.decode("utf8").strip("\n"))
+            if is_submodule():
+                root_dir = root_dir.joinpath("rzil-compiler")
+            if not root_dir.exists():
+                raise NotADirectoryError(str(root_dir))
+
+            path_str = path_str.replace("<REPO>", str(root_dir))
         if "<ARCH>" in path_str:
             if not arch:
                 raise ValueError("No architecture name passed.")
