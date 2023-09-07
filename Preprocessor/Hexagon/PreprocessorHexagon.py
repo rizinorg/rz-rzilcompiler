@@ -8,6 +8,7 @@ import pcpp
 from pathlib import Path
 
 from Configuration import InputFile, Conf
+from Helper import log
 
 
 class PreprocessorHexagon:
