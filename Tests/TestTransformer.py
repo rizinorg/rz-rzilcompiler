@@ -20,7 +20,7 @@ from lark.exceptions import (
 )
 
 
-class TestTransformer(unittest.TestCase):
+class TestTransforming(unittest.TestCase):
     debug = False
     insn_behavior: dict[str:tuple] = dict()
 
@@ -318,8 +318,137 @@ class TestTransformer(unittest.TestCase):
         self.assertIsNone(exc)
 
 
+class TestTransformerMeta(unittest.TestCase):
+    debug = False
+    insn_behavior: dict[str:tuple] = dict()
+
+    @classmethod
+    def setUpClass(cls):
+        # Get instruction behaviors from resolved shortcode
+        with open(Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_RESOLVED_H)) as f:
+            for line in f.readlines():
+                if line[:5] != "insn(":
+                    continue
+                matches = re.search(r"insn\((\w+), (.*)\)$", line)
+                insn_name = matches.group(1)
+                insn_behavior = matches.group(2)
+                if "__COMPOUND_PART1__" in insn_behavior:
+                    behaviors = PreprocessorHexagon.split_compounds(insn_behavior)
+                else:
+                    behaviors = [insn_behavior]
+
+                cls.insn_behavior[insn_name] = behaviors
+
+        # Setup parser
+        with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
+            grammar = "".join(f.readlines())
+        cls.parser = Lark(grammar, start="fbody", parser="earley")
+
+    def compile_behavior(self, behavior: str) -> list[str]:
+        exception = None
+        try:
+            tree = self.parser.parse(behavior)
+            transformer = RZILTransformer(ArchEnum.HEXAGON)
+            transformer.transform(tree)
+            return transformer.ext.get_meta()
+        except UnexpectedToken as e:
+            # Parser got unexpected token
+            exception = e
+        except UnexpectedCharacters as e:
+            # Lexer can not match character to token.
+            exception = e
+        except UnexpectedEOF as e:
+            # Parser expected a token but got EOF
+            exception = e
+        except VisitError as e:
+            # Something went wrong in our transformer.
+            exception = e
+        except Exception as e:
+            exception = e
+        finally:
+            ILOpsHolder().clear()
+        raise exception
+
+    def test_J2_jump(self):
+        behavior = self.insn_behavior["J2_jump"][0]
+        meta: list[str] = self.compile_behavior(behavior)
+        self.assertListEqual(meta, ["HEX_IL_INSN_ATTR_BRANCH"])
+
+    def test_J2_jumpt(self):
+        behavior = self.insn_behavior["J2_jumpt"][0]
+        meta: list[str] = self.compile_behavior(behavior)
+        self.assertListEqual(meta, ["HEX_IL_INSN_ATTR_COND", "HEX_IL_INSN_ATTR_BRANCH"])
+
+    def test_J4_cmpgti_tp0_jump_t(self):
+        behavior = self.insn_behavior["J4_cmpgti_tp0_jump_t"][0]
+        meta: list[str] = self.compile_behavior(behavior)
+        self.assertListEqual(
+            meta, ["HEX_IL_INSN_ATTR_WPRED", "HEX_IL_INSN_ATTR_WRITE_P0"]
+        )
+
+        behavior = self.insn_behavior["J4_cmpgti_tp0_jump_t"][1]
+        meta: list[str] = self.compile_behavior(behavior)
+        self.assertListEqual(
+            meta,
+            [
+                "HEX_IL_INSN_ATTR_COND",
+                "HEX_IL_INSN_ATTR_NEW",
+                "HEX_IL_INSN_ATTR_BRANCH",
+            ],
+        )
+
+    def test_J2_call(self):
+        behavior = self.insn_behavior["J2_call"][0]
+        meta: list[str] = self.compile_behavior(behavior)
+        self.assertListEqual(meta, ["HEX_IL_INSN_ATTR_BRANCH"])
+
+    def test_J2_loop0r(self):
+        behavior = self.insn_behavior["J2_loop0r"][0]
+        meta: list[str] = self.compile_behavior(behavior)
+        self.assertListEqual(meta, ["HEX_IL_INSN_ATTR_NEW"])
+
+    def test_L2_loadrd_io(self):
+        behavior = self.insn_behavior["L2_loadrd_io"][0]
+        meta: list[str] = self.compile_behavior(behavior)
+        self.assertListEqual(meta, ["HEX_IL_INSN_ATTR_MEM_READ"])
+
+    def test_S2_storerd_io(self):
+        behavior = self.insn_behavior["S2_storerd_io"][0]
+        meta: list[str] = self.compile_behavior(behavior)
+        self.assertEqual(meta[0], "HEX_IL_INSN_ATTR_MEM_WRITE")
+
+    def test_L4_return(self):
+        behavior = self.insn_behavior["L4_return"][0]
+        meta: list[str] = self.compile_behavior(behavior)
+        self.assertListEqual(
+            meta, ["HEX_IL_INSN_ATTR_MEM_READ", "HEX_IL_INSN_ATTR_BRANCH"]
+        )
+
+    def test_L4_return_t(self):
+        behavior = self.insn_behavior["L4_return_t"][0]
+        meta: list[str] = self.compile_behavior(behavior)
+        self.assertListEqual(
+            meta,
+            [
+                "HEX_IL_INSN_ATTR_COND",
+                "HEX_IL_INSN_ATTR_MEM_READ",
+                "HEX_IL_INSN_ATTR_BRANCH",
+            ],
+        )
+
+    def test_C4_and_and(self):
+        behavior = self.insn_behavior["C4_and_and"][0]
+        meta: list[str] = self.compile_behavior(behavior)
+        self.assertListEqual(meta, ["HEX_IL_INSN_ATTR_WPRED"])
+
+    def test_A2_nop(self):
+        behavior = self.insn_behavior["A2_nop"][0]
+        meta: list[str] = self.compile_behavior(behavior)
+        self.assertListEqual(meta, ["HEX_IL_INSN_ATTR_NONE"])
+
+
 if __name__ == "__main__":
-    tester = TestTransformer()
+    tester = TestTransforming()
     tester.test_J2_jump()
     tester.test_J2_jumpr()
     tester.test_J2_jumpt()
@@ -368,3 +497,14 @@ if __name__ == "__main__":
     tester.test_SS2_stored_sp()
     tester.test_SS2_storew_sp()
     tester.test_SS2_allocframe()
+
+    tester = TestTransformerMeta()
+    tester.test_J2_jump()
+    tester.test_J2_jumpt()
+    tester.test_J4_cmpgti_tp0_jump_t()
+    tester.test_J2_call()
+    tester.test_J2_loop0r()
+    tester.test_L2_loadrd_io()
+    tester.test_S2_storerd_io()
+    tester.test_L4_return()
+    tester.test_A2_nop()
