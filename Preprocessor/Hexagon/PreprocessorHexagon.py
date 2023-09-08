@@ -158,11 +158,7 @@ class PreprocessorHexagon:
         """Returns a list of instruction behaviors. Most instruction will only have one element in the list.
         But there are instructions which have multiple behaviors (Compounds in our case).
         """
-
-        for i in self.behaviors.keys():
-            if i == insn_name:
-                return self.behaviors[insn_name]
-        return None
+        return self.behaviors.get(insn_name)
 
     @staticmethod
     def split_compounds(insn_beh: str) -> tuple[str, str]:
