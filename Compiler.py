@@ -212,7 +212,7 @@ class Compiler:
 def parse_args() -> argparse.Namespace:
     argp = argparse.ArgumentParser(
         prog="RZIL Compiler",
-        description="Compiles RZIL instructions from varies architectures.",
+        description="Compiles RZIL instructions from various architectures.",
     )
     argp.add_argument(
         "-a",
