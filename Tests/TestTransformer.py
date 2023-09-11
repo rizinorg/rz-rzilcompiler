@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
-
+import logging
 import re
 import unittest
 
@@ -12,7 +12,7 @@ from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.RZILTransformer import RZILTransformer
 from ArchEnum import ArchEnum
 
-from lark import Lark
+from lark import Lark, logger
 from lark.exceptions import (
     VisitError,
     UnexpectedToken,
@@ -474,8 +474,33 @@ class TestTransformerOutput(unittest.TestCase):
     def test_Y2_barrier(self):
         behavior = self.insn_behavior["Y2_barrier"][0]
         output = self.compile_behavior(behavior)
-
         self.assertEqual(output, ExpectedOutput["Y2_barrier"])
+
+
+class TestGrammar(unittest.TestCase):
+    def test_early_compatibility(self):
+        # Setup parser
+        with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
+            grammar = "".join(f.readlines())
+        exc = None
+        try:
+            self.parser = Lark(grammar, start="fbody", parser="earley")
+        except Exception as e:
+            exc = e
+        self.assertIsNone(exc)
+
+    @unittest.skip("LALR test: Grammar not yet LALR compatible.")
+    def test_lalr_compatibility(self):
+        # Setup parser
+        with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
+            grammar = "".join(f.readlines())
+        exc = None
+        logger.setLevel(logging.DEBUG)
+        try:
+            self.parser = Lark(grammar, start="fbody", parser="lalr", debug=True)
+        except Exception as e:
+            exc = e
+        self.assertIsNone(exc)
 
 
 if __name__ == "__main__":
@@ -542,3 +567,7 @@ if __name__ == "__main__":
 
     tester = TestTransformerOutput()
     tester.test_Y2_barrier()
+
+    tester = TestGrammar()
+    tester.test_early_compatibility()
+    tester.test_lalr_compatibility()
