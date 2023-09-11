@@ -105,6 +105,8 @@ class HexagonTransformerExtension(TransformerExtension):
         else:
             size = 32
         v_type = ValueType(False, size)
+        # Access type is unknown. For Alias the access type is set when it is part
+        # of another pure or an effect.
         return Register(
             alias, RegisterAccessType.UNKNOWN, v_type, is_new=is_new, is_reg_alias=True
         )

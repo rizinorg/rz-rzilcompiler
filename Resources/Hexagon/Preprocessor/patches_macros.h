@@ -89,8 +89,6 @@
 // HEX_REG_QEMU_INSN_CNT     = 53,
 // HEX_REG_QEMU_HVX_CNT      = 54,
 
-#define ALIAS_NEW_VAL(A) A##_NEW
-
 #define fREAD_NPC() (get_npc(pkt) & (0xfffffffe))
 
 // Set/get register fields
@@ -104,7 +102,7 @@
                    REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
 
 #define SET_USR_FIELD(FIELD, VAL) \
-    fINSERT_BITS(ALIAS_NEW_VAL(HEX_REG_ALIAS_USR), REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD), \
+    fINSERT_BITS(HEX_REG_ALIAS_USR, REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD), \
                  REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD), (VAL))
 
 #define fALIGN_REG_FIELD_VALUE(FIELD, VAL) \
@@ -120,8 +118,8 @@
 
 // New values
 
-#define fLSBNEW0        (ALIAS_NEW_VAL(P0) & 1)
-#define fLSBNEW1        (ALIAS_NEW_VAL(P1) & 1)
+#define fLSBNEW0        (P0_NEW & 1)
+#define fLSBNEW1        (P1_NEW & 1)
 
 // Macros defined inside #QEMU_GENERATE guards without an #else.
 // We do not include them in the preprocessing

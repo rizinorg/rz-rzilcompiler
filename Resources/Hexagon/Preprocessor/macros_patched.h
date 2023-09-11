@@ -2,7 +2,6 @@
 #define fLOAD_LOCKED(NUM, SIZE, SIGN, EA, DST)     gen_load_locked##SIZE##SIGN(DST, EA, ctx->mem_idx);
 #define PRED_LOAD_CANCEL(PRED, EA)     gen_pred_cancel(PRED, insn->is_endloop ? 4 : insn->slot)
 #define fREAD_NPC() (get_npc(pkt) & (0xfffffffe))
-#define ALIAS_NEW_VAL(A) A##_NEW
 #define HEX_REG_UTIMERHI   HEX_REG_ALIAS_UTIMERHI
 #define HEX_REG_UTIMERLO   HEX_REG_ALIAS_UTIMERLO
 #define HEX_REG_PKTCNTHI   HEX_REG_ALIAS_PKTCNTHI
@@ -66,8 +65,8 @@
 #define fBIDIR_ASHIFTR_SAT(SRC, SHAMT, REGSTYPE)    (((SHAMT) < 0) ? fSAT_ORIG_SHL((fCAST##REGSTYPE##s(SRC)                        << ((-(SHAMT)) - 1)) << 1, (SRC))                   : (fCAST##REGSTYPE##s(SRC) >> (SHAMT)))
 #define fBIDIR_ASHIFTL_SAT(SRC, SHAMT, REGSTYPE)    (((SHAMT) < 0)     ? ((fCAST##REGSTYPE##s(SRC) >> ((-(SHAMT)) - 1)) >> 1)     : fSAT_ORIG_SHL(fCAST##REGSTYPE##s(SRC) << (SHAMT), (SRC)))
 #define fEXTRACTU_BIDIR(INREG, WIDTH, OFFSET)    (fZXTN(WIDTH, 32, fBIDIR_LSHIFTR((INREG), (OFFSET), 4_8)))
-#define fLSBNEW0        (ALIAS_NEW_VAL(P0) & 1)
-#define fLSBNEW1        (ALIAS_NEW_VAL(P1) & 1)
+#define fLSBNEW0        (P0_NEW & 1)
+#define fLSBNEW1        (P1_NEW & 1)
 #define fLSBOLDNOT(VAL) fGETBIT(0, ~VAL)
 #define fLSBNEWNOT(PRED) (fLSBNEW(~PRED))
 #define fLSBNEW0NOT fLSBNEW(~P0N)
@@ -105,7 +104,7 @@
 #define PCALIGN_MASK (PCALIGN - 1)
 #define GET_FIELD(FIELD, REGIN)     fEXTRACTU_BITS(REGIN, REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD),                    REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
 #define GET_USR_FIELD(FIELD)     fEXTRACTU_BITS(HEX_REG_ALIAS_USR, REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD),                    REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
-#define SET_USR_FIELD(FIELD, VAL)     fINSERT_BITS(ALIAS_NEW_VAL(HEX_REG_ALIAS_USR), REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD),                  REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD), (VAL))
+#define SET_USR_FIELD(FIELD, VAL)     fINSERT_BITS(HEX_REG_ALIAS_USR, REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD),                  REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD), (VAL))
 #define MEM_LOAD1s(VA) (mem_load_s8(VA))
 #define MEM_LOAD1u(VA) (mem_load_u8(VA))
 #define MEM_LOAD2s(VA) (mem_load_s16(VA))
