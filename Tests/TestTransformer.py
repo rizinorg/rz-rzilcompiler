@@ -7,6 +7,7 @@ import unittest
 
 from Configuration import Conf, InputFile
 from Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
+from ExpectedOutput import ExpectedOutput
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.RZILTransformer import RZILTransformer
 from ArchEnum import ArchEnum
@@ -20,31 +21,40 @@ from lark.exceptions import (
 )
 
 
+def get_hexagon_insn_behavior() -> dict[list[str]]:
+    collection = dict()
+    # Get instruction behaviors from resolved shortcode
+    with open(Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_RESOLVED_H)) as f:
+        for line in f.readlines():
+            if line[:5] != "insn(":
+                continue
+            matches = re.search(r"insn\((\w+), (.*)\)$", line)
+            insn_name = matches.group(1)
+            insn_behavior = matches.group(2)
+            if "__COMPOUND_PART1__" in insn_behavior:
+                behaviors = PreprocessorHexagon.split_compounds(insn_behavior)
+            else:
+                behaviors = [insn_behavior]
+
+            collection[insn_name] = behaviors
+    return collection
+
+
+def get_hexagon_parser() -> Lark:
+    # Setup parser
+    with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
+        grammar = "".join(f.readlines())
+    return Lark(grammar, start="fbody", parser="earley")
+
+
 class TestTransforming(unittest.TestCase):
     debug = False
     insn_behavior: dict[str:tuple] = dict()
 
     @classmethod
     def setUpClass(cls):
-        # Get instruction behaviors from resolved shortcode
-        with open(Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_RESOLVED_H)) as f:
-            for line in f.readlines():
-                if line[:5] != "insn(":
-                    continue
-                matches = re.search(r"insn\((\w+), (.*)\)$", line)
-                insn_name = matches.group(1)
-                insn_behavior = matches.group(2)
-                if "__COMPOUND_PART1__" in insn_behavior:
-                    behaviors = PreprocessorHexagon.split_compounds(insn_behavior)
-                else:
-                    behaviors = [insn_behavior]
-
-                cls.insn_behavior[insn_name] = behaviors
-
-        # Setup parser
-        with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
-            grammar = "".join(f.readlines())
-        cls.parser = Lark(grammar, start="fbody", parser="earley")
+        cls.insn_behavior = get_hexagon_insn_behavior()
+        cls.parser = get_hexagon_parser()
 
     def compile_behavior(self, behavior: str) -> Exception:
         exception = None
@@ -324,25 +334,8 @@ class TestTransformerMeta(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Get instruction behaviors from resolved shortcode
-        with open(Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_RESOLVED_H)) as f:
-            for line in f.readlines():
-                if line[:5] != "insn(":
-                    continue
-                matches = re.search(r"insn\((\w+), (.*)\)$", line)
-                insn_name = matches.group(1)
-                insn_behavior = matches.group(2)
-                if "__COMPOUND_PART1__" in insn_behavior:
-                    behaviors = PreprocessorHexagon.split_compounds(insn_behavior)
-                else:
-                    behaviors = [insn_behavior]
-
-                cls.insn_behavior[insn_name] = behaviors
-
-        # Setup parser
-        with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
-            grammar = "".join(f.readlines())
-        cls.parser = Lark(grammar, start="fbody", parser="earley")
+        cls.insn_behavior = get_hexagon_insn_behavior()
+        cls.parser = get_hexagon_parser()
 
     def compile_behavior(self, behavior: str) -> list[str]:
         exception = None
@@ -447,6 +440,45 @@ class TestTransformerMeta(unittest.TestCase):
         self.assertListEqual(meta, ["HEX_IL_INSN_ATTR_NONE"])
 
 
+class TestTransformerOutput(unittest.TestCase):
+    debug = False
+    insn_behavior: dict[str:tuple] = dict()
+
+    @classmethod
+    def setUpClass(cls):
+        cls.insn_behavior = get_hexagon_insn_behavior()
+        cls.parser = get_hexagon_parser()
+
+    def compile_behavior(self, behavior: str) -> list[str]:
+        try:
+            tree = self.parser.parse(behavior)
+            transformer = RZILTransformer(ArchEnum.HEXAGON)
+            return transformer.transform(tree)
+        except UnexpectedToken as e:
+            # Parser got unexpected token
+            exception = e
+        except UnexpectedCharacters as e:
+            # Lexer can not match character to token.
+            exception = e
+        except UnexpectedEOF as e:
+            # Parser expected a token but got EOF
+            exception = e
+        except VisitError as e:
+            # Something went wrong in our transformer.
+            exception = e
+        except Exception as e:
+            exception = e
+        finally:
+            ILOpsHolder().clear()
+        raise exception
+
+    def test_Y2_barrier(self):
+        behavior = self.insn_behavior["Y2_barrier"][0]
+        output = self.compile_behavior(behavior)
+
+        self.assertEqual(output, ExpectedOutput["Y2_barrier"])
+
+
 if __name__ == "__main__":
     tester = TestTransforming()
     tester.test_J2_jump()
@@ -508,3 +540,6 @@ if __name__ == "__main__":
     tester.test_S2_storerd_io()
     tester.test_L4_return()
     tester.test_A2_nop()
+
+    tester = TestTransformerOutput()
+    tester.test_Y2_barrier()
