@@ -69,3 +69,9 @@ class ILOpsHolder(object):
         self.exec_ops.clear()
         self.write_ops.clear()
         self.let_ops.clear()
+
+    def is_empty(self) -> bool:
+        return (len(self.read_ops) == 0 and
+                len(self.exec_ops) == 0 and
+                len(self.write_ops) == 0 and
+                len(self.let_ops) == 0)
