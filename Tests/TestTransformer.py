@@ -476,6 +476,11 @@ class TestTransformerOutput(unittest.TestCase):
         output = self.compile_behavior(behavior)
         self.assertEqual(output, ExpectedOutput["Y2_barrier"])
 
+    def test_A2_abs(self):
+        behavior = self.insn_behavior["A2_abs"][0]
+        output = self.compile_behavior(behavior)
+        self.assertEqual(output, ExpectedOutput["A2_abs"])
+
 
 class TestGrammar(unittest.TestCase):
     def test_early_compatibility(self):
