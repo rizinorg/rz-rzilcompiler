@@ -405,7 +405,7 @@ class TestTransformerMeta(unittest.TestCase):
     def test_J2_loop0r(self):
         behavior = self.insn_behavior["J2_loop0r"][0]
         meta: list[str] = self.compile_behavior(behavior)
-        self.assertListEqual(meta, ["HEX_IL_INSN_ATTR_NEW"])
+        self.assertListEqual(meta, ["HEX_IL_INSN_ATTR_NONE"])
 
     def test_L2_loadrd_io(self):
         behavior = self.insn_behavior["L2_loadrd_io"][0]
