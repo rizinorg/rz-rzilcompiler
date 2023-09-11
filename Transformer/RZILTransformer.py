@@ -73,6 +73,24 @@ class RZILTransformer(Transformer):
     def fbody(self, items):
         self.ext.set_token_meta_data("fbody")
 
+        # Hybrids which have no parent in the AST
+        left_hybrids = [
+            self.hybrid_effect_dict.pop(hid) for hid in [k for k in self.hybrid_effect_dict.keys()]
+        ]
+
+        # Assign all effects without parent in the AST to the final instruction sequence.
+        instruction_sequence = Sequence(
+            f"instruction_sequence",
+            [
+                op
+                for op in self.imm_set_effect_list
+                + left_hybrids
+                + flatten_list(items)
+                + self.gcc_ext_effects
+                if isinstance(op, Effect)
+            ],
+        )
+
         holder = ILOpsHolder()
         res = ""
         # We are at the top. Generate code.
@@ -92,22 +110,7 @@ class RZILTransformer(Transformer):
                 res += op.il_init_var() + "\n"
                 continue
             res += op.il_init_var() + "\n"
-        left_hybrids = list()
 
-        for hid in [k for k in self.hybrid_effect_dict.keys()]:
-            left_hybrids.append(self.hybrid_effect_dict.pop(hid))
-        instruction_sequence = Sequence(
-            f"instruction_sequence",
-            [
-                op
-                for op in self.imm_set_effect_list
-                + left_hybrids
-                + flatten_list(items)
-                + self.gcc_ext_effects
-                if isinstance(op, Effect)
-            ],
-        )
-        res += instruction_sequence.il_init_var() + "\n"
         res += f"\nreturn {instruction_sequence.effect_var()};"
         return res
 
