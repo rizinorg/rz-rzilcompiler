@@ -21,7 +21,7 @@ from lark.exceptions import (
 )
 
 
-def get_hexagon_insn_behavior() -> dict[list[str]]:
+def get_hexagon_insn_behavior() -> dict[str:tuple]:
     collection = dict()
     # Get instruction behaviors from resolved shortcode
     with open(Conf.get_path(InputFile.HEXAGON_PP_SHORTCODE_RESOLVED_H)) as f:
@@ -338,7 +338,6 @@ class TestTransformerMeta(unittest.TestCase):
         cls.parser = get_hexagon_parser()
 
     def compile_behavior(self, behavior: str) -> list[str]:
-        exception = None
         try:
             tree = self.parser.parse(behavior)
             transformer = RZILTransformer(ArchEnum.HEXAGON)
