@@ -95,6 +95,7 @@ class RZILTransformer(Transformer):
                 res += op.il_init_var() + "\n"
                 continue
             res += op.il_init_var() + "\n"
+        left_hybrids = list()
 
         # Hybrids which have no parent in the AST
         left_hybrids = [
@@ -112,6 +113,8 @@ class RZILTransformer(Transformer):
                 if isinstance(op, Effect)
             ],
         )
+
+        res += instruction_sequence.il_init_var() + "\n"
         res += f"\nreturn {instruction_sequence.effect_var()};"
         return res
 
