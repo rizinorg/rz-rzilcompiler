@@ -1,0 +1,1 @@
+You can use [Qualcomm's toolchain](https://github.com/quic/toolchain_for_hexagon/) to build these tests.
