@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023 Rot127
+
+SPDX-License-Identifier: LGPL-3.0-only
+-->
+
 # rzil-hexagon
 
 C to RzIL Compiler to extend the Rizin Hexagon plugin.

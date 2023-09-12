@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023 Rot127
+
+SPDX-License-Identifier: LGPL-3.0-only
+-->
+
 | File                   | Source                                                                                           | Purpose                                                                                                                                    |
 |------------------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
 | `macros.h`             | Copied from `qemu/target/hexagon/macros.h`                                                       | Macros used to in shortcode definitions                                                                                                    |

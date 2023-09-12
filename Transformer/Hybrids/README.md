@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023 Rot127
+
+SPDX-License-Identifier: LGPL-3.0-only
+-->
+
 Hyprid classes are operations which must inherit from Effect _and_ Pure.
 
 Certain operations in languages we get as input require these.

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023 Rot127
+
+SPDX-License-Identifier: LGPL-3.0-only
+-->
+
 The overall structure of the compiler consists of:
 
 1. The **Preprocessor** which formats the input data before it is given to the **Parser**.

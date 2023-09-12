@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023 Rot127
+
+SPDX-License-Identifier: LGPL-3.0-only
+-->
+
 # Transformer
 
 The transformers generate the RzIL code for a given instruction.
