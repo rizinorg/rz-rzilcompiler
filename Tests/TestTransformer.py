@@ -7,7 +7,7 @@ import unittest
 
 from Configuration import Conf, InputFile
 from Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
-from ExpectedOutput import ExpectedOutput
+from Tests.ExpectedOutput import ExpectedOutput
 from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.RZILTransformer import RZILTransformer
 from ArchEnum import ArchEnum
@@ -474,12 +474,12 @@ class TestTransformerOutput(unittest.TestCase):
     def test_Y2_barrier(self):
         behavior = self.insn_behavior["Y2_barrier"][0]
         output = self.compile_behavior(behavior)
-        self.assertEqual(output, ExpectedOutput["Y2_barrier"])
+        self.assertEqual(output, ExpectedOutput.src["Y2_barrier"])
 
     def test_A2_abs(self):
         behavior = self.insn_behavior["A2_abs"][0]
         output = self.compile_behavior(behavior)
-        self.assertEqual(output, ExpectedOutput["A2_abs"])
+        self.assertEqual(output, ExpectedOutput.src["A2_abs"])
 
 
 class TestGrammar(unittest.TestCase):
