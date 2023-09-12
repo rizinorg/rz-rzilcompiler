@@ -99,7 +99,8 @@ class RZILTransformer(Transformer):
 
         # Hybrids which have no parent in the AST
         left_hybrids = [
-            self.hybrid_effect_dict.pop(hid) for hid in [k for k in self.hybrid_effect_dict.keys()]
+            self.hybrid_effect_dict.pop(hid)
+            for hid in [k for k in self.hybrid_effect_dict.keys()]
         ]
         # Assign all effects without parent in the AST to the final instruction sequence.
         instruction_sequence = Sequence(
