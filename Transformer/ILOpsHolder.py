@@ -32,10 +32,10 @@ class OpCounter(object):
 
 @singleton
 class ILOpsHolder(object):
-    read_ops = dict()
-    exec_ops = dict()
-    write_ops = dict()
-    let_ops = dict()  # immutable LET vars.
+    read_ops: dict = dict()
+    exec_ops: dict = dict()
+    write_ops: dict = dict()
+    let_ops: dict = dict()  # immutable LET vars.
 
     def add_pure(self, pure: Pure):
         if pure.type == PureType.GLOBAL or pure.type == PureType.LOCAL:
@@ -63,6 +63,16 @@ class ILOpsHolder(object):
         else:
             raise ValueError(f'Did not find op: "{name}"!')
 
+    def rm_op_by_name(self, name: str) -> None:
+        if name in self.read_ops:
+            return self.read_ops.pop(name)
+        elif name in self.exec_ops:
+            return self.exec_ops.pop(name)
+        elif name in self.write_ops:
+            return self.write_ops.pop(name)
+        else:
+            raise ValueError(f'Did not find op: "{name}"!')
+
     def clear(self):
         """Removes all previously added ops."""
         self.read_ops.clear()
@@ -71,7 +81,9 @@ class ILOpsHolder(object):
         self.let_ops.clear()
 
     def is_empty(self) -> bool:
-        return (len(self.read_ops) == 0 and
-                len(self.exec_ops) == 0 and
-                len(self.write_ops) == 0 and
-                len(self.let_ops) == 0)
+        return (
+            len(self.read_ops) == 0
+            and len(self.exec_ops) == 0
+            and len(self.write_ops) == 0
+            and len(self.let_ops) == 0
+        )

@@ -18,6 +18,9 @@ class PureExec(Pure):
         self.ops = operands
         Pure.__init__(self, name, PureType.EXEC, val_type)
 
+    def get_ops(self) -> list[Pure]:
+        return self.ops
+
     def il_exec(self):
         """Returns the RZIL ops to execute the operation.
         :return: RZIL ops to exec the operation value.

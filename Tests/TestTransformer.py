@@ -439,6 +439,44 @@ class TestTransformerMeta(unittest.TestCase):
         self.assertListEqual(meta, ["HEX_IL_INSN_ATTR_NONE"])
 
 
+class TestTransformerCastOptimization(unittest.TestCase):
+    debug = False
+    insn_behavior: dict[str:tuple] = dict()
+
+    @classmethod
+    def setUpClass(cls):
+        cls.insn_behavior = get_hexagon_insn_behavior()
+        cls.parser = get_hexagon_parser()
+
+    def compile_behavior(self, behavior: str) -> list[str]:
+        try:
+            tree = self.parser.parse(behavior)
+            transformer = RZILTransformer(ArchEnum.HEXAGON)
+            return transformer.transform(tree)
+        except UnexpectedToken as e:
+            # Parser got unexpected token
+            exception = e
+        except UnexpectedCharacters as e:
+            # Lexer can not match character to token.
+            exception = e
+        except UnexpectedEOF as e:
+            # Parser expected a token but got EOF
+            exception = e
+        except VisitError as e:
+            # Something went wrong in our transformer.
+            exception = e
+        except Exception as e:
+            exception = e
+        finally:
+            ILOpsHolder().clear()
+        raise exception
+
+    def test_int64_int32_to_int64(self):
+        behavior = self.insn_behavior["L4_return"][0]
+        output = self.compile_behavior(behavior)
+        self.assertEqual(output, ExpectedOutput["L4_return"])
+
+
 class TestTransformerOutput(unittest.TestCase):
     debug = False
     insn_behavior: dict[str:tuple] = dict()
