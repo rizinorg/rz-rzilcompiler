@@ -7,7 +7,7 @@ import unittest
 
 from Configuration import Conf, InputFile
 from Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
-from ExpectedOutput import ExpectedOutput
+from Tests.ExpectedOutput import ExpectedOutput
 from Transformer.RZILTransformer import RZILTransformer
 from ArchEnum import ArchEnum
 
@@ -438,6 +438,7 @@ class TestTransformerMeta(unittest.TestCase):
 class TestTransformerOutput(unittest.TestCase):
     debug = False
     insn_behavior: dict[str:tuple] = dict()
+    expected = ExpectedOutput()
 
     @classmethod
     def setUpClass(cls):
@@ -469,23 +470,23 @@ class TestTransformerOutput(unittest.TestCase):
     def test_empty_stmt_is_nop(self):
         behavior = self.insn_behavior["Y2_barrier"][0]
         output = self.compile_behavior(behavior)
-        self.assertEqual(output, ExpectedOutput["Y2_barrier"])
+        self.assertEqual(output, self.expected.src["Y2_barrier"])
 
     def test_Number_is_not_let(self):
         behavior = self.insn_behavior["A2_abs"][0]
         output = self.compile_behavior(behavior)
-        self.assertEqual(output, ExpectedOutput["A2_abs"])
+        self.assertEqual(output, self.expected.src["A2_abs"])
 
     def test_int64_int32_to_int64(self):
         behavior = self.insn_behavior["L4_return"][0]
         output = self.compile_behavior(behavior)
-        self.assertEqual(output, ExpectedOutput["L4_return"])
+        self.assertEqual(output, self.expected.src["L4_return"])
 
     def test_simplify_arith_expr(self):
         # Simplify e.g. 4 - 1 = 3
         behavior = self.insn_behavior["J2_jump"][0]
         output = self.compile_behavior(behavior)
-        self.assertEqual(output, ExpectedOutput["J2_jump"])
+        self.assertEqual(output, self.expected.src["J2_jump"])
 
 
 class TestGrammar(unittest.TestCase):
