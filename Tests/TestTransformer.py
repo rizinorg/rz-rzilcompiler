@@ -8,7 +8,6 @@ import unittest
 from Configuration import Conf, InputFile
 from Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
 from ExpectedOutput import ExpectedOutput
-from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.RZILTransformer import RZILTransformer
 from ArchEnum import ArchEnum
 
@@ -60,7 +59,8 @@ class TestTransforming(unittest.TestCase):
         exception = None
         try:
             tree = self.parser.parse(behavior)
-            RZILTransformer(ArchEnum.HEXAGON).transform(tree)
+            transformer = RZILTransformer(ArchEnum.HEXAGON)
+            transformer.transform(tree)
         except UnexpectedToken as e:
             # Parser got unexpected token
             exception = e
@@ -75,8 +75,6 @@ class TestTransforming(unittest.TestCase):
             exception = e
         except Exception as e:
             exception = e
-        finally:
-            ILOpsHolder().clear()
 
         if self.debug and exception:
             raise exception
@@ -357,8 +355,6 @@ class TestTransformerMeta(unittest.TestCase):
             exception = e
         except Exception as e:
             exception = e
-        finally:
-            ILOpsHolder().clear()
         raise exception
 
     def test_J2_jump(self):
@@ -452,6 +448,7 @@ class TestTransformerOutput(unittest.TestCase):
         try:
             tree = self.parser.parse(behavior)
             transformer = RZILTransformer(ArchEnum.HEXAGON)
+            transformer.reset()
             return transformer.transform(tree)
         except UnexpectedToken as e:
             # Parser got unexpected token
@@ -467,8 +464,6 @@ class TestTransformerOutput(unittest.TestCase):
             exception = e
         except Exception as e:
             exception = e
-        finally:
-            ILOpsHolder().clear()
         raise exception
 
     def test_empty_stmt_is_nop(self):

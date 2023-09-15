@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from HexagonExtensions import get_fcn_arg_types
 from Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
-from Transformer.ILOpsHolder import OpCounter
 from Transformer.PluginInfo import hexagon_c_call_prefix
 from Transformer.Pures.Cast import Cast
 from Transformer.Pures.Pure import ValueType
@@ -30,7 +29,7 @@ class Call(Hybrid):
             if not a_type or arg.value_type == a_type:
                 continue
 
-            self.ops[i] = Cast(f"arg_cast_{OpCounter().get_op_count()}", a_type, arg)
+            self.ops[i] = Cast(f"arg_cast", a_type, arg)
 
     def il_exec(self):
         def read_arg(arg) -> str:

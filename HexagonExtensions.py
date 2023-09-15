@@ -4,9 +4,7 @@
 import re
 
 from CompilerExtension import CompilerExtension
-from Transformer.ILOpsHolder import ILOpsHolder
 from Transformer.Pures.Immediate import Immediate
-from Transformer.Pures.LocalVar import LocalVar
 from Transformer.Pures.Pure import ValueType
 from Transformer.Pures.Register import RegisterAccessType, Register
 from Transformer.Pures.Variable import Variable
@@ -27,9 +25,10 @@ class HexagonTransformerExtension(TransformerExtension):
     writes_predicate = False
     preds_written = list()  # The numbers of the predicate registers written.
 
-    def __init__(self):
+    def __init__(self, transformer):
         # Variables names used in the shortcode with special meaning.
         self.spec_ids = {"EffectiveAddress": "EA", "iterator_vars": ["i", "k", "j"]}
+        self.transformer = transformer
 
     def set_uses_new(self):
         if not self.uses_new:
@@ -94,7 +93,7 @@ class HexagonTransformerExtension(TransformerExtension):
         if items[1]:
             is_new = True
             self.set_token_meta_data("new_reg")
-        holder = ILOpsHolder()
+        holder = self.transformer.il_ops_holder
         if alias in holder.read_ops:
             return holder.read_ops[alias]
         elif is_new and f"{alias}_tmp" in holder.read_ops:
@@ -115,7 +114,7 @@ class HexagonTransformerExtension(TransformerExtension):
         return self.hex_reg(items, False)
 
     def hex_reg(self, items, is_new: bool, is_explicit: bool = False):
-        holder = ILOpsHolder()
+        holder = self.transformer.il_ops_holder
         items: [Token]
         if is_explicit:
             # If the register is explicitly given (R31, P1, P2 etc.)

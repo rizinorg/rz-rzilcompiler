@@ -10,6 +10,14 @@ class Empty(Effect):
         self.effect_ops = []
         Effect.__init__(self, name, EffectType.EMPTY)
 
+    def il_init_var(self) -> str:
+        return ""
+
+    def effect_var(self) -> str:
+        """Returns the C variable name which holds the IL effect."""
+        # No need to initialize it. We simply execute EMPTY()
+        return self.il_write()
+
     def il_write(self):
         """Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.

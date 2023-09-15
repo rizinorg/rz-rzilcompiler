@@ -3,7 +3,6 @@
 
 from Transformer.Effects.Effect import Effect, EffectType
 from Transformer.Effects.Empty import Empty
-from Transformer.ILOpsHolder import OpCounter
 
 
 class Sequence(Effect):
@@ -16,7 +15,7 @@ class Sequence(Effect):
             else:
                 self.effect_ops.append(e)
         if len(eff) == 0:
-            eff = [Empty(f"empty_seq_{OpCounter().get_op_count()}")]
+            eff = [Empty(f"empty_seq")]
 
         self.effects = eff
         self.effect_ops += self.effects

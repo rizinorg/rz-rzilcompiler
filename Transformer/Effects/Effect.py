@@ -26,15 +26,11 @@ class Effect:
     effect_ops: list = None
 
     def __init__(self, name: str, effect_type: EffectType):
-        from Transformer.ILOpsHolder import ILOpsHolder
-
         self.name = name
         self.type = effect_type
 
-        holder = ILOpsHolder()
-        if name in holder.write_ops:
-            return
-        holder.add_effect(self)
+    def set_name(self, name: str):
+        self.name = name
 
     def get_name(self) -> str:
         return self.name

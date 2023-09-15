@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from copy import deepcopy
 
-from Transformer.ILOpsHolder import OpCounter
 from Transformer.Pures.Cast import Cast
 from Transformer.Pures.Pure import ValueType, Pure
 
@@ -50,7 +49,7 @@ def cast_operands(immutable_a: bool, **ops) -> tuple[Pure, Pure]:
     if a.value_type == b.value_type:
         return a, b
 
-    cname = f"cast_{OpCounter().get_op_count()}"
+    cname = f"cast"
     if immutable_a:
         return a, Cast(cname, a.value_type, b)
 
