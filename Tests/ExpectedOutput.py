@@ -19,7 +19,7 @@ ExpectedOutput = {
         "\n"
         "// WRITE\n"
         "RzILOpEffect *op_ASSIGN_4 = HEX_WRITE_GLOBAL(Rd_assoc_tmp, cond_3);\n"
-        "RzILOpEffect *instruction_sequence = SEQN(1, op_ASSIGN_4);\n"
+        "RzILOpEffect *instruction_sequence = op_ASSIGN_4;\n"
         "\n"
         "return instruction_sequence;"
     ),

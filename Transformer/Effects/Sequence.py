@@ -23,4 +23,6 @@ class Sequence(Effect):
         Effect.__init__(self, name, EffectType.SEQUENCE)
 
     def il_write(self):
+        if len(self.effects) == 1:
+            return self.effects[0].effect_var()
         return f'SEQN({len(self.effects)}, {", ".join([e.effect_var() for e in self.effects])})'
