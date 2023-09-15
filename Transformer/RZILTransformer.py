@@ -140,13 +140,13 @@ class RZILTransformer(Transformer):
     def reg_alias(self, items):
         self.ext.set_token_meta_data("reg")
 
-        return self.ext.reg_alias(items)
+        return self.add_op(self.ext.reg_alias(items))
 
     # SPECIFIC FOR: Hexagon
     def new_reg(self, items):
         self.ext.set_token_meta_data("new_reg")
 
-        return self.ext.hex_reg(items, True)
+        return self.add_op(self.ext.hex_reg(items, True))
 
     def explicit_reg(self, items):
         name = items[0]
