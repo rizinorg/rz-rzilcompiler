@@ -144,6 +144,16 @@
 #define fSTOREMMVU(EA, SRC) \
     gen_vreg_store(ctx, EA, SRC##_off, INSN_SLOT, false)
 
+#define fWRITE_LC0(VAL) (HEX_REG_LC0 = VAL)
+
+/* Post Modify Register using Circular arithmetic by Immediate */
+#define fPM_CIRI(REG, IMM, MVAL) \
+    do { fcirc_add(REG,IMM,MuV); } while (0)
+
+/* Post Modify Register using Circular arithmetic by Register */
+#define fPM_CIRR(REG, VAL, MVAL) \
+    do { fcirc_add(REG,VAL,MuV); } while (0)
+
 // TODO
 // fCARRY_FROM_ADD
 // fEA_BREVR
