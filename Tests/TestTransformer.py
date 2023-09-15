@@ -439,44 +439,6 @@ class TestTransformerMeta(unittest.TestCase):
         self.assertListEqual(meta, ["HEX_IL_INSN_ATTR_NONE"])
 
 
-class TestTransformerCastOptimization(unittest.TestCase):
-    debug = False
-    insn_behavior: dict[str:tuple] = dict()
-
-    @classmethod
-    def setUpClass(cls):
-        cls.insn_behavior = get_hexagon_insn_behavior()
-        cls.parser = get_hexagon_parser()
-
-    def compile_behavior(self, behavior: str) -> list[str]:
-        try:
-            tree = self.parser.parse(behavior)
-            transformer = RZILTransformer(ArchEnum.HEXAGON)
-            return transformer.transform(tree)
-        except UnexpectedToken as e:
-            # Parser got unexpected token
-            exception = e
-        except UnexpectedCharacters as e:
-            # Lexer can not match character to token.
-            exception = e
-        except UnexpectedEOF as e:
-            # Parser expected a token but got EOF
-            exception = e
-        except VisitError as e:
-            # Something went wrong in our transformer.
-            exception = e
-        except Exception as e:
-            exception = e
-        finally:
-            ILOpsHolder().clear()
-        raise exception
-
-    def test_int64_int32_to_int64(self):
-        behavior = self.insn_behavior["L4_return"][0]
-        output = self.compile_behavior(behavior)
-        self.assertEqual(output, ExpectedOutput["L4_return"])
-
-
 class TestTransformerOutput(unittest.TestCase):
     debug = False
     insn_behavior: dict[str:tuple] = dict()
@@ -509,15 +471,20 @@ class TestTransformerOutput(unittest.TestCase):
             ILOpsHolder().clear()
         raise exception
 
-    def test_Y2_barrier(self):
+    def test_empty_stmt_is_nop(self):
         behavior = self.insn_behavior["Y2_barrier"][0]
         output = self.compile_behavior(behavior)
         self.assertEqual(output, ExpectedOutput["Y2_barrier"])
 
-    def test_A2_abs(self):
+    def test_Number_is_not_let(self):
         behavior = self.insn_behavior["A2_abs"][0]
         output = self.compile_behavior(behavior)
         self.assertEqual(output, ExpectedOutput["A2_abs"])
+
+    def test_int64_int32_to_int64(self):
+        behavior = self.insn_behavior["L4_return"][0]
+        output = self.compile_behavior(behavior)
+        self.assertEqual(output, ExpectedOutput["L4_return"])
 
 
 class TestGrammar(unittest.TestCase):
@@ -547,70 +514,7 @@ class TestGrammar(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    tester = TestTransforming()
-    tester.test_J2_jump()
-    tester.test_J2_jumpr()
-    tester.test_J2_jumpt()
-    tester.test_J2_jumpf()
-    tester.test_J2_jumprt()
-    tester.test_J2_jumprf()
-    tester.test_J4_cmpgti_tp0_jump_t()
-    tester.test_J2_call()
-    tester.test_J2_loop0r()
-    tester.test_L2_loadrd_io()
-    tester.test_S2_storeri_io()
-    tester.test_S2_storerd_io()
-    tester.test_L4_return()
-    tester.test_S4_storeiri_io()
-    tester.test_C2_cmpgtu()
-    tester.test_C2_cmpgti()
-    tester.test_C2_xor()
-    tester.test_C2_muxii()
-    tester.test_M2_mpyi()
-    tester.test_A2_sub()
-    tester.test_A2_paddfnew()
-    tester.test_A2_psubfnew()
-    tester.test_A2_paddit()
-    tester.test_A2_addi()
-    tester.test_A2_abs()
-    tester.test_A2_nop()
-    tester.test_A4_ext()
-    tester.test_A2_tfr()
-    tester.test_A2_tfrsi()
-    tester.test_A2_combinew()
-    tester.test_A2_combineii()
-    tester.test_A2_subri()
-    tester.test_S2_lsr_i_vw()
-    tester.test_S2_lsl_r_vw()
-    tester.test_S2_cl0()
-    tester.test_SA1_addi()
-    tester.test_SA1_tfr()
-    tester.test_SA1_seti()
-    tester.test_SA1_combinezr()
-    tester.test_SA1_combine1i()
-    tester.test_SL1_loadri_io()
-    tester.test_SL2_loadrh_io()
-    tester.test_SL2_loadrd_sp()
-    tester.test_SL2_jumpr31_t()
-    tester.test_SS2_storeh_io()
-    tester.test_SS2_stored_sp()
-    tester.test_SS2_storew_sp()
-    tester.test_SS2_allocframe()
-
-    tester = TestTransformerMeta()
-    tester.test_J2_jump()
-    tester.test_J2_jumpt()
-    tester.test_J4_cmpgti_tp0_jump_t()
-    tester.test_J2_call()
-    tester.test_J2_loop0r()
-    tester.test_L2_loadrd_io()
-    tester.test_S2_storerd_io()
-    tester.test_L4_return()
-    tester.test_A2_nop()
-
-    tester = TestTransformerOutput()
-    tester.test_Y2_barrier()
-
-    tester = TestGrammar()
-    tester.test_early_compatibility()
-    tester.test_lalr_compatibility()
+    TestTransforming().main()
+    TestTransformerMeta().main()
+    TestGrammar().main()
+    TestTransformerOutput().main()
