@@ -36,13 +36,13 @@ class InputFile(StrEnum):
 
 
 def is_submodule() -> bool:
-    """Test if there is a submodule rzil-compiler present."""
+    """Test if there is a submodule rzil_compiler present."""
     res = subprocess.run(
         ["git", "submodule"],
         check=True,
         stdout=subprocess.PIPE,
     )
-    return "rzil-compiler" in res.stdout.decode("utf8").strip("\n")
+    return "rzil_compiler" in res.stdout.decode("utf8").strip("\n")
 
 
 class Conf:
@@ -60,7 +60,7 @@ class Conf:
             )
             root_dir = Path(root.stdout.decode("utf8").strip("\n"))
             if is_submodule():
-                root_dir = root_dir.joinpath("rzil-compiler")
+                root_dir = root_dir.joinpath("rzil_compiler")
             if not root_dir.exists():
                 raise NotADirectoryError(str(root_dir))
 
