@@ -53,7 +53,7 @@
 #define fVSAT(A) fVSATN(32, A)
 #define fSAT(A) fSATN(32, A)
 #define f8BITSOF(VAL) ((VAL) ? 0xff : 0x00)
-#define fREAD_GP()     (insn->extension_valid ? 0 : READ_REG(HEX_REG_GP))
+#define fREAD_GP() HEX_REG_GP
 #define fCLIP(DST, SRC, U) (DST = fMIN((1 << U) - 1, fMAX(SRC, -(1 << U))))
 #define fBIDIR_ASHIFTL(SRC, SHAMT, REGSTYPE)    ((SHAMT > 0) ?     (fCAST##REGSTYPE##s(SRC) << SHAMT) :     (fCAST##REGSTYPE##s(SRC) >> -SHAMT))
 #define fBIDIR_LSHIFTL(SRC, SHAMT, REGSTYPE)    ((SHAMT > 0) ?     (fCAST##REGSTYPE##u(SRC) << SHAMT) :     (fCAST##REGSTYPE##u(SRC) >>> -SHAMT))
@@ -119,7 +119,7 @@
 #define MEM_STORE8(VA, DATA, SLOT) mem_store_u64(VA, DATA)
 #define CANCEL cancel_slot
 #define LOAD_CANCEL(EA) do { CANCEL; } while (0)
-#define STORE_CANCEL(EA) { env->slot_cancelled |= (1 << slot); }
+#define STORE_CANCEL(EA) { store_cancelled_slot(pkt, slot); }
 #define fMAX(A, B) (((A) > (B)) ? (A) : (B))
 #define fMIN(A, B) (((A) < (B)) ? (A) : (B))
 #define fABS(A) (((A) < 0) ? (-(A)) : (A))
@@ -260,7 +260,7 @@
 #define fFRAME_SCRAMBLE(VAL) ((VAL) ^ (fCAST8u(fGET_FRAMEKEY()) << 32))
 #define fFRAME_UNSCRAMBLE(VAL) fFRAME_SCRAMBLE(VAL)
 #define fFRAMECHECK(ADDR, EA)
-#define fSTORE(NUM, SIZE, EA, SRC) MEM_STORE##SIZE(EA, SRC, slot)
+#define fSTORE(NUM, SIZE, EA, SRC) MEM_STORE##SIZE(EA, SRC, INSN_SLOT)
 #define fGETBYTE(N, SRC) ((int8_t)((SRC >> ((N) * 8)) & 0xff))
 #define fGETUBYTE(N, SRC) ((uint8_t)((SRC >> ((N) * 8)) & 0xff))
 #define fSETBYTE(N, DST, VAL)    do {        DST = (DST & ~(0x0ffLL << ((N) * 8))) |        (((uint64_t)((VAL) & 0x0ffLL)) << ((N) * 8));    } while (0)
@@ -366,8 +366,8 @@
 #define fLOADMMVU(EA, DST) gen_vreg_load(ctx, DST##_off, EA, false)
 #define fSTOREMMV(EA, SRC)    gen_vreg_store(ctx, EA, SRC##_off, insn->slot, true)
 #define fSTOREMMVQ(EA, SRC, MASK)    gen_vreg_masked_store(ctx, EA, SRC##_off, MASK##_off, insn->slot, false)
-#define fSTOREMMVNQ(EA, SRC, MASK)    gen_vreg_masked_store(ctx, EA, SRC##_off, MASK##_off, insn->slot, true)
-#define fSTOREMMVU(EA, SRC)    gen_vreg_store(ctx, EA, SRC##_off, insn->slot, false)
+#define fSTOREMMVNQ(EA, SRC, MASK)     gen_vreg_masked_store(ctx, EA, SRC##_off, MASK##_off, INSN_SLOT, true)
+#define fSTOREMMVU(EA, SRC)     gen_vreg_store(ctx, EA, SRC##_off, INSN_SLOT, false)
 #define fVFOREACH(WIDTH, VAR) for (VAR = 0; VAR < fVELEM(WIDTH); VAR++)
 #define fVARRAY_ELEMENT_ACCESS(ARRAY, TYPE, INDEX)    ARRAY.v[(INDEX) / (fVECSIZE() / (sizeof(ARRAY.TYPE[0])))].TYPE[(INDEX) %    (fVECSIZE() / (sizeof(ARRAY.TYPE[0])))]
 #define fVSATDW(U, V) fVSATW(((((long long)U) << 32) | fZXTN(32, 64, V)))

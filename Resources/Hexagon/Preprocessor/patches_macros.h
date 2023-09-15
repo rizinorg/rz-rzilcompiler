@@ -135,6 +135,15 @@
 // Frame checks are currently not implemented. They are not modeled for user instructions anyway.
 #define fFRAMECHECK(ADDR, EA)
 
+#define fREAD_GP() HEX_REG_GP
+#define STORE_CANCEL(EA) { store_cancelled_slot(pkt, slot); }
+
+#define fSTORE(NUM, SIZE, EA, SRC) MEM_STORE##SIZE(EA, SRC, INSN_SLOT)
+#define fSTOREMMVNQ(EA, SRC, MASK) \
+    gen_vreg_masked_store(ctx, EA, SRC##_off, MASK##_off, INSN_SLOT, true)
+#define fSTOREMMVU(EA, SRC) \
+    gen_vreg_store(ctx, EA, SRC##_off, INSN_SLOT, false)
+
 // TODO
 // fCARRY_FROM_ADD
 // fEA_BREVR
