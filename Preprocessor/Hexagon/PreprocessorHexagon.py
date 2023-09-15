@@ -7,8 +7,8 @@ import pcpp
 
 from pathlib import Path
 
-from Configuration import InputFile, Conf
-from Helper import log
+from rzil_compiler.Configuration import InputFile, Conf
+from rzil_compiler.Helper import log
 
 
 class PreprocessorHexagon:

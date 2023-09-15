@@ -3,9 +3,9 @@
 
 from enum import StrEnum, Enum
 
-from Transformer.Effects.Effect import Effect, EffectType
-from Transformer.Pures.Pure import ValueType, Pure
-from Transformer.Pures.PureExec import PureExec
+from rzil_compiler.Transformer.Effects.Effect import Effect, EffectType
+from rzil_compiler.Transformer.Pures.Pure import ValueType, Pure
+from rzil_compiler.Transformer.Pures.PureExec import PureExec
 
 
 class HybridType(StrEnum):

@@ -1,15 +1,15 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Transformer.Effects.Effect import Effect, EffectType
-from Transformer.Pures.BitOp import BitOp, BitOperationType
-from Transformer.Pures.LetVar import LetVar, resolve_lets
-from Transformer.Pures.Pure import Pure, PureType, ValueType
-from Transformer.helper import cast_operands
+from rzil_compiler.Transformer.Effects.Effect import Effect, EffectType
+from rzil_compiler.Transformer.Pures.BitOp import BitOp, BitOperationType
+from rzil_compiler.Transformer.Pures.LetVar import LetVar, resolve_lets
+from rzil_compiler.Transformer.Pures.Pure import Pure, PureType, ValueType
+from rzil_compiler.Transformer.helper import cast_operands
 from enum import StrEnum
 
-from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
-from Transformer.Pures.Register import Register
+from rzil_compiler.Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
+from rzil_compiler.Transformer.Pures.Register import Register
 
 
 class AssignmentType(StrEnum):
@@ -130,7 +130,7 @@ class Assignment(Effect):
         """Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
         """
-        from Transformer.Pures.Immediate import Immediate
+        from rzil_compiler.Transformer.Pures.Immediate import Immediate
 
         if isinstance(self.src, LetVar):
             read = resolve_lets([self.src], self.src)

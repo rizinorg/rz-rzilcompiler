@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from enum import StrEnum
 
-from Transformer.Pures.Pure import Pure
-from Transformer.Pures.PureExec import PureExec
-from Transformer.helper import cast_operands
+from rzil_compiler.Transformer.Pures.Pure import Pure
+from rzil_compiler.Transformer.Pures.PureExec import PureExec
+from rzil_compiler.Transformer.helper import cast_operands
 
 
 class CompareOpType(StrEnum):

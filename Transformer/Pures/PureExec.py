@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Exceptions import OverloadException
-from Transformer.Pures.LetVar import LetVar, resolve_lets
-from Transformer.Pures.Pure import Pure, PureType, ValueType
+from rzil_compiler.Exceptions import OverloadException
+from rzil_compiler.Transformer.Pures.LetVar import LetVar, resolve_lets
+from rzil_compiler.Transformer.Pures.Pure import Pure, PureType, ValueType
 
 
 class PureExec(Pure):

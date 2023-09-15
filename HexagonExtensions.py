@@ -3,13 +3,13 @@
 
 import re
 
-from CompilerExtension import CompilerExtension
-from Transformer.Pures.Immediate import Immediate
-from Transformer.Pures.Pure import ValueType
-from Transformer.Pures.Register import RegisterAccessType, Register
-from Transformer.Pures.Variable import Variable
-from Transformer.TransformerExtension import TransformerExtension
-from Transformer.helper_hexagon import (
+from rzil_compiler.CompilerExtension import CompilerExtension
+from rzil_compiler.Transformer.Pures.Immediate import Immediate
+from rzil_compiler.Transformer.Pures.Pure import ValueType
+from rzil_compiler.Transformer.Pures.Register import RegisterAccessType, Register
+from rzil_compiler.Transformer.Pures.Variable import Variable
+from rzil_compiler.Transformer.TransformerExtension import TransformerExtension
+from rzil_compiler.Transformer.helper_hexagon import (
     get_value_type_from_reg_type,
     get_value_type_by_isa_imm,
 )

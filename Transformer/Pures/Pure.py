@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from enum import Enum
-from Exceptions import OverloadException
+from rzil_compiler.Exceptions import OverloadException
 
 
 class PureType(Enum):

@@ -3,8 +3,8 @@
 
 from math import ceil
 
-from Transformer.Pures.LetVar import LetVar
-from Transformer.Pures.Pure import ValueType, Pure
+from rzil_compiler.Transformer.Pures.LetVar import LetVar
+from rzil_compiler.Transformer.Pures.Pure import ValueType, Pure
 
 
 class Sizeof(LetVar):

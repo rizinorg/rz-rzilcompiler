@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from enum import Enum
-from Exceptions import OverloadException
-from Transformer.Pures.PureExec import PureExec
+from rzil_compiler.Exceptions import OverloadException
+from rzil_compiler.Transformer.Pures.PureExec import PureExec
 
 
 class EffectType(Enum):
@@ -50,7 +50,7 @@ class Effect:
 
     def get_op_list(self):
         """Returns all Global, Local and LetPure operands this effect depends on as list."""
-        from Transformer.Hybrids.Hybrid import Hybrid
+        from rzil_compiler.Transformer.Hybrids.Hybrid import Hybrid
 
         def get_ops(x):
             if isinstance(x, PureExec):
@@ -63,6 +63,6 @@ class Effect:
                 return x
             return [get_ops(y) for y in ops]
 
-        from Transformer.helper import flatten_list
+        from rzil_compiler.Transformer.helper import flatten_list
 
         return flatten_list([get_ops(o) for o in self.effect_ops])

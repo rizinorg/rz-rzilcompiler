@@ -3,7 +3,7 @@
 
 from lark import Token
 
-from Exceptions import OverloadException
+from rzil_compiler.Exceptions import OverloadException
 
 
 class TransformerExtension:

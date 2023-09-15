@@ -4,7 +4,7 @@ import re
 
 from lark import Token
 
-from Transformer.Pures.Pure import ValueType
+from rzil_compiler.Transformer.Pures.Pure import ValueType
 
 
 def get_value_type_from_reg_type(token_list: list) -> ValueType:

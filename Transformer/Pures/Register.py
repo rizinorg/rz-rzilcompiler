@@ -1,16 +1,16 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Transformer.PluginInfo import (
+from rzil_compiler.Transformer.PluginInfo import (
     isa_to_reg_fnc,
     isa_to_reg_args,
     isa_alias_to_reg,
     isa_alias_to_reg_args,
 )
-from Transformer.Pures.GlobalVar import GlobalVar
+from rzil_compiler.Transformer.Pures.GlobalVar import GlobalVar
 from enum import StrEnum
 
-from Transformer.Pures.Pure import ValueType
+from rzil_compiler.Transformer.Pures.Pure import ValueType
 
 
 class RegisterAccessType(StrEnum):

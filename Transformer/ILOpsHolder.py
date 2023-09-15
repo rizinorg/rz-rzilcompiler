@@ -1,10 +1,10 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Transformer.Effects.Effect import Effect
-from Transformer.Hybrids.Hybrid import Hybrid
-from Transformer.Pures.Pure import Pure, PureType
-from Transformer.Pures.Variable import Variable
+from rzil_compiler.Transformer.Effects.Effect import Effect
+from rzil_compiler.Transformer.Hybrids.Hybrid import Hybrid
+from rzil_compiler.Transformer.Pures.Pure import Pure, PureType
+from rzil_compiler.Transformer.Pures.Variable import Variable
 
 
 class ILOpsHolder:

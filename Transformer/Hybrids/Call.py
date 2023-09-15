@@ -1,12 +1,12 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
-from HexagonExtensions import get_fcn_arg_types
-from Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
-from Transformer.PluginInfo import hexagon_c_call_prefix
-from Transformer.Pures.Cast import Cast
-from Transformer.Pures.Pure import ValueType
-from Transformer.Pures.Register import Register
-from Transformer.Pures.LetVar import LetVar, resolve_lets
+from rzil_compiler.HexagonExtensions import get_fcn_arg_types
+from rzil_compiler.Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
+from rzil_compiler.Transformer.PluginInfo import hexagon_c_call_prefix
+from rzil_compiler.Transformer.Pures.Cast import Cast
+from rzil_compiler.Transformer.Pures.Pure import ValueType
+from rzil_compiler.Transformer.Pures.Register import Register
+from rzil_compiler.Transformer.Pures.LetVar import LetVar, resolve_lets
 
 
 class Call(Hybrid):

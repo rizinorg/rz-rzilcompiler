@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Transformer.Pures.Pure import Pure, PureType, ValueType
+from rzil_compiler.Transformer.Pures.Pure import Pure, PureType, ValueType
 
 
 class LetVar(Pure):
@@ -29,8 +29,8 @@ class LetVar(Pure):
 
 def resolve_lets(lets: list[LetVar], consumer):
     """Wraps LET(...) around the consumer."""
-    from Transformer.Pures.Number import Number
-    from Transformer.Pures.PureExec import PureExec
+    from rzil_compiler.Transformer.Pures.Number import Number
+    from rzil_compiler.Transformer.Pures.PureExec import PureExec
 
     num_lets = len(lets) - sum(isinstance(l, Number) for l in lets)
 

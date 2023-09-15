@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from copy import deepcopy
 
-from Transformer.Pures.Cast import Cast
-from Transformer.Pures.Pure import ValueType, Pure
+from rzil_compiler.Transformer.Pures.Cast import Cast
+from rzil_compiler.Transformer.Pures.Pure import ValueType, Pure
 
 
 def get_smalles_val_type_for_number(num: int) -> int:

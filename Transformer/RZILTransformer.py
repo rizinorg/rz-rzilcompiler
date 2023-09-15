@@ -3,36 +3,39 @@
 
 from lark import Transformer, Token
 
-from ArchEnum import ArchEnum
-from Transformer.Effects.Branch import Branch
-from Transformer.Effects.Effect import Effect
-from Transformer.Effects.Empty import Empty
-from Transformer.Effects.ForLoop import ForLoop
-from Transformer.Effects.Jump import Jump
-from Transformer.Effects.MemStore import MemStore
-from Transformer.Effects.NOP import NOP
-from Transformer.Effects.Sequence import Sequence
-from HexagonExtensions import HexagonTransformerExtension
-from Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
-from Transformer.Hybrids.PostfixIncDec import PostfixIncDec
-from Transformer.ILOpsHolder import ILOpsHolder
-from Transformer.Pures.BitOp import BitOperationType, BitOp
-from Transformer.Pures.BooleanOp import BooleanOpType, BooleanOp
-from Transformer.Hybrids.Call import Call
-from Transformer.Pures.Cast import Cast
-from Transformer.Pures.CompareOp import CompareOp, CompareOpType
-from Transformer.Pures.LocalVar import LocalVar
-from Transformer.Pures.MemLoad import MemAccessType, MemLoad
-from Transformer.Pures.Number import Number
-from Transformer.Pures.Pure import Pure, ValueType
-from Transformer.Effects.Assignment import Assignment, AssignmentType
-from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
-from Transformer.Pures.Register import Register
-from Transformer.Pures.Sizeof import Sizeof
-from Transformer.Pures.Ternary import Ternary
-from Transformer.Pures.Variable import Variable
-from Transformer.helper import flatten_list, c11_cast
-from Transformer.helper_hexagon import get_value_type_by_c_number, get_num_base_by_token
+from rzil_compiler.ArchEnum import ArchEnum
+from rzil_compiler.Transformer.Effects.Branch import Branch
+from rzil_compiler.Transformer.Effects.Effect import Effect
+from rzil_compiler.Transformer.Effects.Empty import Empty
+from rzil_compiler.Transformer.Effects.ForLoop import ForLoop
+from rzil_compiler.Transformer.Effects.Jump import Jump
+from rzil_compiler.Transformer.Effects.MemStore import MemStore
+from rzil_compiler.Transformer.Effects.NOP import NOP
+from rzil_compiler.Transformer.Effects.Sequence import Sequence
+from rzil_compiler.HexagonExtensions import HexagonTransformerExtension
+from rzil_compiler.Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
+from rzil_compiler.Transformer.Hybrids.PostfixIncDec import PostfixIncDec
+from rzil_compiler.Transformer.ILOpsHolder import ILOpsHolder
+from rzil_compiler.Transformer.Pures.BitOp import BitOperationType, BitOp
+from rzil_compiler.Transformer.Pures.BooleanOp import BooleanOpType, BooleanOp
+from rzil_compiler.Transformer.Hybrids.Call import Call
+from rzil_compiler.Transformer.Pures.Cast import Cast
+from rzil_compiler.Transformer.Pures.CompareOp import CompareOp, CompareOpType
+from rzil_compiler.Transformer.Pures.LocalVar import LocalVar
+from rzil_compiler.Transformer.Pures.MemLoad import MemAccessType, MemLoad
+from rzil_compiler.Transformer.Pures.Number import Number
+from rzil_compiler.Transformer.Pures.Pure import Pure, ValueType
+from rzil_compiler.Transformer.Effects.Assignment import Assignment, AssignmentType
+from rzil_compiler.Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
+from rzil_compiler.Transformer.Pures.Register import Register
+from rzil_compiler.Transformer.Pures.Sizeof import Sizeof
+from rzil_compiler.Transformer.Pures.Ternary import Ternary
+from rzil_compiler.Transformer.Pures.Variable import Variable
+from rzil_compiler.Transformer.helper import flatten_list, c11_cast
+from rzil_compiler.Transformer.helper_hexagon import (
+    get_value_type_by_c_number,
+    get_num_base_by_token,
+)
 
 
 class RZILTransformer(Transformer):

@@ -5,11 +5,11 @@ import logging
 import re
 import unittest
 
-from Configuration import Conf, InputFile
-from Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
-from Tests.ExpectedOutput import ExpectedOutput
-from Transformer.RZILTransformer import RZILTransformer
-from ArchEnum import ArchEnum
+from rzil_compiler.Configuration import Conf, InputFile
+from rzil_compiler.Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
+from rzil_compiler.Tests.ExpectedOutput import ExpectedOutput
+from rzil_compiler.Transformer.RZILTransformer import RZILTransformer
+from rzil_compiler.ArchEnum import ArchEnum
 
 from lark import Lark, logger
 from lark.exceptions import (

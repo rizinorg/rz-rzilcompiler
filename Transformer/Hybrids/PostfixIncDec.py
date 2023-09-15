@@ -1,10 +1,10 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Transformer.Hybrids.Hybrid import HybridType, Hybrid, HybridSeqOrder
-from Transformer.Pures.GlobalVar import GlobalVar
-from Transformer.Pures.LocalVar import LocalVar
-from Transformer.Pures.Pure import ValueType, Pure
+from rzil_compiler.Transformer.Hybrids.Hybrid import HybridType, Hybrid, HybridSeqOrder
+from rzil_compiler.Transformer.Pures.GlobalVar import GlobalVar
+from rzil_compiler.Transformer.Pures.LocalVar import LocalVar
+from rzil_compiler.Transformer.Pures.Pure import ValueType, Pure
 
 
 class PostfixIncDec(Hybrid):

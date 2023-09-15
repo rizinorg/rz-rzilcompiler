@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from Transformer.PluginInfo import isa_to_imm_fnc, isa_to_imm_args
-from Transformer.Pures.LocalVar import LocalVar
-from Transformer.Pures.Pure import ValueType
+from rzil_compiler.Transformer.PluginInfo import isa_to_imm_fnc, isa_to_imm_args
+from rzil_compiler.Transformer.Pures.LocalVar import LocalVar
+from rzil_compiler.Transformer.Pures.Pure import ValueType
 
 
 class Immediate(LocalVar):

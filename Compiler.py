@@ -10,12 +10,12 @@ from lark.exceptions import VisitError
 from lark.lark import Lark
 from tqdm import tqdm
 
-from ArchEnum import ArchEnum
-from Configuration import Conf, InputFile
-from Helper import log
-from HexagonExtensions import HexagonCompilerExtension
-from Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
-from Transformer.RZILTransformer import RZILTransformer
+from rzil_compiler.ArchEnum import ArchEnum
+from rzil_compiler.Configuration import Conf, InputFile
+from rzil_compiler.Helper import log
+from rzil_compiler.HexagonExtensions import HexagonCompilerExtension
+from rzil_compiler.Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
+from rzil_compiler.Transformer.RZILTransformer import RZILTransformer
 
 
 class Compiler:
