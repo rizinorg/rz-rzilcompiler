@@ -10,7 +10,6 @@ ExpectedOutput = {
         "const char *Rs_assoc = ISA2REG(hi, 's', false);\n"
         "RzILOpPure *Rs = VARG(Rs_assoc);\n"
         "\n"
-        "\n"
         "// EXEC\n"
         "RzILOpPure *cast_1 = CAST(32, IL_FALSE, Rs);\n"
         "RzILOpPure *op_LT_0 = ULT(cast_1, UN(32, 0));\n"

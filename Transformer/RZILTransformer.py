@@ -81,13 +81,19 @@ class RZILTransformer(Transformer):
         # We are at the top. Generate code.
         res += "\n// READ\n"
         for op in holder.read_ops.values():
-            res += op.il_init_var() + "\n"
+            read_op = op.il_init_var()
+            if not read_op:
+                continue
+            res += read_op + "\n"
 
         res += "\n// EXEC\n"
         for op in holder.exec_ops.values():
             if isinstance(op, Hybrid):
                 continue
-            res += op.il_init_var() + "\n"
+            exec_op = op.il_init_var()
+            if not exec_op:
+                continue
+            res += exec_op + "\n"
 
         res += "\n// WRITE\n"
         for op in holder.write_ops.values():
@@ -95,11 +101,11 @@ class RZILTransformer(Transformer):
                 res += op.il_init_var() + "\n"
                 continue
             res += op.il_init_var() + "\n"
-        left_hybrids = list()
 
         # Hybrids which have no parent in the AST
         left_hybrids = [
-            self.hybrid_effect_dict.pop(hid) for hid in [k for k in self.hybrid_effect_dict.keys()]
+            self.hybrid_effect_dict.pop(hid)
+            for hid in [k for k in self.hybrid_effect_dict.keys()]
         ]
         # Assign all effects without parent in the AST to the final instruction sequence.
         instruction_sequence = Sequence(
