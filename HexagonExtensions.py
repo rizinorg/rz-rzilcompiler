@@ -206,6 +206,10 @@ class HexagonTransformerExtension(TransformerExtension):
             # lie entirely within the 64 bit word. It is valid to request that
             # all 64 bits are returned (ie @length 64 and @start 0).
             return ValueType(False, 64)
+        elif fcn_name == "STORE_SLOT_CANCELLED":
+            # Marks the slot i as cancelled in a global variable for this case.
+            # returns void.
+            return ValueType(False, 32)
         else:
             raise NotImplementedError(f"No value type for function {fcn_name} defined.")
         # TODO
@@ -309,5 +313,10 @@ def get_fcn_arg_types(fcn_name: str) -> [ValueType]:
         return [ValueType(False, 64), ValueType(True, 64), ValueType(True, 64)]
     elif fcn_name == "WRITE_PRED":
         return [ValueType(False, 8), ValueType(False, 8)]
+    elif fcn_name == "STORE_SLOT_CANCELLED":
+        # Marks the slot i as cancelled in a global variable for this case.
+        return [ValueType(False, 8)]
     else:
-        raise NotImplementedError(f"No value type for function {fcn_name} defined.")
+        raise NotImplementedError(
+            f"No value type for the function parameter of {fcn_name} defined."
+        )

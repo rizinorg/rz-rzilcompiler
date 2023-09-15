@@ -119,7 +119,7 @@
 #define MEM_STORE8(VA, DATA, SLOT) mem_store_u64(VA, DATA)
 #define CANCEL cancel_slot
 #define LOAD_CANCEL(EA) do { CANCEL; } while (0)
-#define STORE_CANCEL(EA) { store_cancelled_slot(pkt, slot); }
+#define STORE_CANCEL(EA) { STORE_SLOT_CANCELLED(slot); }
 #define fMAX(A, B) (((A) > (B)) ? (A) : (B))
 #define fMIN(A, B) (((A) < (B)) ? (A) : (B))
 #define fABS(A) (((A) < 0) ? (-(A)) : (A))
