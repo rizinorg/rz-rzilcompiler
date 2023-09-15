@@ -154,11 +154,12 @@
 #define fPM_CIRR(REG, VAL, MVAL) \
     do { fcirc_add(REG,VAL,MuV); } while (0)
 
+/* read modifier register */
+#define fREAD_IREG(VAL) (fSXTN(11,64,(((VAL) & 0xf0000000)>>21) | ((VAL>>17)&0x7f) ))
+
 // TODO
 // fCARRY_FROM_ADD
 // fEA_BREVR
-// fPM_CIRI
-// fPM_CIRR
 // fCARRY_FROM_ADD
 // fFLOAT
 // fSF_RECIP_COMMON

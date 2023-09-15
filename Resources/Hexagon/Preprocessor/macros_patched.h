@@ -1,3 +1,7 @@
+#define fREAD_IREG(VAL) (fSXTN(11,64,(((VAL) & 0xf0000000)>>21) | ((VAL>>17)&0x7f) ))
+#define fPM_CIRR(REG, VAL, MVAL)     do { fcirc_add(REG,VAL,MuV); } while (0)
+#define fPM_CIRI(REG, IMM, MVAL)     do { fcirc_add(REG,IMM,MuV); } while (0)
+#define fWRITE_LC0(VAL) (HEX_REG_LC0 = VAL)
 #define fSTORE_LOCKED(NUM, SIZE, EA, SRC, PRED)     gen_store_conditional##SIZE(ctx, PRED, EA, SRC);
 #define fLOAD_LOCKED(NUM, SIZE, SIGN, EA, DST)     gen_load_locked##SIZE##SIGN(DST, EA, ctx->mem_idx);
 #define PRED_LOAD_CANCEL(PRED, EA)     gen_pred_cancel(PRED, insn->is_endloop ? 4 : insn->slot)
