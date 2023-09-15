@@ -28,7 +28,7 @@ def exc_if_types_not_match(a: ValueType, b: ValueType):
         )
 
 
-def cast_operands(immutable_a: bool, **ops) -> (Pure, Pure):
+def cast_operands(immutable_a: bool, **ops) -> tuple[Pure, Pure]:
     """Casts two operands to a common type according to C11 standard.
     If immutable_op_a = True operand b is cast to the operand a type
     (Useful for assignments to global vars like registers).
@@ -70,7 +70,7 @@ def cast_operands(immutable_a: bool, **ops) -> (Pure, Pure):
     return a, b
 
 
-def c11_cast(a: ValueType, b: ValueType) -> (ValueType, ValueType):
+def c11_cast(a: ValueType, b: ValueType) -> tuple[ValueType, ValueType]:
     """Compares both value types against each other and converts them according to
     Chapter 6.3.1.8 of ISO/IEC 9899:201x (C11 Standard).
     Please note that we do not follow the rank definition from the standard.

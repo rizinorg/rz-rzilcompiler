@@ -61,4 +61,27 @@ ExpectedOutput = {
         "\n"
         "return instruction_sequence;"
     ),
+    "J2_jump": (
+        '\n'
+        '// READ\n'
+        "RzILOpPure *r = SN(32, (st32) ISA2IMM(hi, 'r'));\n"
+        'RzILOpPure *pc = U32(pkt->pkt_addr);\n'
+        '\n'
+        '// EXEC\n'
+        'RzILOpPure *op_NOT_1 = LOGNOT(UN(32, 3));\n'
+        'RzILOpPure *cast_3 = CAST(32, IL_FALSE, VARL("r"));\n'
+        'RzILOpPure *op_AND_2 = LOGAND(cast_3, op_NOT_1);\n'
+        'RzILOpPure *cast_5 = CAST(32, MSB(DUP(op_AND_2)), op_AND_2);\n'
+        'RzILOpPure *cast_7 = CAST(32, IL_FALSE, VARL("r"));\n'
+        'RzILOpPure *op_ADD_6 = ADD(pc, cast_7);\n'
+        '\n'
+        '// WRITE\n'
+        'RzILOpEffect *imm_assign_0 = SETL("r", r);\n'
+        'RzILOpEffect *op_ASSIGN_4 = SETL("r", cast_5);\n'
+        'RzILOpEffect *jump_op_ADD_6 = JMP(op_ADD_6);\n'
+        'RzILOpEffect *empty_8 = EMPTY();\n'
+        'RzILOpEffect *instruction_sequence = SEQN(4, imm_assign_0, op_ASSIGN_4, jump_op_ADD_6, empty_8);\n'
+        '\n'
+        'return instruction_sequence;'
+    ),
 }

@@ -27,13 +27,45 @@ from Transformer.Pures.Number import Number
 from Transformer.Pures.Pure import Pure, ValueType
 from Transformer.Effects.Assignment import Assignment, AssignmentType
 from Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
-from Transformer.Pures.PureExec import PureExec
 from Transformer.Pures.Register import Register
 from Transformer.Pures.Sizeof import Sizeof
 from Transformer.Pures.Ternary import Ternary
 from Transformer.Pures.Variable import Variable
-from Transformer.helper import flatten_list, drain_list
+from Transformer.helper import flatten_list, c11_cast
 from Transformer.helper_hexagon import get_value_type_by_c_number, get_num_base_by_token
+
+
+def simplify_arithmetic_expr(items) -> Pure:
+    """
+    Checks if the given arithmetic expression can be simplified.
+    Simple arithmetic expressions can be resolved to a single number,
+    so we do not have to do it during runtime.
+    """
+    a = items[0]
+    operation: str = items[1]
+    b = items[2]
+    if not isinstance(a, Number) or not isinstance(b, Number):
+        return None
+
+    val_a = a.get_val()
+    val_b = b.get_val()
+    ILOpsHolder().rm_op_by_name(a.get_name())
+    ILOpsHolder().rm_op_by_name(b.get_name())
+    match operation:
+        case "+":
+            result = val_a + val_b
+        case "-":
+            result = val_a - val_b
+        case "*":
+            result = val_a * val_b
+        case "/":
+            result = val_a / val_b
+        case _:
+            raise NotImplementedError(f"Can not simplify '{operation}' expression.")
+    a_type, b_type = c11_cast(a.value_type, b.value_type)
+
+    name = f'const_{"neg" if items[0] == "-" else "pos"}{items[1]}{items[2] if items[2] else ""}'
+    return Number(name, result, a_type)
 
 
 class RZILTransformer(Transformer):
@@ -329,6 +361,9 @@ class RZILTransformer(Transformer):
         return self.chk_hybrid_dep(Assignment(name, op_type, dest, src))
 
     def additive_expr(self, items):
+        result = simplify_arithmetic_expr(items)
+        if result:
+            return result
         self.ext.set_token_meta_data("additive_expr")
 
         a = items[0]
@@ -339,6 +374,9 @@ class RZILTransformer(Transformer):
         return v
 
     def multiplicative_expr(self, items):
+        result = simplify_arithmetic_expr(items)
+        if result:
+            return result
         self.ext.set_token_meta_data("multiplicative_expr")
 
         a = items[0]

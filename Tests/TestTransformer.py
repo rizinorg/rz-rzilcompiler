@@ -486,6 +486,12 @@ class TestTransformerOutput(unittest.TestCase):
         output = self.compile_behavior(behavior)
         self.assertEqual(output, ExpectedOutput["L4_return"])
 
+    def test_simplify_arith_expr(self):
+        # Simplify e.g. 4 - 1 = 3
+        behavior = self.insn_behavior["J2_jump"][0]
+        output = self.compile_behavior(behavior)
+        self.assertEqual(output, ExpectedOutput["J2_jump"])
+
 
 class TestGrammar(unittest.TestCase):
     def test_early_compatibility(self):
