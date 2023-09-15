@@ -27,15 +27,21 @@ class LetVar(Pure):
         return f'"{self.get_name()}"'
 
 
-def resolve_lets(lets: [LetVar], consumer):
+def resolve_lets(lets: list[LetVar], consumer):
     """Wraps LET(...) around the consumer."""
+    from Transformer.Pures.Number import Number
     from Transformer.Pures.PureExec import PureExec
+
+    num_lets = len(lets) - sum(isinstance(l, Number) for l in lets)
 
     code = ""
     for let in lets:
+        if isinstance(let, Number):
+            # Numbers are initialized with UN()
+            continue
         let_read = let.pure_var() if let.reads < 1 else f"DUP({let.pure_var()})"
         code += f"LET({let.vm_id(True)}, {let_read}, "
         let.reads += 1
     code += consumer.il_exec() if isinstance(consumer, PureExec) else consumer.il_read()
-    code += ")" * len(lets)
+    code += ")" * num_lets
     return code
