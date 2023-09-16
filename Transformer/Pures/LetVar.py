@@ -39,15 +39,54 @@ class LetVar(Pure):
         return f'"{self.get_name()}"'
 
 
-def resolve_lets(lets: list[LetVar], consumer):
-    """Wraps LET(...) around the consumer."""
+def get_local_pures(operands: list[Pure]) -> list[LetVar]:
+    """Extracts a list of LetVars which were not initialized yet."""
+    from rzil_compiler.Transformer.Pures.LocalVar import LocalVar
+    from rzil_compiler.Transformer.Pures.PureExec import PureExec
+
+    local_pures = list()
+
+    if len(operands) == 0:
+        return local_pures
+
+    for op in operands:
+        if isinstance(op, LocalVar):
+            # LocalVars must be initialized and have their LocalPures
+            # set there.
+            continue
+        if isinstance(op, PureExec):
+            if not op.inlined:
+                # Those ops were initialized as well and have the
+                # LocalPures set there.
+                continue
+            # Search in the operands of the inline pure, for other LocalPures
+            local_pures.extend(get_local_pures(op.ops))
+            continue
+        elif isinstance(op, LetVar):
+            local_pures.append(op)
+        else:
+            raise NotImplementedError(
+                f"{op} shouldn't be in the op list. Type not handled."
+            )
+    return local_pures
+
+
+def resolve_lets(operands: list[Pure], consumer) -> str:
+    """Wraps LET(...) around the consumer for every LocalPure in the operands."""
     from rzil_compiler.Transformer.Pures.Number import Number
     from rzil_compiler.Transformer.Pures.PureExec import PureExec
 
-    num_lets = len(lets) - sum(isinstance(l, Number) for l in lets)
+    consumer_code = (
+        consumer.il_exec() if isinstance(consumer, PureExec) else consumer.il_read()
+    )
 
+    lets = get_local_pures(operands)
+    if len(lets) == 0:
+        return consumer_code
+
+    num_lets = len(lets) - len([l for l in lets if l.inlined])
     code = ""
-    for let in lets:
+    for let in [l for l in lets if not l.inlined]:
         if isinstance(let, Number):
             # Numbers are initialized with UN()
             continue

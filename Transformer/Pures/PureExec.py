@@ -37,7 +37,7 @@ class PureExec(Pure):
             init = f"RzILOpPure *{self.pure_var()} = {self.il_exec()};"
             return init
         init = f"RzILOpPure *{self.pure_var()} = "
-        init += resolve_lets(self.lets, self) + ";"
+        init += resolve_lets(self.ops, self) + ";"
         return init
 
     def il_read(self):
