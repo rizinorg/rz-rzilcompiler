@@ -11,6 +11,9 @@ class PureExec(Pure):
     They difference to Pure, LocalVars and GlobalVars is only the initialization.
     """
 
+    # If true, the code gets inlined (does not get it's own Pure variable initialized)
+    inlined: bool = False
+
     def __init__(self, name: str, operands: [Pure], val_type: ValueType):
         """Pure operands must be ordered from left to right. None is not a valid value for an operand."""
         # Add LETs to a list for use during initialization.
@@ -28,6 +31,8 @@ class PureExec(Pure):
         raise OverloadException("")
 
     def il_init_var(self):
+        if self.inlined:
+            return ""
         if len(self.lets) == 0:
             init = f"RzILOpPure *{self.pure_var()} = {self.il_exec()};"
             return init
@@ -37,6 +42,8 @@ class PureExec(Pure):
 
     def il_read(self):
         self.reads += 1
+        if self.inlined:
+            return self.il_exec()
         return self.pure_var()
 
     def vm_id(self, write_usage):
