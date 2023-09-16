@@ -24,7 +24,7 @@ from rzil_compiler.Transformer.Pures.CompareOp import CompareOp, CompareOpType
 from rzil_compiler.Transformer.Pures.LocalVar import LocalVar
 from rzil_compiler.Transformer.Pures.MemLoad import MemAccessType, MemLoad
 from rzil_compiler.Transformer.Pures.Number import Number
-from rzil_compiler.Transformer.Pures.Pure import Pure, ValueType
+from rzil_compiler.Transformer.Pures.Pure import Pure, ValueType, PureType
 from rzil_compiler.Transformer.Effects.Assignment import Assignment, AssignmentType
 from rzil_compiler.Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from rzil_compiler.Transformer.Pures.Register import Register
@@ -259,6 +259,19 @@ class RZILTransformer(Transformer):
             f"Type specifier {specifier} currently not supported."
         )
 
+    def set_dest_type(self, assig: Assignment, t: ValueType) -> None:
+        """For "<type> Assignment" declarations the Assignment gets parsed first.
+        Afterwards the type. Here we update the type of the destination variable.
+        """
+        if assig.dest.type != PureType.LOCAL and assig.dest.type != PureType.LET:
+            raise NotImplementedError(
+                f"Updating the type of a {assig.dest.type} is not allowed."
+            )
+        assig.dest.set_value_type(t)
+        assig.dest, assig.src = self.cast_operands(
+            a=assig.dest, b=assig.src, immutable_a=True
+        )
+
     def declaration(self, items):
         self.ext.set_token_meta_data("declaration")
 
@@ -274,14 +287,14 @@ class RZILTransformer(Transformer):
         t: ValueType = items[0]
         if isinstance(items[1], Assignment):
             assg: Assignment = items[1]
-            assg.set_dest_type(t)
+            self.set_dest_type(assg, t)
             return assg
         elif isinstance(items[1], Sequence):
             # This is an assignment which has a hybrid dependency. Iterate over sequence ops and find Assignment.
             items[1]: Sequence
             for e in items[1].effects:
                 if isinstance(e, Assignment):
-                    e.set_dest_type(t)
+                    self.set_dest_type(e, t)
                     return items[1]
             raise NotImplementedError(
                 "declaration without Assignment are not implemented."

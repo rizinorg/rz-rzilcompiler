@@ -143,14 +143,3 @@ class Assignment(Effect):
             return f"SETL({self.dest.vm_id(True)}, {read})"
         else:
             raise NotImplementedError(f"Effect type {self.type} not handled.")
-
-    def set_dest_type(self, t: ValueType):
-        """For "<type> Assignment" declarations the Assignment gets parsed first.
-        Afterwards the type. Here we update the type of the destination variable.
-        """
-        if self.dest.type != PureType.LOCAL and self.dest.type != PureType.LET:
-            raise NotImplementedError(
-                f"Updating the type of a {self.dest.type} is not allowed."
-            )
-        self.dest.set_value_type(t)
-        self.dest, self.src = cast_operands(a=self.dest, b=self.src, immutable_a=True)
