@@ -222,7 +222,7 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data("data_type")
         return self.ext.get_value_type_by_resource_type(items)
 
-    def init_a_cast(self, val_type: ValueType, pure: Pure, cast_name: str = "") -> Cast:
+    def init_a_cast(self, val_type: ValueType, pure: Pure, cast_name: str = "") -> Pure:
         """
         Initializes and returns a Cast if the val_types and the pure.val_type
         mismatch. Otherwise, it simply returns the pure.
@@ -369,6 +369,87 @@ class RZILTransformer(Transformer):
         then_p, else_p = self.cast_operands(a=items[1], b=items[2], immutable_a=False)
         return self.add_op(Ternary(f"cond", items[0], then_p, else_p))
 
+    def update_assign_src(self, assign: Assignment):
+        """
+        For Assignment expressions, we need to add a PureExec for the
+        corresponding expressions. So Add for +=, SUB for -= etc.
+        """
+        if assign.assign_type == AssignmentType.ASSIGN:
+            return
+        elif assign.assign_type == AssignmentType.ASSIGN_ADD:
+            assign.src = ArithmeticOp(
+                f"op_ADD",
+                assign.src,
+                assign.dest,
+                ArithmeticType.ADD,
+            )
+        elif assign.assign_type == AssignmentType.ASSIGN_SUB:
+            assign.src = ArithmeticOp(
+                f"op_SUB",
+                assign.src,
+                assign.dest,
+                ArithmeticType.SUB,
+            )
+        elif assign.assign_type == AssignmentType.ASSIGN_MUL:
+            assign.src = ArithmeticOp(
+                f"op_MUL",
+                assign.src,
+                assign.dest,
+                ArithmeticType.MUL,
+            )
+        elif assign.assign_type == AssignmentType.ASSIGN_MOD:
+            assign.src = ArithmeticOp(
+                f"op_MOD",
+                assign.src,
+                assign.dest,
+                ArithmeticType.MOD,
+            )
+        elif assign.assign_type == AssignmentType.ASSIGN_DIV:
+            assign.src = ArithmeticOp(
+                f"op_DIV",
+                assign.src,
+                assign.dest,
+                ArithmeticType.DIV,
+            )
+        elif assign.assign_type == AssignmentType.ASSIGN_RIGHT:
+            assign.src = BitOp(
+                f"op_SHIFTR",
+                assign.src,
+                assign.dest,
+                BitOperationType.RSHIFT,
+            )
+        elif assign.assign_type == AssignmentType.ASSIGN_LEFT:
+            assign.src = BitOp(
+                f"op_SHIFTL",
+                assign.src,
+                assign.dest,
+                BitOperationType.LSHIFT,
+            )
+        elif assign.assign_type == AssignmentType.ASSIGN_AND:
+            assign.src = BitOp(
+                f"op_AND",
+                assign.src,
+                assign.dest,
+                BitOperationType.AND,
+            )
+        elif assign.assign_type == AssignmentType.ASSIGN_OR:
+            assign.src = BitOp(
+                f"op_OR",
+                assign.src,
+                assign.dest,
+                BitOperationType.OR,
+            )
+        elif assign.assign_type == AssignmentType.ASSIGN_XOR:
+            assign.src = BitOp(
+                f"op_XOR",
+                assign.src,
+                assign.dest,
+                BitOperationType.XOR,
+            )
+        else:
+            raise NotImplementedError(f"Assign type {assign.assign_type} not handled.")
+        self.add_op(assign.src)
+
     def assignment_expr(self, items):
         self.ext.set_token_meta_data("assignment_expr")
 
@@ -391,7 +472,9 @@ class RZILTransformer(Transformer):
             AssignmentType.ASSIGN_LEFT,
         ]:
             dest, src = self.cast_operands(a=dest, b=src, immutable_a=True)
-        return self.chk_hybrid_dep(self.add_op(Assignment(name, op_type, dest, src)))
+        assignment = Assignment(name, op_type, dest, src)
+        self.update_assign_src(assignment)
+        return self.chk_hybrid_dep(self.add_op(assignment))
 
     def additive_expr(self, items):
         result = self.simplify_arithmetic_expr(items)
