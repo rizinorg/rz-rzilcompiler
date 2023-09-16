@@ -27,12 +27,12 @@ class ILOpsHolder:
         if not isinstance(op, Variable):
             # Variables already have a unique name
             op.set_name(f"{op.get_name()}_{self.get_op_count()}")
-        if isinstance(op, Pure):
+        if isinstance(op, Hybrid):
+            self.add_hybrid(op)
+        elif isinstance(op, Pure):
             self.add_pure(op)
         elif isinstance(op, Effect):
             self.add_effect(op)
-        elif isinstance(op, Hybrid):
-            self.add_hybrid(op)
         else:
             raise NotImplementedError(
                 f"Can not add op {op} because it has no op holder list."
@@ -55,8 +55,8 @@ class ILOpsHolder:
         self.write_ops[effect.get_name()] = effect
 
     def add_hybrid(self, hybrid: Hybrid):
-        self.exec_ops[hybrid.get_name()] = hybrid.ops
-        self.write_ops[hybrid.get_name()] = hybrid.effect_ops
+        self.exec_ops[hybrid.get_name()] = hybrid
+        self.write_ops[hybrid.get_name()] = hybrid
 
     def has_op(self, name: str) -> bool:
         if name in self.read_ops:
