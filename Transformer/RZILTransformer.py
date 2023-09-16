@@ -14,7 +14,7 @@ from rzil_compiler.Transformer.Effects.NOP import NOP
 from rzil_compiler.Transformer.Effects.Sequence import Sequence
 from rzil_compiler.HexagonExtensions import (
     HexagonTransformerExtension,
-    get_fcn_arg_types,
+    get_fcn_param_types,
 )
 from rzil_compiler.Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
 from rzil_compiler.Transformer.Hybrids.PostfixIncDec import PostfixIncDec
@@ -219,22 +219,33 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data("data_type")
         return self.ext.get_value_type_by_resource_type(items)
 
+    def init_a_cast(self, val_type: ValueType, pure: Pure, cast_name: str = "") -> Cast:
+        """
+        Initializes and returns a Cast if the val_types and the pure.val_type
+        mismatch. Otherwise, it simply returns the pure.
+        """
+        if val_type == pure.value_type:
+            return pure
+        if not cast_name:
+            cast_name = f"cast_{val_type}"
+        return self.add_op(Cast(cast_name, val_type, pure))
+
     def cast_expr(self, items):
         self.ext.set_token_meta_data("cast_expr")
         val_type = items[0]
         data = items[1]
         if not isinstance(data, Cast):
-            return self.add_op(Cast(f"cast_{val_type}", val_type, data))
+            return self.init_a_cast(val_type, data)
 
         # Duplicate casts can be reduced to a single one.
         # We check this here
         if data.value_type.signed != val_type.signed:
-            return self.add_op(Cast(f"cast_{val_type}", val_type, data))
+            return self.init_a_cast(val_type, data)
 
         prev_cast_ops = data.get_ops()
         assert len(prev_cast_ops) == 1
         self.il_ops_holder.rm_op_by_name(data.get_name())
-        return self.add_op(Cast(f"cast_{val_type}", val_type, prev_cast_ops[0]))
+        return self.init_a_cast(val_type, prev_cast_ops[0])
 
     def number(self, items):
         # Numbers of the form -10ULL
@@ -505,7 +516,7 @@ class RZILTransformer(Transformer):
         if operation_value_type != data.value_type:
             # STOREW determines from the data type how many bytes are written.
             # Cast the data type to the mem store type
-            data = Cast(f"op", operation_value_type, data)
+            data = self.init_a_cast(operation_value_type, data)
         return self.chk_hybrid_dep(
             self.add_op(MemStore(f"ms_{data.get_name()}", va, data))
         )
@@ -521,18 +532,18 @@ class RZILTransformer(Transformer):
 
         return self.add_op(MemLoad(f"ml_{va.get_name()}", va, mem_acc_type))
 
-    def cast_call_params(self, fcn_name: str, args: list[Pure]) -> list[Pure]:
-        arg_types = get_fcn_arg_types(fcn_name)
-        if len(args) != len(arg_types):
+    def cast_call_params(self, fcn_name: str, params: list[Pure]) -> list[Pure]:
+        param_types = get_fcn_param_types(fcn_name)
+        if len(params) != len(param_types):
             raise NotImplementedError("Not all ops have a type assigned.")
-        for i, (arg, a_type) in enumerate(zip(args, arg_types)):
-            if isinstance(arg, str):
+        for i, (param, a_type) in enumerate(zip(params, param_types)):
+            if isinstance(param, str):
                 continue
-            if not a_type or arg.value_type == a_type:
+            if not a_type or param.value_type == a_type:
                 continue
 
-            args[i] = self.add_op(Cast(f"arg_cast", a_type, arg))
-        return args
+            params[i] = self.init_a_cast(a_type, param, "param_cast")
+        return params
 
     def c_call(self, items):
         self.ext.set_token_meta_data("c_call")
@@ -728,9 +739,8 @@ class RZILTransformer(Transformer):
         if a.value_type == b.value_type:
             return a, b
 
-        cname = f"cast"
         if immutable_a:
-            return a, self.add_op(Cast(cname, a.value_type, b))
+            return a, self.init_a_cast(a.value_type, b)
 
         casted_a, casted_b = c11_cast(a.value_type, b.value_type)
 
@@ -738,11 +748,11 @@ class RZILTransformer(Transformer):
             casted_a.bit_width != a.value_type.bit_width
             or casted_a.signed != a.value_type.signed
         ):
-            a = self.add_op(Cast(cname, casted_a, a))
+            a = self.init_a_cast(casted_a, a)
         if (
             casted_b.bit_width != b.value_type.bit_width
             or casted_b.signed != b.value_type.signed
         ):
-            b = self.add_op(Cast(cname, casted_b, b))
+            b = self.init_a_cast(casted_b, b)
 
         return a, b

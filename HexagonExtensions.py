@@ -276,7 +276,7 @@ class HexagonCompilerExtension(CompilerExtension):
             return insn_name
 
 
-def get_fcn_arg_types(fcn_name: str) -> [ValueType]:
+def get_fcn_param_types(fcn_name: str) -> [ValueType]:
     """Returns a list of ValueTypes for each function argument (from left to right).
     If an argument has no IL type (strings for example) the type is None.
     """
