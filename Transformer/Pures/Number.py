@@ -16,4 +16,7 @@ class Number(LetVar):
 
     def il_read(self):
         """Returns the code to read the let variable for the VM."""
-        return f"{'SN' if self.v_type.signed else 'UN'}({self.v_type.bit_width}, {self.get_val()})"
+        number = hex(self.get_val()) if self.get_val() > 31 else str(self.get_val())
+        return (
+            f"{'SN' if self.v_type.signed else 'UN'}({self.v_type.bit_width}, {number})"
+        )
