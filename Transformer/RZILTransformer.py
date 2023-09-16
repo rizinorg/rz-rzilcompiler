@@ -47,6 +47,8 @@ class RZILTransformer(Transformer):
     The classes do the actual code generation.
     """
 
+    # Classes of Pures which should not be initialized in the C code.
+    inlined_pure_classes = (Number, Sizeof, Cast)
     # Total count of hybrids seen during transformation
     hybrid_op_count = 0
     hybrid_effect_dict = dict()
@@ -81,6 +83,11 @@ class RZILTransformer(Transformer):
 
         num_id = self.il_ops_holder.get_op_count()
         op.set_num_id(num_id)
+        if isinstance(op, self.inlined_pure_classes):
+            if not hasattr(op, "inlined"):
+                NotImplementedError(f"{op} can not be inlined yet.")
+            op.inlined = True
+
         if not isinstance(op, Variable) and not isinstance(op, Register):
             # Those have already a unique name
             op.set_name(f"{op.get_name()}_{num_id}")

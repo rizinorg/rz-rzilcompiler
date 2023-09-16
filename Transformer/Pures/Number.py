@@ -9,5 +9,4 @@ class Number(LetVar):
     def __init__(self, name: str, val: int, v_type: ValueType):
         self.name = name
         self.v_type: ValueType = v_type
-        self.inlined = True
         LetVar.__init__(self, name, val, v_type)

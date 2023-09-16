@@ -7,7 +7,6 @@ from rzil_compiler.Transformer.Pures.PureExec import PureExec
 
 class Cast(PureExec):
     def __init__(self, name: str, type_specifier: ValueType, val: Pure):
-        self.inlined = True
         PureExec.__init__(self, name, [val], type_specifier)
 
     def il_exec(self) -> str:
