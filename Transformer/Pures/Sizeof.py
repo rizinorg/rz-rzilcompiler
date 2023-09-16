@@ -13,5 +13,6 @@ class Sizeof(LetVar):
     def __init__(self, name: str, op: Pure):
         self.name = name
         self.size = ceil(op.value_type.bit_width / 8)
+        self.inlined = True
 
         LetVar.__init__(self, name, self.size, ValueType(True, 32))
