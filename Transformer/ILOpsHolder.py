@@ -24,9 +24,6 @@ class ILOpsHolder:
         Adds an IL operation and appends an id to its
         name to make the name unique.
         """
-        if not isinstance(op, Variable):
-            # Variables already have a unique name
-            op.set_name(f"{op.get_name()}_{self.get_op_count()}")
         if isinstance(op, Hybrid):
             self.add_hybrid(op)
         elif isinstance(op, Pure):

@@ -74,6 +74,9 @@ class RZILTransformer(Transformer):
 
     def add_op(self, op):
         if not self.il_ops_holder.has_op(op.get_name()):
+            if not isinstance(op, Variable) and not isinstance(op, Register):
+                # Those have already a unique name
+                op.set_name(f"{op.get_name()}_{self.il_ops_holder.get_op_count()}")
             self.il_ops_holder.add_op(op)
             return op
         return self.il_ops_holder.get_op_by_name(op.get_name())
