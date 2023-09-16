@@ -48,12 +48,16 @@ class Pure:
     )
     type: PureType = None
     value_type: ValueType = None
+    num_id = -1
 
     def __init__(self, name: str, pure_type: PureType, value_type: ValueType):
         self.name = name
         self.name_assoc = name + "_assoc"
         self.type = pure_type
         self.value_type = value_type
+
+    def set_num_id(self, num_id: int):
+        self.num_id = num_id
 
     def set_name(self, name: str):
         self.name = name

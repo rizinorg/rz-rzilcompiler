@@ -24,10 +24,14 @@ class Effect:
     name: str = ""
     type: EffectType = None
     effect_ops: list = None
+    num_id = -1
 
     def __init__(self, name: str, effect_type: EffectType):
         self.name = name
         self.type = effect_type
+
+    def set_num_id(self, num_id: int):
+        self.num_id = num_id
 
     def set_name(self, name: str):
         self.name = name

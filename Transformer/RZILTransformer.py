@@ -76,13 +76,16 @@ class RZILTransformer(Transformer):
         return self.il_ops_holder.get_op_count()
 
     def add_op(self, op):
-        if not self.il_ops_holder.has_op(op.get_name()):
-            if not isinstance(op, Variable) and not isinstance(op, Register):
-                # Those have already a unique name
-                op.set_name(f"{op.get_name()}_{self.il_ops_holder.get_op_count()}")
-            self.il_ops_holder.add_op(op)
-            return op
-        return self.il_ops_holder.get_op_by_name(op.get_name())
+        if self.il_ops_holder.has_op(op.get_name()):
+            return self.il_ops_holder.get_op_by_name(op.get_name())
+
+        num_id = self.il_ops_holder.get_op_count()
+        op.set_num_id(num_id)
+        if not isinstance(op, Variable) and not isinstance(op, Register):
+            # Those have already a unique name
+            op.set_name(f"{op.get_name()}_{num_id}")
+        self.il_ops_holder.add_op(op)
+        return op
 
     def fbody(self, items):
         self.ext.set_token_meta_data("fbody")
