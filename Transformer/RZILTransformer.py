@@ -307,6 +307,7 @@ class RZILTransformer(Transformer):
         op_type = AssignmentType.ASSIGN
         src: Pure = items[1]
         name = f"op_{op_type.name}"
+        dest, src = self.cast_operands(a=dest, b=src, immutable_a=True)
         return self.chk_hybrid_dep(self.add_op(Assignment(name, op_type, dest, src)))
 
     def selection_stmt(self, items):
@@ -332,7 +333,8 @@ class RZILTransformer(Transformer):
 
     def conditional_expr(self, items):
         self.ext.set_token_meta_data("conditional_expr")
-        return self.add_op(Ternary(f"cond", items[0], items[1], items[2]))
+        then_p, else_p = self.cast_operands(a=items[1], b=items[2], immutable_a=False)
+        return self.add_op(Ternary(f"cond", items[0], then_p, else_p))
 
     def assignment_expr(self, items):
         self.ext.set_token_meta_data("assignment_expr")
@@ -350,6 +352,12 @@ class RZILTransformer(Transformer):
         op_type = AssignmentType(items[1])
         src: Pure = items[2]
         name = f"op_{op_type.name}"
+        if op_type not in [
+            AssignmentType.ASSIGN_MOD,
+            AssignmentType.ASSIGN_RIGHT,
+            AssignmentType.ASSIGN_LEFT,
+        ]:
+            dest, src = self.cast_operands(a=dest, b=src, immutable_a=True)
         return self.chk_hybrid_dep(self.add_op(Assignment(name, op_type, dest, src)))
 
     def additive_expr(self, items):
@@ -362,6 +370,9 @@ class RZILTransformer(Transformer):
         b = items[2]
         op_type = ArithmeticType(items[1])
         name = f"op_{op_type.name}"
+        if op_type != ArithmeticType.MOD:
+            # Modular operations don't need matching types.
+            a, b = self.cast_operands(a=a, b=b, immutable_a=False)
         return self.add_op(ArithmeticOp(name, a, b, op_type))
 
     def multiplicative_expr(self, items):
@@ -374,6 +385,9 @@ class RZILTransformer(Transformer):
         b = items[2]
         op_type = ArithmeticType(items[1])
         name = f"op_{op_type.name}"
+        if op_type != ArithmeticType.MOD:
+            # Modular operations don't need matching types.
+            a, b = self.cast_operands(a=a, b=b, immutable_a=False)
         v = ArithmeticOp(name, a, b, op_type)
         return self.add_op(v)
 
@@ -410,6 +424,9 @@ class RZILTransformer(Transformer):
             name = f"op_{t}"
             a = items[0]
             b = items[2] if len(items) == 3 else None
+            if a and b:
+                # No need to check for single operand operations.
+                a, b = self.cast_operands(a=a, b=b, immutable_a=False)
             v = BooleanOp(name, a, b, t)
         return self.add_op(v)
 
@@ -454,6 +471,10 @@ class RZILTransformer(Transformer):
         a = items[0]
         b = items[2]
         name = f"op_{op_type.name}"
+        if (a and b) and not (
+            op_type == BitOperationType.RSHIFT or op_type == BitOperationType.LSHIFT
+        ):
+            a, b = self.cast_operands(a=a, b=b, immutable_a=False)
         v = BitOp(name, a, b, op_type)
         return self.add_op(v)
 
@@ -506,7 +527,8 @@ class RZILTransformer(Transformer):
     def compare_op(self, items):
         self.ext.set_token_meta_data("compare_op")
         op_type = CompareOpType(items[1])
-        return self.add_op(CompareOp(f"op_{op_type.name}", items[0], items[2], op_type))
+        a, b = self.cast_operands(a=items[0], b=items[1], immutable_a=False)
+        return self.add_op(CompareOp(f"op_{op_type.name}", a, b, op_type))
 
     def for_loop(self, items):
         self.ext.set_token_meta_data("for_loop")
@@ -595,6 +617,7 @@ class RZILTransformer(Transformer):
 
         # Assign the hybrid pure part to tmp_x.
         name = f"op_{AssignmentType.ASSIGN.name}_hybrid_tmp"
+        tmp_x, hybrid = self.cast_operands(a=tmp_x, b=hybrid, immutable_a=True)
         set_tmp = self.add_op(Assignment(name, AssignmentType.ASSIGN, tmp_x, hybrid))
 
         # Add hybrid effect to the ILOpHolder in the Effect constructor.
@@ -645,3 +668,44 @@ class RZILTransformer(Transformer):
 
         name = f'const_{"neg" if items[0] == "-" else "pos"}{items[1]}{items[2] if items[2] else ""}'
         return Number(name, result, a_type)
+
+    def cast_operands(self, immutable_a: bool, **ops) -> tuple[Pure, Pure]:
+        """Casts two operands to a common type according to C11 standard.
+        If immutable_op_a = True operand b is cast to the operand a type
+        (Useful for assignments to global vars like registers).
+        Operand are names in the order: a, b, c, ...
+        """
+        if "a" not in ops and "b" not in ops:
+            raise NotImplementedError('At least operand "a" and "b" must e given.')
+        a = ops["a"]
+        b = ops["b"]
+        if not a.value_type and not b.value_type:
+            raise NotImplementedError("Cannot cast ops without value types.")
+        if not a.value_type:
+            a.value_type = b.value_type
+            return a, b
+        if not b.value_type:
+            b.value_type = a.value_type
+            return a, b
+
+        if a.value_type == b.value_type:
+            return a, b
+
+        cname = f"cast"
+        if immutable_a:
+            return a, self.add_op(Cast(cname, a.value_type, b))
+
+        casted_a, casted_b = c11_cast(a.value_type, b.value_type)
+
+        if (
+            casted_a.bit_width != a.value_type.bit_width
+            or casted_a.signed != a.value_type.signed
+        ):
+            a = self.add_op(Cast(cname, casted_a, a))
+        if (
+            casted_b.bit_width != b.value_type.bit_width
+            or casted_b.signed != b.value_type.signed
+        ):
+            b = self.add_op(Cast(cname, casted_b, b))
+
+        return a, b

@@ -4,7 +4,6 @@ from enum import StrEnum
 
 from rzil_compiler.Transformer.Pures.Pure import Pure
 from rzil_compiler.Transformer.Pures.PureExec import PureExec
-from rzil_compiler.Transformer.helper import cast_operands
 
 
 class BitOperationType(StrEnum):
@@ -20,11 +19,6 @@ class BitOperationType(StrEnum):
 class BitOp(PureExec):
     def __init__(self, name: str, a: Pure, b: Pure, op_type: BitOperationType):
         self.op_type = op_type
-        if (a and b) and not (
-            op_type == BitOperationType.RSHIFT or op_type == BitOperationType.LSHIFT
-        ):
-            # No need to check for single operand operations.
-            a, b = cast_operands(a=a, b=b, immutable_a=False)
 
         if b:
             PureExec.__init__(self, name, [a, b], a.value_type)

@@ -5,12 +5,10 @@ from rzil_compiler.Transformer.Pures.Pure import Pure
 from rzil_compiler.Transformer.Pures.PureExec import PureExec
 from rzil_compiler.Transformer.Pures.BooleanOp import BooleanOp
 from rzil_compiler.Transformer.Pures.CompareOp import CompareOp
-from rzil_compiler.Transformer.helper import cast_operands
 
 
 class Ternary(PureExec):
     def __init__(self, name: str, cond: Pure, then_p: Pure, else_p: Pure):
-        then_p, else_p = cast_operands(a=then_p, b=else_p, immutable_a=False)
         PureExec.__init__(self, name, [cond, then_p, else_p], then_p.value_type)
 
     def il_exec(self):

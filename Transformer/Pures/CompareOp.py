@@ -4,7 +4,6 @@ from enum import StrEnum
 
 from rzil_compiler.Transformer.Pures.Pure import Pure
 from rzil_compiler.Transformer.Pures.PureExec import PureExec
-from rzil_compiler.Transformer.helper import cast_operands
 
 
 class CompareOpType(StrEnum):
@@ -19,7 +18,6 @@ class CompareOpType(StrEnum):
 class CompareOp(PureExec):
     def __init__(self, name: str, a: Pure, b: Pure, op_type: CompareOpType):
         self.op_type = op_type
-        a, b = cast_operands(a=a, b=b, immutable_a=False)
 
         PureExec.__init__(self, name, [a, b], a.value_type)
 

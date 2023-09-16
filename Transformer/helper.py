@@ -27,48 +27,6 @@ def exc_if_types_not_match(a: ValueType, b: ValueType):
         )
 
 
-def cast_operands(immutable_a: bool, **ops) -> tuple[Pure, Pure]:
-    """Casts two operands to a common type according to C11 standard.
-    If immutable_op_a = True operand b is cast to the operand a type
-    (Useful for assignments to global vars like registers).
-    Operand are names in the order: a, b, c, ...
-    """
-    if "a" not in ops and "b" not in ops:
-        raise NotImplementedError('At least operand "a" and "b" must e given.')
-    a = ops["a"]
-    b = ops["b"]
-    if not a.value_type and not b.value_type:
-        raise NotImplementedError("Cannot cast ops without value types.")
-    if not a.value_type:
-        a.value_type = b.value_type
-        return a, b
-    if not b.value_type:
-        b.value_type = a.value_type
-        return a, b
-
-    if a.value_type == b.value_type:
-        return a, b
-
-    cname = f"cast"
-    if immutable_a:
-        return a, Cast(cname, a.value_type, b)
-
-    casted_a, casted_b = c11_cast(a.value_type, b.value_type)
-
-    if (
-        casted_a.bit_width != a.value_type.bit_width
-        or casted_a.signed != a.value_type.signed
-    ):
-        a = Cast(cname, casted_a, a)
-    if (
-        casted_b.bit_width != b.value_type.bit_width
-        or casted_b.signed != b.value_type.signed
-    ):
-        b = Cast(cname, casted_b, b)
-
-    return a, b
-
-
 def c11_cast(a: ValueType, b: ValueType) -> tuple[ValueType, ValueType]:
     """Compares both value types against each other and converts them according to
     Chapter 6.3.1.8 of ISO/IEC 9899:201x (C11 Standard).

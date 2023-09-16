@@ -4,7 +4,6 @@ from enum import StrEnum
 
 from rzil_compiler.Transformer.Pures.Pure import Pure
 from rzil_compiler.Transformer.Pures.PureExec import PureExec
-from rzil_compiler.Transformer.helper import cast_operands
 
 
 class ArithmeticType(StrEnum):
@@ -18,10 +17,6 @@ class ArithmeticType(StrEnum):
 class ArithmeticOp(PureExec):
     def __init__(self, name: str, a: Pure, b: Pure, arith_type: ArithmeticType):
         self.arith_type = arith_type
-        if arith_type != ArithmeticType.MOD:
-            # Modular operations don't need matching types.
-            a, b = cast_operands(a=a, b=b, immutable_a=False)
-
         PureExec.__init__(self, name, [a, b], a.value_type)
 
     def il_exec(self):
