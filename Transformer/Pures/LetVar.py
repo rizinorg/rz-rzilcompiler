@@ -74,13 +74,11 @@ def resolve_lets(operands: list[Pure], consumer) -> str:
     from rzil_compiler.Transformer.Pures.Number import Number
     from rzil_compiler.Transformer.Pures.PureExec import PureExec
 
-    consumer_code = (
-        consumer.il_exec() if isinstance(consumer, PureExec) else consumer.il_read()
-    )
-
     lets = get_local_pures(operands)
     if len(lets) == 0:
-        return consumer_code
+        return (
+            consumer.il_exec() if isinstance(consumer, PureExec) else consumer.il_read()
+        )
 
     num_lets = len(lets) - len([l for l in lets if l.inlined])
     code = ""
