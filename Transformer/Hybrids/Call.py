@@ -31,6 +31,9 @@ class Call(Hybrid):
                 return f'"{param.get_name()}"'
             return param.il_read()
 
+        if self.fcn_name.upper() == "STORE_SLOT_CANCELLED":
+            return f"{hexagon_c_call_prefix + self.fcn_name.upper()}(insn->slot)"
+
         code = f'{hexagon_c_call_prefix + self.fcn_name.upper()}({", ".join([read_param(param) for param in self.ops])})'
         return code
 
