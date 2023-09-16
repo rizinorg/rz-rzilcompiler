@@ -106,9 +106,15 @@ class RZILTransformer(Transformer):
         res += "\n// WRITE\n"
         for op in holder.write_ops.values():
             if isinstance(op, Hybrid):
-                res += op.il_init_var() + "\n"
+                hybrid_init = op.il_init_var()
+                if not hybrid_init:
+                    continue
+                res += hybrid_init + "\n"
                 continue
-            res += op.il_init_var() + "\n"
+            write_op = op.il_init_var()
+            if not write_op:
+                continue
+            res += write_op + "\n"
 
         # Hybrids which have no parent in the AST
         left_hybrids = [
@@ -374,25 +380,25 @@ class RZILTransformer(Transformer):
     def and_expr(self, items):
         self.ext.set_token_meta_data("and_expr")
 
-        return self.add_op(self.bit_operations(items, BitOperationType.AND))
+        return self.bit_operations(items, BitOperationType.AND)
 
     def inclusive_or_expr(self, items):
         self.ext.set_token_meta_data("inclusive_or_expr")
 
-        return self.add_op(self.bit_operations(items, BitOperationType.OR))
+        return self.bit_operations(items, BitOperationType.OR)
 
     def exclusive_or_expr(self, items):
         self.ext.set_token_meta_data("exclusive_or_expr")
 
-        return self.add_op(self.bit_operations(items, BitOperationType.XOR))
+        return self.bit_operations(items, BitOperationType.XOR)
 
     def logical_and_expr(self, items):
         self.ext.set_token_meta_data("logical_and_expr")
-        return self.add_op(self.boolean_expr(items))
+        return self.boolean_expr(items)
 
     def logical_or_expr(self, items):
         self.ext.set_token_meta_data("logical_or_expr")
-        return self.add_op(self.boolean_expr(items))
+        return self.boolean_expr(items)
 
     def boolean_expr(self, items):
         if items[0] == "!":
@@ -409,7 +415,7 @@ class RZILTransformer(Transformer):
 
     def shift_expr(self, items):
         self.ext.set_token_meta_data("shift_expr")
-        return self.add_op(self.bit_operations(items, BitOperationType(items[1])))
+        return self.bit_operations(items, BitOperationType(items[1]))
 
     def unary_expr(self, items):
         self.ext.set_token_meta_data("unary_expr")
@@ -422,7 +428,7 @@ class RZILTransformer(Transformer):
             v = self.boolean_expr(items)
         else:
             raise NotImplementedError(f"Unary expression {items[0]} not handler.")
-        return self.add_op(v)
+        return v
 
     def postfix_expr(self, items):
         self.ext.set_token_meta_data("postfix_expr")
@@ -430,8 +436,8 @@ class RZILTransformer(Transformer):
         name = f"op_{HybridType(items[1]).name}"
         if t == HybridType.INC or t == HybridType.DEC:
             op: LocalVar = items[0]
-            return self.add_op(
-                self.resolve_hybrid(PostfixIncDec(name, op, op.value_type, t))
+            return self.resolve_hybrid(
+                self.add_op(PostfixIncDec(name, op, op.value_type, t))
             )
         else:
             raise NotImplementedError(f"Postfix expression {t} not handled.")
@@ -482,7 +488,7 @@ class RZILTransformer(Transformer):
             op = items[1]
             return self.add_op(Sizeof(f"op_sizeof_{op.get_name()}", op))
         val_type = self.ext.get_val_type_by_fcn(prefix)
-        return self.add_op(self.resolve_hybrid(Call(f"c_call", val_type, items)))
+        return self.resolve_hybrid(self.add_op(Call(f"c_call", val_type, items)))
 
     def identifier(self, items):
         self.ext.set_token_meta_data("identifier")
@@ -515,7 +521,7 @@ class RZILTransformer(Transformer):
             self.add_op(
                 Sequence(
                     f"seq",
-                    [items[1], ForLoop(f"for", items[2], compound)],
+                    [items[1], self.add_op(ForLoop(f"for", items[2], compound))],
                 )
             )
         )
@@ -523,7 +529,7 @@ class RZILTransformer(Transformer):
     def iteration_stmt(self, items):
         self.ext.set_token_meta_data("iteration_stmt")
         if items[0] == "for":
-            return self.add_op(self.for_loop(items))
+            return self.for_loop(items)
         else:
             raise NotImplementedError(f"{items[0]} loop not supported.")
 
@@ -589,7 +595,7 @@ class RZILTransformer(Transformer):
 
         # Assign the hybrid pure part to tmp_x.
         name = f"op_{AssignmentType.ASSIGN.name}_hybrid_tmp"
-        set_tmp = Assignment(name, AssignmentType.ASSIGN, tmp_x, hybrid)
+        set_tmp = self.add_op(Assignment(name, AssignmentType.ASSIGN, tmp_x, hybrid))
 
         # Add hybrid effect to the ILOpHolder in the Effect constructor.
         if hybrid.seq_order == HybridSeqOrder.SET_VAL_THEN_EXEC:
