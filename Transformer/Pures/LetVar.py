@@ -65,9 +65,7 @@ def get_local_pures(operands: list[Pure]) -> list[LetVar]:
         elif isinstance(op, LetVar):
             local_pures.append(op)
         else:
-            raise NotImplementedError(
-                f"{op} shouldn't be in the op list. Type not handled."
-            )
+            continue
     return local_pures
 
 
