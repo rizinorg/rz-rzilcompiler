@@ -24,6 +24,7 @@ from rzil_compiler.Transformer.Pures.BooleanOp import BooleanOpType, BooleanOp
 from rzil_compiler.Transformer.Hybrids.Call import Call
 from rzil_compiler.Transformer.Pures.Cast import Cast
 from rzil_compiler.Transformer.Pures.CompareOp import CompareOp, CompareOpType
+from rzil_compiler.Transformer.Pures.LetVar import LetVar
 from rzil_compiler.Transformer.Pures.LocalVar import LocalVar
 from rzil_compiler.Transformer.Pures.MemLoad import MemAccessType, MemLoad
 from rzil_compiler.Transformer.Pures.Number import Number
@@ -787,7 +788,10 @@ class RZILTransformer(Transformer):
         a = items[0]
         operation: str = items[1]
         b = items[2]
-        if not isinstance(a, Number) or not isinstance(b, Number):
+        if not isinstance(a, LetVar) or not isinstance(b, LetVar):
+            return None
+
+        if not isinstance(a.get_val(), int) or not isinstance(b.get_val(), int):
             return None
 
         val_a = a.get_val()
