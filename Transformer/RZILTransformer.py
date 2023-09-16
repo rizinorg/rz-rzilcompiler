@@ -12,7 +12,10 @@ from rzil_compiler.Transformer.Effects.Jump import Jump
 from rzil_compiler.Transformer.Effects.MemStore import MemStore
 from rzil_compiler.Transformer.Effects.NOP import NOP
 from rzil_compiler.Transformer.Effects.Sequence import Sequence
-from rzil_compiler.HexagonExtensions import HexagonTransformerExtension
+from rzil_compiler.HexagonExtensions import (
+    HexagonTransformerExtension,
+    get_fcn_arg_types,
+)
 from rzil_compiler.Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
 from rzil_compiler.Transformer.Hybrids.PostfixIncDec import PostfixIncDec
 from rzil_compiler.Transformer.ILOpsHolder import ILOpsHolder
@@ -518,6 +521,19 @@ class RZILTransformer(Transformer):
 
         return self.add_op(MemLoad(f"ml_{va.get_name()}", va, mem_acc_type))
 
+    def cast_call_params(self, fcn_name: str, args: list[Pure]) -> list[Pure]:
+        arg_types = get_fcn_arg_types(fcn_name)
+        if len(args) != len(arg_types):
+            raise NotImplementedError("Not all ops have a type assigned.")
+        for i, (arg, a_type) in enumerate(zip(args, arg_types)):
+            if isinstance(arg, str):
+                continue
+            if not a_type or arg.value_type == a_type:
+                continue
+
+            args[i] = self.add_op(Cast(f"arg_cast", a_type, arg))
+        return args
+
     def c_call(self, items):
         self.ext.set_token_meta_data("c_call")
         prefix = items[0]
@@ -525,7 +541,12 @@ class RZILTransformer(Transformer):
             op = items[1]
             return self.add_op(Sizeof(f"op_sizeof_{op.get_name()}", op))
         val_type = self.ext.get_val_type_by_fcn(prefix)
-        return self.resolve_hybrid(self.add_op(Call(f"c_call", val_type, items)))
+
+        fcn_name = items[0]
+        param = self.cast_call_params(fcn_name, items[1:])
+        return self.resolve_hybrid(
+            self.add_op(Call(f"c_call", val_type, [fcn_name] + param))
+        )
 
     def identifier(self, items):
         self.ext.set_token_meta_data("identifier")
