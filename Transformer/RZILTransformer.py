@@ -564,7 +564,7 @@ class RZILTransformer(Transformer):
     def compare_op(self, items):
         self.ext.set_token_meta_data("compare_op")
         op_type = CompareOpType(items[1])
-        a, b = self.cast_operands(a=items[0], b=items[1], immutable_a=False)
+        a, b = self.cast_operands(a=items[0], b=items[2], immutable_a=False)
         return self.add_op(CompareOp(f"op_{op_type.name}", a, b, op_type))
 
     def for_loop(self, items):
