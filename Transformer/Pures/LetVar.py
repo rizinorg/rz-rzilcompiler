@@ -83,9 +83,6 @@ def resolve_lets(operands: list[Pure], consumer) -> str:
     num_lets = len(lets) - len([l for l in lets if l.inlined])
     code = ""
     for let in [l for l in lets if not l.inlined]:
-        if isinstance(let, Number):
-            # Numbers are initialized with UN()
-            continue
         let_read = let.pure_var() if let.reads < 1 else f"DUP({let.pure_var()})"
         code += f"LET({let.vm_id(True)}, {let_read}, "
         let.reads += 1

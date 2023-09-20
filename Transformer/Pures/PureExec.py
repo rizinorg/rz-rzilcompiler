@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from rzil_compiler.Exceptions import OverloadException
-from rzil_compiler.Transformer.Pures.LetVar import LetVar, resolve_lets
+from rzil_compiler.Transformer.Pures.LetVar import LetVar, resolve_lets, get_local_pures
 from rzil_compiler.Transformer.Pures.Pure import Pure, PureType, ValueType
 
 
@@ -17,7 +17,7 @@ class PureExec(Pure):
     def __init__(self, name: str, operands: [Pure], val_type: ValueType):
         """Pure operands must be ordered from left to right. None is not a valid value for an operand."""
         # Add LETs to a list for use during initialization.
-        self.lets = [op for op in operands if isinstance(op, LetVar)]
+        self.lets = get_local_pures(operands)
         self.ops = operands
         Pure.__init__(self, name, PureType.EXEC, val_type)
 
