@@ -43,7 +43,7 @@ class PureExec(Pure):
     def il_read(self):
         self.reads += 1
         if self.inlined:
-            return self.il_exec()
+            return resolve_lets(self.ops, self)
         return self.pure_var()
 
     def vm_id(self, write_usage):

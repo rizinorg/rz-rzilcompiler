@@ -50,9 +50,7 @@ class Assignment(Effect):
         """
         from rzil_compiler.Transformer.Pures.Immediate import Immediate
 
-        if isinstance(self.src, LetVar):
-            read = resolve_lets([self.src], self.src)
-        elif isinstance(self.src, Immediate):
+        if isinstance(self.src, Immediate):
             self.src.assign_usage = True
             read = self.src.il_read()
         else:
