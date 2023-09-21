@@ -5,9 +5,10 @@ import logging
 import re
 import unittest
 
+from rzil_compiler.Transformer.Pures.Cast import Cast
+from rzil_compiler.Transformer.Pures.Number import Number
 from rzil_compiler.Configuration import Conf, InputFile
 from rzil_compiler.Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
-from rzil_compiler.Tests.ExpectedOutput import ExpectedOutput
 from rzil_compiler.Transformer.RZILTransformer import RZILTransformer
 from rzil_compiler.ArchEnum import ArchEnum
 
@@ -438,19 +439,18 @@ class TestTransformerMeta(unittest.TestCase):
 class TestTransformerOutput(unittest.TestCase):
     debug = False
     insn_behavior: dict[str:tuple] = dict()
-    expected = ExpectedOutput()
 
     @classmethod
     def setUpClass(cls):
         cls.insn_behavior = get_hexagon_insn_behavior()
         cls.parser = get_hexagon_parser()
+        cls.transformer = RZILTransformer(ArchEnum.HEXAGON)
 
     def compile_behavior(self, behavior: str) -> list[str]:
         try:
             tree = self.parser.parse(behavior)
-            transformer = RZILTransformer(ArchEnum.HEXAGON)
-            transformer.reset()
-            return transformer.transform(tree)
+            self.transformer.reset()
+            return self.transformer.transform(tree)
         except UnexpectedToken as e:
             # Parser got unexpected token
             exception = e
@@ -467,26 +467,128 @@ class TestTransformerOutput(unittest.TestCase):
             exception = e
         raise exception
 
-    def test_empty_stmt_is_nop(self):
-        behavior = self.insn_behavior["Y2_barrier"][0]
+    def test_empty_stmt_is_empty(self):
+        behavior = "{}"
         output = self.compile_behavior(behavior)
-        self.assertEqual(output, self.expected.src["Y2_barrier"])
+        expected = "RzILOpEffect *instruction_sequence = EMPTY();\n\nreturn instruction_sequence;"
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
 
-    def test_Number_is_not_let(self):
-        behavior = self.insn_behavior["A2_abs"][0]
+    def test_cast_simplification_1(self):
+        self.transformer.inlined_pure_classes = ()
+        behavior = "{ uint64_t a = ((uint64_t)(uint32_t)(uint8_t) 0); }"
         output = self.compile_behavior(behavior)
-        self.assertEqual(output, self.expected.src["A2_abs"])
+        expected = (
+            "RzILOpPure *const_pos0_0 = UN(32, 0x0);\n"
+            "// Declare: ut64 a;\n\n"
+            "// EXEC\n"
+            'RzILOpPure *cast_ut8_1 = LET("const_pos0_0", const_pos0_0, CAST(8, IL_FALSE, VARLP("const_pos0_0")));\n'
+            "RzILOpPure *cast_ut64_3 = CAST(64, IL_FALSE, cast_ut8_1);"
+        )
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
 
-    def test_int64_int32_to_int64(self):
-        behavior = self.insn_behavior["L4_return"][0]
+    def test_cast_simplification_2(self):
+        behavior = "{ uint64_t a = ((int64_t)((int8_t)((int32_t) 0))); }"
+        self.transformer.inlined_pure_classes = ()
         output = self.compile_behavior(behavior)
-        self.assertEqual(output, self.expected.src["L4_return"])
+        expected = (
+            "RzILOpPure *const_pos0_0 = UN(32, 0x0);\n"
+            "// Declare: ut64 a;\n\n"
+            "// EXEC\n"
+            'RzILOpPure *cast_st8_2 = LET("const_pos0_0", const_pos0_0, CAST(8, MSB(DUP(VARLP("const_pos0_0"))), VARLP("const_pos0_0")));\n'
+            "RzILOpPure *cast_st64_3 = CAST(64, MSB(DUP(cast_st8_2)), cast_st8_2);\n"
+            "RzILOpPure *cast_ut64_6 = CAST(64, IL_FALSE, cast_st64_3);"
+        )
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
 
     def test_simplify_arith_expr(self):
         # Simplify e.g. 4 - 1 = 3
-        behavior = self.insn_behavior["J2_jump"][0]
+        behavior = "{ uint32_t a = 1 + 1 * 7; }"
         output = self.compile_behavior(behavior)
-        self.assertEqual(output, self.expected.src["J2_jump"])
+        expected = "// WRITE\n" 'RzILOpEffect *op_ASSIGN_6 = SETL("a", UN(32, 8));\n'
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+
+    def test_inlining_nothing(self):
+        behavior = "{ int64_t a = 0; }"
+        self.transformer.inlined_pure_classes = ()
+        output = self.compile_behavior(behavior)
+        expected = (
+            "\n"
+            "// READ\n"
+            "RzILOpPure *const_pos0_0 = UN(32, 0x0);\n"
+            "// Declare: st64 a;\n\n"
+            "// EXEC\n"
+            'RzILOpPure *cast_st64_3 = LET("const_pos0_0", const_pos0_0, CAST(64, MSB(DUP(VARLP("const_pos0_0"))), VARLP("const_pos0_0")));\n\n'
+            "// WRITE\n"
+            'RzILOpEffect *op_ASSIGN_2 = SETL("a", cast_st64_3);\n'
+        )
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+
+    def test_inlining_number_only(self):
+        behavior = "{ int64_t a = 0; }"
+        self.transformer.inlined_pure_classes = Number
+        output = self.compile_behavior(behavior)
+        expected = (
+            "// READ\n"
+            "// Declare: st64 a;\n\n"
+            "// EXEC\n"
+            "RzILOpPure *cast_st64_3 = CAST(64, MSB(UN(32, 0)), UN(32, 0));\n\n"
+            "// WRITE\n"
+            'RzILOpEffect *op_ASSIGN_2 = SETL("a", cast_st64_3);\n'
+        )
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+
+    def test_inlining_casts_only(self):
+        behavior = "{ int64_t a = 0; }"
+        self.transformer.inlined_pure_classes = Cast
+        output = self.compile_behavior(behavior)
+        expected = (
+            "\n"
+            "// READ\n"
+            "RzILOpPure *const_pos0_0 = UN(32, 0x0);\n"
+            "// Declare: st64 a;\n\n"
+            "// EXEC\n\n"
+            "// WRITE\n"
+            'RzILOpEffect *op_ASSIGN_2 = SETL("a", LET("const_pos0_0", const_pos0_0, CAST(64, MSB(DUP(VARLP("const_pos0_0"))), VARLP("const_pos0_0"))));\n'
+        )
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+
+    def test_inlining_pure_exec_lp(self):
+        behavior = "{ int64_t a = 0; }"
+        self.transformer.inlined_pure_classes = (Cast, Number)
+        output = self.compile_behavior(behavior)
+        expected = (
+            "\n"
+            "// READ\n"
+            "// Declare: st64 a;\n\n"
+            "// EXEC\n\n"
+            "// WRITE\n"
+            'RzILOpEffect *op_ASSIGN_2 = SETL("a", CAST(64, MSB(UN(32, 0)), UN(32, 0)));\n'
+        )
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+
+    def test_store_cancelled_fcn(self):
+        behavior = "{ STORE_SLOT_CANCELLED(slot); }"
+        output = self.compile_behavior(behavior)
+        expected = "RzILOpEffect *c_call_0 = HEX_STORE_SLOT_CANCELLED(insn->slot);\n"
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
 
 
 class TestGrammar(unittest.TestCase):
