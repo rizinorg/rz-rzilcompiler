@@ -12,7 +12,7 @@ class Cast(PureExec):
     def il_exec(self) -> str:
         if self.value_type.signed:
             fill_bit = f"MSB("
-            if not self.ops[0].inlined:
+            if hasattr(self.ops[0], "inlined") and not self.ops[0].inlined:
                 fill_bit += f"DUP({self.ops[0].il_read()}))"
             else:
                 fill_bit += f"{self.ops[0].il_read()})"
