@@ -245,18 +245,33 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data("cast_expr")
         val_type = items[0]
         data = items[1]
+        if data.value_type == val_type:
+            return data
+
         if not isinstance(data, Cast):
             return self.init_a_cast(val_type, data)
 
         # Duplicate casts can be reduced to a single one.
         # We check this here
         if data.value_type.signed != val_type.signed:
+            # Always cast if signs mismatch.
             return self.init_a_cast(val_type, data)
 
-        prev_cast_ops = data.get_ops()
-        assert len(prev_cast_ops) == 1
-        self.il_ops_holder.rm_op_by_name(data.get_name())
-        return self.init_a_cast(val_type, prev_cast_ops[0])
+        cast_i = data
+        # Skip consecutive casts of same type
+        while (
+            isinstance(cast_i, Cast)
+            and val_type.signed == cast_i.value_type.signed
+            and (
+                (val_type >= cast_i.value_type >= cast_i.get_ops()[0].value_type)
+                or (val_type <= cast_i.value_type <= cast_i.get_ops()[0].value_type)
+            )
+        ):
+            # Drop cast
+            self.il_ops_holder.rm_op_by_name(cast_i.get_name())
+            cast_i = cast_i.get_ops()[0]
+
+        return self.init_a_cast(val_type, cast_i)
 
     def number(self, items):
         # Numbers of the form -10ULL
