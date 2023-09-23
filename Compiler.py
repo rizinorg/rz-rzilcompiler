@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 import argparse
-from time import sleep
+import re
 
 from lark.exceptions import VisitError
 from tqdm import tqdm
@@ -15,6 +15,87 @@ from rzil_compiler.Helper import log
 from rzil_compiler.HexagonExtensions import HexagonCompilerExtension
 from rzil_compiler.Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
 from rzil_compiler.Transformer.RZILTransformer import RZILTransformer
+
+
+class RZILInstruction:
+    """Holds all the information about a transformed instruction."""
+
+    def __init__(
+        self,
+        name: str,
+        rzil: list[str],
+        meta: list[list[str]],
+        parse_trees: list[str],
+        not_implemented=False,
+    ):
+        self.name = name
+        self.not_implemented = not_implemented
+        self.rzil = rzil
+
+        self.needs_hi: list[bool] = list()
+        self.needs_pkt: list[bool] = list()
+        for i, code in enumerate(self.rzil):
+            self.needs_hi.append(
+                not self.not_implemented and re.search(r"\Whi\W", code)
+            )
+            self.needs_pkt.append(not self.not_implemented and "pkt" in code)
+
+        self.meta = meta
+        self.parse_trees = parse_trees
+        self.getter_rzil = {"name": [], "fcn_decl": []}
+        if len(self.rzil) == 1:
+            # No _partX postfix for instructions with only one part
+            self.getter_rzil["name"].append(self.gen_hex_il_op_getter_name(self.name))
+            self.getter_rzil["fcn_decl"].append(
+                self.gen_hex_il_op_getter_name(self.name, fcn_decl=True)
+            )
+        else:
+            for i in range(len(self.rzil)):
+                self.getter_rzil["name"].append(
+                    self.gen_hex_il_op_getter_name(self.name, i)
+                )
+                self.getter_rzil["fcn_decl"].append(
+                    self.gen_hex_il_op_getter_name(self.name, i, fcn_decl=True)
+                )
+
+        assert (
+            len(self.rzil)
+            == len(self.meta)
+            == len(self.parse_trees)
+            == len(self.getter_rzil["name"])
+            == len(self.getter_rzil["fcn_decl"])
+            == len(self.needs_pkt)
+            == len(self.needs_hi)
+        )
+
+    @staticmethod
+    def gen_hex_il_op_getter_name(
+        insn_name: str, part: int = -1, fcn_decl: bool = False
+    ) -> str:
+        if part < 0:
+            name = f"hex_il_op_{insn_name.lower()}"
+        else:
+            name = f"hex_il_op_{insn_name.lower()}_part{part}"
+        if fcn_decl:
+            return f"RzILOpEffect *{name}(HexInsnPktBundle *bundle)"
+        return name
+
+    @staticmethod
+    def get_unimplemented_rzil_instr(instr_name: str):
+        instr = RZILInstruction(
+            instr_name,
+            ["NOT_IMPLEMENTED;"],
+            [["HEX_IL_INSN_ATTR_INVALID"]],
+            [],
+            not_implemented=True,
+        )
+        return instr
+
+    def __getitem__(self, item: str):
+        return getattr(self, item)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
 
 
 class Compiler:
@@ -102,14 +183,16 @@ class Compiler:
         for k, v in stats.items():
             print(f'\t{k} = {v["count"]}')
 
-    def compile_insn(self, insn_name: str) -> [str]:
+    def compile_insn(self, insn_name: str) -> dict[RZILInstruction]:
         return self.transform_insn(insn_name, self.asts[insn_name])
 
     def parse_shortcode(self):
         log("Parse shortcode...")
         self.asts = Parser().parse(self.preprocessor.behaviors)
 
-    def transform_insn(self, insn_name: str, parse_trees: list) -> [str]:
+    def transform_insn(
+        self, insn_name: str, parse_trees: list
+    ) -> dict[RZILInstruction]:
         """Compiles the instruction <insn_name> and returns the RZIL code.
         An instruction of certain architectures can have multiple behaviors,
         so this method returns a list of compiled behaviors.
@@ -117,14 +200,12 @@ class Compiler:
         """
         try:
             insn = self.ext.transform_insn_name(insn_name)
-            self.compiled_insns[insn] = {"rzil": [], "meta": [], "parse_trees": []}
             for pt in parse_trees:
                 self.transformer.reset()
-                self.compiled_insns[insn]["rzil"].append(self.transformer.transform(pt))
-                self.compiled_insns[insn]["meta"].append(
-                    self.transformer.ext.get_meta()
-                )
-                self.compiled_insns[insn]["parse_trees"].append(pt.pretty())
+                rzil = self.transformer.transform(pt)
+                meta = self.transformer.ext.get_meta()
+                trees = pt.pretty()
+                self.compiled_insns[insn] = RZILInstruction(insn, rzil, meta, trees)
             return self.compiled_insns[insn]
         except Exception as e:
             raise e

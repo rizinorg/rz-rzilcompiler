@@ -5,6 +5,7 @@ import logging
 import re
 import unittest
 
+from Compiler import RZILInstruction
 from rzil_compiler.Transformer.Pures.Cast import Cast
 from rzil_compiler.Transformer.Pures.Number import Number
 from rzil_compiler.Configuration import Conf, InputFile
@@ -45,6 +46,69 @@ def get_hexagon_parser() -> Lark:
     with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
         grammar = "".join(f.readlines())
     return Lark(grammar, start="fbody", parser="earley")
+
+
+class TestTransformedInstr(unittest.TestCase):
+    debug = False
+
+    def test_set_get_item(self):
+        instr = RZILInstruction("", [""], [[""]], [""])
+        instr["aaaa"] = []
+        self.assertListEqual(instr["aaaa"], [])
+
+    def test_unimplemented(self):
+        instr = RZILInstruction.get_unimplemented_rzil_instr("dummy")
+        self.assertListEqual(instr["rzil"], ["NOT_IMPLEMENTED;"])
+        self.assertListEqual(instr["meta"], [["HEX_IL_INSN_ATTR_INVALID"]])
+        self.assertEqual(instr["getter_rzil"]["name"], ["hex_il_op_dummy"])
+        self.assertEqual(
+            instr["getter_rzil"]["fcn_decl"],
+            ["RzILOpEffect *hex_il_op_dummy(HexInsnPktBundle *bundle)"],
+        )
+
+    def test_two_parts(self):
+        instr = RZILInstruction(
+            "dummy", ["aaa", "bbb"], [["ATTR_A"], ["ATTR_B"]], ["", ""]
+        )
+        self.assertListEqual(instr["rzil"], ["aaa", "bbb"])
+        self.assertListEqual(instr["meta"], [["ATTR_A"], ["ATTR_B"]])
+        self.assertEqual(
+            instr["getter_rzil"]["name"],
+            ["hex_il_op_dummy_part0", "hex_il_op_dummy_part1"],
+        )
+        self.assertEqual(
+            instr["getter_rzil"]["fcn_decl"],
+            [
+                "RzILOpEffect *hex_il_op_dummy_part0(HexInsnPktBundle *bundle)",
+                "RzILOpEffect *hex_il_op_dummy_part1(HexInsnPktBundle *bundle)",
+            ],
+        )
+
+    def test_one_parts(self):
+        instr = RZILInstruction("dummy", ["aaa"], [["ATTR_A"]], [""])
+        self.assertListEqual(instr["rzil"], ["aaa"])
+        self.assertListEqual(instr["meta"], [["ATTR_A"]])
+        self.assertEqual(instr["getter_rzil"]["name"], ["hex_il_op_dummy"])
+        self.assertEqual(
+            instr["getter_rzil"]["fcn_decl"],
+            ["RzILOpEffect *hex_il_op_dummy(HexInsnPktBundle *bundle)"],
+        )
+
+    def test_needs_var(self):
+        instr = RZILInstruction(
+            "dummy",
+            [" hi pkt ", " hi ", " pkt ", ""],
+            [[""], [""], [""], [""]],
+            ["", "", "", ""],
+        )
+        self.assertTrue(instr["needs_hi"][0])
+        self.assertTrue(instr["needs_pkt"][0])
+        self.assertTrue(instr["needs_hi"][1])
+        self.assertFalse(instr["needs_pkt"][1])
+        self.assertFalse(instr["needs_hi"][2])
+        self.assertTrue(instr["needs_pkt"][2])
+        self.assertFalse(instr["needs_hi"][3])
+        self.assertFalse(instr["needs_pkt"][3])
 
 
 class TestTransforming(unittest.TestCase):
@@ -723,3 +787,4 @@ if __name__ == "__main__":
     TestTransformerMeta().main()
     TestGrammar().main()
     TestTransformerOutput().main()
+    TestTransformedInstr().main()
