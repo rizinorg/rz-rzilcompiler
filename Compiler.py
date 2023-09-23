@@ -56,7 +56,6 @@ class Compiler:
         self.preprocessor.run_preprocess_steps()
 
     def test_compile_all(self):
-        log("Parse shortcode...")
         self.parse_shortcode()
 
         keys = [
@@ -103,7 +102,11 @@ class Compiler:
         for k, v in stats.items():
             print(f'\t{k} = {v["count"]}')
 
+    def compile_insn(self, insn_name: str) -> [str]:
+        return self.transform_insn(insn_name, self.asts[insn_name])
+
     def parse_shortcode(self):
+        log("Parse shortcode...")
         self.asts = Parser().parse(self.preprocessor.behaviors)
 
     def transform_insn(self, insn_name: str, parse_trees: list) -> [str]:
