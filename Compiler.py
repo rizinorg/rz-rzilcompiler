@@ -3,13 +3,12 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 import argparse
-import traceback
+from time import sleep
 
-from lark import UnexpectedToken, UnexpectedCharacters, UnexpectedEOF
 from lark.exceptions import VisitError
-from lark.lark import Lark
 from tqdm import tqdm
 
+from rzil_compiler.Parser import Parser, ParserException
 from rzil_compiler.ArchEnum import ArchEnum
 from rzil_compiler.Configuration import Conf, InputFile
 from rzil_compiler.Helper import log
@@ -23,13 +22,13 @@ class Compiler:
     parser = None
     transformer = None
     compiled_insns = dict()
+    asts = dict()  # Abstract syntax trees
     ext = None
 
     def __init__(self, arch: ArchEnum):
         self.arch: ArchEnum = arch
 
         self.set_extension()
-        self.set_parser()
         self.set_transformer()
         self.set_preprocessor()
 
@@ -38,13 +37,6 @@ class Compiler:
             self.ext = HexagonCompilerExtension()
         else:
             raise NotImplementedError(f"No compiler extension for {self.arch} given.")
-
-    def set_parser(self):
-        log("Set up Lark parser.")
-        with open(Conf.get_path(InputFile.GRAMMAR, self.arch)) as f:
-            grammar = "".join(f.readlines())
-
-        self.parser = Lark(grammar, start="fbody", parser="earley")
 
     def set_transformer(self):
         self.transformer = RZILTransformer(self.arch)
@@ -64,109 +56,57 @@ class Compiler:
         self.preprocessor.run_preprocess_steps()
 
     def test_compile_all(self):
-        log("Test: Compile all instructions.")
-        keys = ["no_term", "no_char", "eof", "visit", "other", "ok"]
-        stats = {k: {"count": 0} for k in keys}
-        excs = dict()
+        log("Parse shortcode...")
+        self.parse_shortcode()
 
-        for insn in tqdm(self.preprocessor.behaviors.keys(), desc="Compiling..."):
-            e = None
-            try:
-                self.compile_insn(insn)
-                exc_name = "ok"
-            except UnexpectedToken as x:
-                # Parser got unexpected token
-                exc_name = "no_term"
-                e = x
-            except UnexpectedCharacters as x:
-                # Lexer can not match character to token.
-                exc_name = "no_char"
-                e = x
-            except UnexpectedEOF as x:
-                # Parser expected a token but got EOF
-                exc_name = "eof"
-                e = x
-            except VisitError as x:
-                # Something went wrong in the transformer
-                exc_name = "visit"
-                e = x
-            except Exception as x:
-                exc_name = "other"
-                e = x
+        keys = [
+            "Successful",
+            "UnexpectedToken",
+            "UnexpectedCharacters",
+            "UnexpectedEOF",
+            "VisitError",
+            "Exception",
+        ]
+        stats = {k: {"count": 0} for k in keys}
+
+        log("Transform ASTs...")
+        for insn_name, trees in tqdm(self.asts.items()):
+            if isinstance(trees[0], ParserException):
+                match trees[0].name:
+                    case "UnexpectedToken":
+                        # Parser got unexpected token
+                        exc_name = "UnexpectedToken"
+                    case "UnexpectedCharacters":
+                        # Lexer can not match character to token.
+                        exc_name = "UnexpectedCharacters"
+                    case "UnexpectedEOF":
+                        exc_name = "UnexpectedEOF"
+                    case "Exception" | _:
+                        exc_name = "Exception"
+            else:
+                try:
+                    self.transform_insn(insn_name, trees)
+                    exc_name = "Successful"
+                except VisitError:
+                    # Something went wrong in the transformer
+                    exc_name = "VisitError"
+                except Exception:
+                    exc_name = "Exception"
 
             stats[exc_name]["count"] += 1
-            if e:
-                e_name = type(e).__name__
-                behavior = self.preprocessor.get_insn_behavior(insn)
-                try:
-                    tree = self.parser.parse(behavior[0]).pretty()
-                except Exception:
-                    tree = "No tree present"
-                tup = (insn, behavior, e, tree)
-                if e_name in excs:
-                    excs[e_name].append(tup)
-                else:
-                    excs[e_name] = [tup]
 
-        if len(excs) == 0:
+        if sum([stats[k]["count"] for k in stats.keys() if k != "Successful"]) == 0:
             log("All instructions compiled successfully!")
             return
 
+        log("Results:")
         for k, v in stats.items():
-            print(f'{k} = {v["count"]}')
-        stats = dict()
-        for v_exc in excs["VisitError"]:
-            err: VisitError = v_exc[2]
-            exc_str = str(err.orig_exc)
-            if exc_str in stats:
-                stats[exc_str] += 1
-            else:
-                stats[exc_str] = 1
-        log("Visit Errors:")
-        for k, x in stats.items():
-            print(f"\t{x} - {k}")
+            print(f'\t{k} = {v["count"]}')
 
-        self.fix_compile_exceptions(excs)
+    def parse_shortcode(self):
+        self.asts = Parser().parse(self.preprocessor.behaviors)
 
-    @staticmethod
-    def fix_compile_exceptions(exceptions: dict):
-        for i, k in enumerate(exceptions.keys()):
-            print(f"[{i}] {k}")
-        i = 0
-        while True:
-            inp = input("Choose exception type print (number or q: quit)\n > ")
-            if inp == "q":
-                exit()
-            try:
-                i = int(inp)
-                break
-            except ValueError:
-                continue
-        for k, e in enumerate(exceptions.keys()):
-            if k != i:
-                continue
-            h = 0
-            while h != len(exceptions[e]):
-                insn: str = exceptions[e][h][0]
-                beh: str = exceptions[e][h][1]
-                ex = exceptions[e][h][2]
-                tree = exceptions[e][h][3]
-                print(f"\nTree: {tree}\n")
-                print(f"EXCEPTION: {type(ex)} : {ex}\n")
-                print(f"TRACE: \n{traceback.print_tb(ex.__traceback__)}")
-                if isinstance(ex, VisitError):
-                    print(f"ORIGINAL EXCEPTION: {ex.orig_exc}\n")
-                    print(f"TRACE:\n{traceback.print_tb(ex.orig_exc.__traceback__)}")
-                print(f"INSTRUCTION: {insn}\n\nBEHAVIOR: \n{beh}\n")
-                cmd = input("\n[n = next, b = back, q = quit] > ")
-                if cmd == "n":
-                    h += 1
-                elif cmd == "q":
-                    exit()
-                elif cmd == "b":
-                    Compiler.fix_compile_exceptions(exceptions)
-
-    def compile_insn(self, insn_name: str) -> [str]:
+    def transform_insn(self, insn_name: str, parse_trees: list) -> [str]:
         """Compiles the instruction <insn_name> and returns the RZIL code.
         An instruction of certain architectures can have multiple behaviors,
         so this method returns a list of compiled behaviors.
@@ -174,13 +114,6 @@ class Compiler:
         """
         try:
             insn = self.ext.transform_insn_name(insn_name)
-            behaviors = self.preprocessor.get_insn_behavior(insn)
-            if not behaviors:
-                raise NotImplementedError(
-                    f"Behavior for instruction {insn_name} not known by the preprocessor."
-                )
-
-            parse_trees = [self.parser.parse(behavior) for behavior in behaviors]
             self.compiled_insns[insn] = {"rzil": [], "meta": [], "parse_trees": []}
             for pt in parse_trees:
                 self.transformer.reset()
