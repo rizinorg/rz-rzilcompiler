@@ -55,9 +55,11 @@ class Assignment(Effect):
             read = self.src.il_read()
         else:
             read = self.src.il_read()
-        if self.type == EffectType.SETG:
-            return f"HEX_WRITE_GLOBAL({self.dest.vm_id(True)}, {read})"
+        if self.type == EffectType.SETG and isinstance(self.dest, Register):
+            return f"WRITE_REG({self.dest.vm_id(True)}, {read})"
         elif self.type == EffectType.SETL:
             return f"SETL({self.dest.vm_id(True)}, {read})"
         else:
-            raise NotImplementedError(f"Effect type {self.type} not handled.")
+            raise NotImplementedError(
+                f"Effect type {self.type} and to {self.dest} not handled."
+            )

@@ -42,7 +42,7 @@ class Call(Hybrid):
 
             code = (
                 f"{hexagon_c_call_prefix + self.fcn_name.upper()}("
-                f"{in_out_reg.get_assoc_name(write_usage=True)}, "  # input/output register
+                f"{in_out_reg.get_op_var()}, "  # input/output register
                 f'{", ".join([read_param(param) for param in self.ops])})'
             )
             return code

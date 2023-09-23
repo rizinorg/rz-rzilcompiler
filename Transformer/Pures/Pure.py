@@ -49,16 +49,12 @@ class Pure:
     reads: int = 0
     name: str = ""  # Name of pure
     isa_name = None
-    name_assoc: str = (
-        ""  # Name associated with the ISA name. E.g. ISA: "Rs" Associated: "R3"
-    )
     type: PureType = None
     value_type: ValueType = None
     num_id = -1
 
     def __init__(self, name: str, pure_type: PureType, value_type: ValueType):
         self.name = name
-        self.name_assoc = name + "_assoc"
         self.type = pure_type
         self.value_type = value_type
 

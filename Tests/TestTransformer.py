@@ -590,6 +590,107 @@ class TestTransformerOutput(unittest.TestCase):
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
         )
 
+    def test_reg_write(self):
+        behavior = "{ RdV = 0x0; }"
+        output = self.compile_behavior(behavior)
+        expected = (
+            "// READ\n"
+            "const HexOp *Rd_op = ISA2REG(hi, 'd', true);\n\n"
+            "// EXEC\n\n// WRITE\n"
+            "RzILOpEffect *op_ASSIGN_3 = WRITE_REG(Rd_op, CAST(32, MSB(UN(32, 0)), UN(32, 0)));\n"
+        )
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+
+    def test_reg_read(self):
+        behavior = "{ RdV = RsV; }"
+        output = self.compile_behavior(behavior)
+        expected = (
+            "// READ\n"
+            "const HexOp *Rd_op = ISA2REG(hi, 'd', true);\n"
+            "const HexOp *Rs_op = ISA2REG(hi, 's', false);\n"
+            "RzILOpPure *Rs = READ_REG(Rs_op, false);\n\n"
+            "// EXEC\n\n// WRITE\n"
+            "RzILOpEffect *op_ASSIGN_2 = WRITE_REG(Rd_op, Rs);\n"
+        )
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+
+    def test_reg_read_write(self):
+        behavior = "{ RxV = RxV; }"
+        output = self.compile_behavior(behavior)
+        expected = (
+            "// READ\n"
+            "const HexOp *Rx_op = ISA2REG(hi, 'x', true);\n"
+            "RzILOpPure *Rx = READ_REG(Rx_op, false);\n\n"
+            "// EXEC\n\n// WRITE\n"
+            "RzILOpEffect *op_ASSIGN_1 = WRITE_REG(Rx_op, Rx);\n"
+        )
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+
+    def test_reg_explicit(self):
+        behavior = "{ RdV = P0_NEW; }"
+        output = self.compile_behavior(behavior)
+        expected = (
+            "// READ\n"
+            "const HexOp *Rd_op = ISA2REG(hi, 'd', true);\n"
+            "const HexOp *P0_new_op = EXPLICIT2OP(HEX_REG_EXPLICIT_P0_NEW, true);\n"
+            "RzILOpPure *P0 = READ_REG(P0_new_op, false);\n\n"
+            "// EXEC\n\n// WRITE\n"
+            "RzILOpEffect *op_ASSIGN_3 = WRITE_REG(Rd_op, CAST(32, MSB(P0), DUP(P0)));\n"
+        )
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+
+    def test_reg_explicit_assign(self):
+        behavior = "{ P1_NEW = P0; }"
+        output = self.compile_behavior(behavior)
+        expected = (
+            "// READ\n"
+            "const HexOp *P1_new_op = EXPLICIT2OP(HEX_REG_EXPLICIT_P1_NEW, true);\n"
+            "const HexOp *P0_op = EXPLICIT2OP(HEX_REG_EXPLICIT_P0, false);\n"
+            "RzILOpPure *P0 = READ_REG(P0_op, false);\n\n"
+            "// EXEC\n\n// WRITE\n"
+            "RzILOpEffect *op_ASSIGN_2 = WRITE_REG(P1_new_op, P0);\n"
+        )
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+
+    def test_reg_alias_pc(self):
+        behavior = "{ RdV = HEX_REG_ALIAS_PC; }"
+        output = self.compile_behavior(behavior)
+        expected = (
+            "// READ\n"
+            "const HexOp *Rd_op = ISA2REG(hi, 'd', true);\n"
+            "RzILOpPure *pc = U32(pkt->pkt_addr);\n\n"
+            "// EXEC\n\n// WRITE\n"
+            "RzILOpEffect *op_ASSIGN_3 = WRITE_REG(Rd_op, CAST(32, MSB(pc), DUP(pc)));\n"
+        )
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+
+    def test_reg_alias(self):
+        behavior = "{ RdV = HEX_REG_ALIAS_USR; }"
+        output = self.compile_behavior(behavior)
+        expected = (
+            "// READ\n"
+            "const HexOp *Rd_op = ISA2REG(hi, 'd', true);\n"
+            "const HexOp *usr_op = ALIAS2OP(HEX_REG_ALIAS_USR, false);\n"
+            "RzILOpPure *usr = READ_REG(usr_op, false);\n\n"
+            "// EXEC\n\n// WRITE\n"
+            "RzILOpEffect *op_ASSIGN_3 = WRITE_REG(Rd_op, CAST(32, MSB(usr), DUP(usr)));\n"
+        )
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+
 
 class TestGrammar(unittest.TestCase):
     def test_early_compatibility(self):
