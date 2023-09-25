@@ -86,7 +86,7 @@ class RZILInstruction:
             instr_name,
             ["NOT_IMPLEMENTED;"],
             [["HEX_IL_INSN_ATTR_INVALID"]],
-            [],
+            [""],
             not_implemented=True,
         )
         return instr
