@@ -180,7 +180,11 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data("explicit_reg", is_new=new)
         return self.add_op(
             self.ext.hex_reg(
-                [Token("REG_TYPE", name[0]), Token("SRC_DEST_REG", str(name[1:])), name],
+                [
+                    Token("REG_TYPE", name[0]),
+                    Token("SRC_DEST_REG", str(name[1:])),
+                    name,
+                ],
                 is_new=new,
                 is_explicit=True,
             )
