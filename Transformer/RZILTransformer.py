@@ -178,25 +178,13 @@ class RZILTransformer(Transformer):
         name = items[0]
         new = items[1] is not None
         self.ext.set_token_meta_data("explicit_reg", is_new=new)
-        if name == "R31":
-            # We don't know whether R31 is used as dest or src. Hence: SRC_DEST_REG.
-            return self.add_op(
-                self.ext.hex_reg(
-                    [Token("REG_TYPE", "R"), Token("SRC_DEST_REG", "31"), name],
-                    is_new=new,
-                    is_explicit=True,
-                )
+        return self.add_op(
+            self.ext.hex_reg(
+                [Token("REG_TYPE", name[0]), Token("SRC_DEST_REG", str(name[1:])), name],
+                is_new=new,
+                is_explicit=True,
             )
-        elif name[0] == "P":
-            return self.add_op(
-                self.ext.hex_reg(
-                    [Token("REG_TYPE", "P"), Token("SRC_DEST_REG", str(name[1])), name],
-                    is_new=new,
-                    is_explicit=True,
-                )
-            )
-        else:
-            raise NotImplementedError(f"Explicit register {items} not handled.")
+        )
 
     def reg(self, items):
         self.ext.set_token_meta_data("reg")

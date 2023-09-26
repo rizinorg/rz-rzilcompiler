@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
+import re
 
 from rzil_compiler.Transformer.PluginInfo import (
     isa_to_reg_fnc,
@@ -47,9 +48,17 @@ class Register(GlobalVar):
         else:
             GlobalVar.__init__(self, name, v_type)
         self.set_isa_name(name)
+        self.reg_number = self.get_reg_num_from_name(self.get_isa_name())
+        self.reg_class = self.get_reg_class(self.get_isa_name())
 
     def get_op_var(self):
-        return self.name + "_op"
+        var = self.name + "_op"
+        var = var.replace(":", "_")
+        return var
+
+    def pure_var(self):
+        var = GlobalVar.pure_var(self)
+        return var.replace(":", "_")
 
     def vm_id(self, write_usage: bool):
         if write_usage:
@@ -109,10 +118,12 @@ class Register(GlobalVar):
 
     def il_explicit_reg_to_op(self, write_usage: bool) -> str:
         """Some registers are explicitly named (P0 etc.). Here we resolve them."""
+        assert self.reg_number is not None
         return (
             f"const HexOp {self.get_op_var()} = {isa_explicit_to_op}("
             f'{", ".join(isa_explicit_to_op_args)}'
-            f'{", " if isa_explicit_to_op_args else ""}{self.get_explicit_enum(self.name)}'
+            f'{", " if isa_explicit_to_op_args else ""}'
+            f"{self.reg_number}, {self.reg_class}"
             f", {str(self.is_new or write_usage).lower()});"
         )
 
@@ -128,7 +139,7 @@ class Register(GlobalVar):
             return f"READ_REG(pkt, {self.vm_id(True)}, true)"
         if self.access == RegisterAccessType.UNKNOWN:
             self.access = RegisterAccessType.R
-        return GlobalVar.il_read(self)
+        return GlobalVar.il_read(self).replace(":", "_")
 
     def get_pred_num(self) -> int:
         num = self.get_name()[-1]
@@ -157,5 +168,56 @@ class Register(GlobalVar):
         return f"HEX_REG_ALIAS_{alias.upper()}"
 
     @staticmethod
-    def get_explicit_enum(alias: str) -> str:
-        return f"HEX_REG_EXPLICIT_{alias.upper()}"
+    def get_reg_class(reg_name: str) -> str:
+        """
+        Returns the name of the LLVM register class this register belongs to.
+
+        :param reg_name: The register name
+        :return: The register class name.
+        """
+        reg_class = "HEX_REG_CLASS_"
+        match reg_name[0].upper():
+            case "R":
+                reg_class += "INT_REGS"
+            case "P":
+                reg_class += "PRED_REGS"
+            case "V":
+                reg_class += "HVX_VR"
+            case "Q":
+                reg_class += "HVX_QR"
+            case "G":
+                reg_class += "GUEST_REGS"
+            case "S":
+                reg_class += "SYS_REGS"
+            case "M":
+                reg_class += "MOD_REGS"
+            case "C":
+                reg_class += "CTR_REGS"
+            case _:
+                raise ValueError(f"Register {reg_name} has no class assigned.")
+
+        is_double = ":" in reg_name or (
+            len(reg_name) > 2 and reg_name[1] == reg_name[2]
+        )
+        if is_double:
+            if reg_name[0] == "R":
+                return "HEX_REG_CLASS_DOUBLE_REGS"
+            elif reg_name[0] == "V":
+                return "HEX_REG_CLASS_HVX_WR"
+            elif reg_name[0] == "Q":
+                raise ValueError(f"Doble vector predicates not yet handled: {reg_name}")
+            return reg_class + "64"
+        return reg_class
+
+    @staticmethod
+    def get_reg_num_from_name(reg_name: str) -> int | None:
+        """
+        Determines the register number from the name.
+        :param reg_name: The name of the register 'Rd', 'P0', 'V31:30' etc.
+        :return: The number of the register as in Rizins enums or None if no number can be retrieved (e.g. for 'Rd').
+        """
+        num = None
+        for n in re.findall(r"\d+", reg_name):
+            # For double registers, the smaller number is the number in the enums.
+            num = min(num, int(n)) if num else int(n)
+        return num

@@ -6,6 +6,7 @@ import re
 import unittest
 
 from Compiler import RZILInstruction
+from rzil_compiler.Transformer.Pures.Register import Register
 from rzil_compiler.Transformer.Pures.Cast import Cast
 from rzil_compiler.Transformer.Pures.Number import Number
 from rzil_compiler.Configuration import Conf, InputFile
@@ -697,7 +698,7 @@ class TestTransformerOutput(unittest.TestCase):
         )
 
     def test_reg_explicit(self):
-        behavior = "{ RdV = P0_NEW; }"
+        behavior = "{ RdV = V31:30; R0 = P0_NEW; }"
         output = self.compile_behavior(behavior)
         expected = (
             "// READ\n"
@@ -712,19 +713,39 @@ class TestTransformerOutput(unittest.TestCase):
         )
 
     def test_reg_explicit_assign(self):
-        behavior = "{ P1_NEW = P0; }"
+        behavior = "{ P1_NEW = P0; R11:10_NEW = C31:30; }"
         output = self.compile_behavior(behavior)
         expected = (
             "// READ\n"
-            "const HexOp *P1_new_op = EXPLICIT2OP(HEX_REG_EXPLICIT_P1_NEW, true);\n"
-            "const HexOp *P0_op = EXPLICIT2OP(HEX_REG_EXPLICIT_P0, false);\n"
-            "RzILOpPure *P0 = READ_REG(P0_op, false);\n\n"
+            "const HexOp P1_new_op = EXPLICIT2OP(1, HEX_REG_CLASS_PRED_REGS, true);\n"
+            "const HexOp P0_op = EXPLICIT2OP(0, HEX_REG_CLASS_PRED_REGS, false);\n"
+            "RzILOpPure *P0 = READ_REG(pkt, &P0_op, false);\n"
+            "const HexOp R11_10_new_op = EXPLICIT2OP(10, HEX_REG_CLASS_DOUBLE_REGS, true);\n"
+            "const HexOp C31_30_op = EXPLICIT2OP(30, HEX_REG_CLASS_CTR_REGS64, false);\n"
+            "RzILOpPure *C31_30 = READ_REG(pkt, &C31_30_op, false);\n"
+            "\n"
             "// EXEC\n\n// WRITE\n"
-            "RzILOpEffect *op_ASSIGN_2 = WRITE_REG(P1_new_op, P0);\n"
+            "RzILOpEffect *op_ASSIGN_2 = WRITE_REG(pkt, &P1_new_op, P0);\n"
+            "RzILOpEffect *op_ASSIGN_5 = WRITE_REG(pkt, &R11_10_new_op, C31_30);\n"
         )
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
         )
+
+    def test_reg_nums(self):
+        self.assertEqual(Register.get_reg_num_from_name("V31:30"), 30)
+        self.assertEqual(Register.get_reg_num_from_name("P0"), 0)
+        self.assertIsNone(Register.get_reg_num_from_name("Pd"))
+        self.assertIsNone(Register.get_reg_num_from_name("Pdd"))
+
+    def test_reg_classes(self):
+        self.assertEqual(Register.get_reg_class("Rd"), "HEX_REG_CLASS_INT_REGS")
+        self.assertEqual(Register.get_reg_class("Rdd"), "HEX_REG_CLASS_DOUBLE_REGS")
+        self.assertEqual(Register.get_reg_class("Vdd"), "HEX_REG_CLASS_HVX_WR")
+        self.assertEqual(Register.get_reg_class("Vd"), "HEX_REG_CLASS_HVX_VR")
+        self.assertEqual(Register.get_reg_class("Qd"), "HEX_REG_CLASS_HVX_QR")
+        self.assertEqual(Register.get_reg_class("Cd"), "HEX_REG_CLASS_CTR_REGS")
+        self.assertEqual(Register.get_reg_class("Cdd"), "HEX_REG_CLASS_CTR_REGS64")
 
     def test_reg_alias_pc(self):
         behavior = "{ RdV = HEX_REG_ALIAS_PC; }"

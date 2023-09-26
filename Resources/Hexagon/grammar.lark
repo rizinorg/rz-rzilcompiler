@@ -381,7 +381,7 @@ _reg_variant: "HEX_REG_ALIAS_" reg_alias
     | reg "V"
     | explicit_reg
 
-!explicit_reg: ("R31" | "P0" | "P1" | "P2" | "P3") ["_NEW"]
+!explicit_reg: /[RCPVQMGS][0-31]{1,2}(:[0-31]{1,2})?/ ["_NEW"]
 
 new_reg: _reg
 reg: _reg
