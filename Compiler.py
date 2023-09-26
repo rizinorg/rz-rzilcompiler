@@ -183,7 +183,7 @@ class Compiler:
         for k, v in stats.items():
             print(f'\t{k} = {v["count"]}')
 
-    def compile_insn(self, insn_name: str) -> dict[RZILInstruction]:
+    def compile_insn(self, insn_name: str) -> RZILInstruction:
         return self.transform_insn(insn_name, self.asts[insn_name])
 
     def parse_shortcode(self):
@@ -192,7 +192,7 @@ class Compiler:
 
     def transform_insn(
         self, insn_name: str, parse_trees: list
-    ) -> dict[RZILInstruction]:
+    ) -> RZILInstruction:
         """Compiles the instruction <insn_name> and returns the RZIL code.
         An instruction of certain architectures can have multiple behaviors,
         so this method returns a list of compiled behaviors.
