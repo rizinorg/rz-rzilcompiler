@@ -200,12 +200,15 @@ class Compiler:
         """
         try:
             insn = self.ext.transform_insn_name(insn_name)
+            rzil = list()
+            meta = list()
+            trees = list()
             for pt in parse_trees:
                 self.transformer.reset()
-                rzil = self.transformer.transform(pt)
-                meta = self.transformer.ext.get_meta()
-                trees = pt.pretty()
-                self.compiled_insns[insn] = RZILInstruction(insn, rzil, meta, trees)
+                rzil.append(self.transformer.transform(pt))
+                meta.append(self.transformer.ext.get_meta())
+                trees.append(pt.pretty())
+            self.compiled_insns[insn] = RZILInstruction(insn, rzil, meta, trees)
             return self.compiled_insns[insn]
         except Exception as e:
             raise e
