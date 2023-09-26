@@ -5,6 +5,7 @@
 import argparse
 import re
 
+from lark import Lark
 from lark.exceptions import VisitError
 from tqdm import tqdm
 
@@ -100,7 +101,7 @@ class RZILInstruction:
 
 class Compiler:
     preprocessor = None
-    parser = None
+    parser = None  # Parser only used for single statement compilations. Instructions are compiled in Parser.py
     transformer = None
     compiled_insns = dict()
     asts = dict()  # Abstract syntax trees
@@ -109,9 +110,15 @@ class Compiler:
     def __init__(self, arch: ArchEnum):
         self.arch: ArchEnum = arch
 
+        self.set_lark_parser()
         self.set_extension()
         self.set_transformer()
         self.set_preprocessor()
+
+    def set_lark_parser(self):
+        with open(Conf.get_path(InputFile.GRAMMAR, "Hexagon")) as f:
+            grammar = "".join(f.readlines())
+        self.parser = Lark(grammar, start="fbody", parser="earley")
 
     def set_extension(self):
         if self.arch == ArchEnum.HEXAGON:
@@ -182,6 +189,19 @@ class Compiler:
         log("Results:")
         for k, v in stats.items():
             print(f'\t{k} = {v["count"]}')
+
+    def compile_c_stmt(self, code: str) -> str:
+        """
+        Compiles an arbitrary C statement to RzIL.
+        Statement must be wrapped in curley brackets: "{ <code> }".
+
+        :param code: The C code to compile.
+        :return: The RzIL representation of it.
+        """
+        ast = self.parser.parse(code)
+        result = self.transformer.transform(ast)
+        self.transformer.reset()
+        return result
 
     def compile_insn(self, insn_name: str) -> RZILInstruction:
         return self.transform_insn(insn_name, self.asts[insn_name])
