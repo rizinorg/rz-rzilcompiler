@@ -739,13 +739,28 @@ class TestTransformerOutput(unittest.TestCase):
         self.assertIsNone(Register.get_reg_num_from_name("Pdd"))
 
     def test_reg_classes(self):
-        self.assertEqual(Register.get_reg_class("Rd"), "HEX_REG_CLASS_INT_REGS")
-        self.assertEqual(Register.get_reg_class("Rdd"), "HEX_REG_CLASS_DOUBLE_REGS")
-        self.assertEqual(Register.get_reg_class("Vdd"), "HEX_REG_CLASS_HVX_WR")
-        self.assertEqual(Register.get_reg_class("Vd"), "HEX_REG_CLASS_HVX_VR")
-        self.assertEqual(Register.get_reg_class("Qd"), "HEX_REG_CLASS_HVX_QR")
-        self.assertEqual(Register.get_reg_class("Cd"), "HEX_REG_CLASS_CTR_REGS")
-        self.assertEqual(Register.get_reg_class("Cdd"), "HEX_REG_CLASS_CTR_REGS64")
+        self.assertEqual(
+            Register("Rd", None, None).get_reg_class(), "HEX_REG_CLASS_INT_REGS"
+        )
+        self.assertEqual(
+            Register("Rdd", None, None).get_reg_class(), "HEX_REG_CLASS_DOUBLE_REGS"
+        )
+        self.assertEqual(
+            Register("Vdd", None, None).get_reg_class(), "HEX_REG_CLASS_HVX_WR"
+        )
+        self.assertEqual(
+            Register("Vd", None, None).get_reg_class(), "HEX_REG_CLASS_HVX_VR"
+        )
+        self.assertEqual(
+            Register("Qd", None, None).get_reg_class(), "HEX_REG_CLASS_HVX_QR"
+        )
+        self.assertEqual(
+            Register("Cd", None, None).get_reg_class(), "HEX_REG_CLASS_CTR_REGS"
+        )
+        self.assertEqual(
+            Register("Cdd", None, None).get_reg_class(), "HEX_REG_CLASS_CTR_REGS64"
+        )
+        self.assertIsNone(Register("lr", None, None, is_reg_alias=True).get_reg_class())
 
     def test_reg_alias_pc(self):
         behavior = "{ RdV = HEX_REG_ALIAS_PC; }"

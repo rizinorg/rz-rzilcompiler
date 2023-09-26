@@ -49,7 +49,7 @@ class Register(GlobalVar):
             GlobalVar.__init__(self, name, v_type)
         self.set_isa_name(name)
         self.reg_number = self.get_reg_num_from_name(self.get_isa_name())
-        self.reg_class = self.get_reg_class(self.get_isa_name())
+        self.reg_class = self.get_reg_class()
 
     def get_op_var(self):
         var = self.name + "_op"
@@ -167,14 +167,16 @@ class Register(GlobalVar):
     def get_alias_enum(alias: str) -> str:
         return f"HEX_REG_ALIAS_{alias.upper()}"
 
-    @staticmethod
-    def get_reg_class(reg_name: str) -> str:
+    def get_reg_class(self) -> str | None:
         """
         Returns the name of the LLVM register class this register belongs to.
 
-        :param reg_name: The register name
-        :return: The register class name.
+        :return: The register class name or None if not handled (e.g. for alias)
         """
+        if self.is_reg_alias:
+            return None
+
+        reg_name = self.get_isa_name()
         reg_class = "HEX_REG_CLASS_"
         match reg_name[0].upper():
             case "R":
