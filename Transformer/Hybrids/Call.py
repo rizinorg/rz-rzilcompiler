@@ -32,7 +32,7 @@ class Call(Hybrid):
             return param.il_read()
 
         if self.fcn_name.upper() == "STORE_SLOT_CANCELLED":
-            return f"{hexagon_c_call_prefix + self.fcn_name.upper()}(pkt, insn->slot)"
+            return f"{hexagon_c_call_prefix + self.fcn_name.upper()}(pkt, hi->slot)"
         elif self.fcn_name.upper() == "FCIRC_ADD":
             # For those we need to pass the name of the tmp register as well.
             in_out_reg = self.ops[0]
