@@ -97,5 +97,5 @@ class SubRoutineCall(Hybrid):
         return self.sub_routine.il_read()
 
     def il_write(self):
-        code = f'{hexagon_c_call_prefix + self.sub_routine.get_name()}({", ".join([a.il_read() for a in self.args])})'
+        code = f'{hexagon_c_call_prefix.lower() + self.sub_routine.get_name()}({", ".join([a.il_read() for a in self.args])})'
         return code

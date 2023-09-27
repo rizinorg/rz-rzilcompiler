@@ -175,14 +175,13 @@ class TestTransforming(unittest.TestCase):
         sub_routine = self.compiler.compile_sub_routine(
             name, return_type, parameters, code
         )
-        print(sub_routine.il_init(SubRoutineInitType.DEF))
         # Use sub-routine
         exc = None
+        result = "FAILED"
         try:
             ast_body = self.parser.parse(
                 "{ RdV = sextract64(0, 0, 0); RdV = sextract64(0, 0, 0); }"
             )
-            print(ast_body.pretty())
             transformer = RZILTransformer(
                 ArchEnum.HEXAGON, sub_routines={"sextract64": sub_routine}
             )
@@ -192,12 +191,16 @@ class TestTransforming(unittest.TestCase):
 
         self.assertIsNone(exc)
         expected = (
-            "// READ\n"
-            "const HexOp *Rd_op = ISA2REG(hi, 'd', true);\n\n"
-            "// EXEC\n\n"
-            ""
+            "RzILOpEffect *sextract64_call_7 = "
+            "hex_sextract64(CAST(64, IL_FALSE, UN(32, 0)), CAST(32, MSB(UN(32, 0)), UN(32, 0)), CAST(32, MSB(UN(32, 0)), UN(32, 0)));\n"
+            'RzILOpEffect *op_ASSIGN_hybrid_tmp_8 = SETL("h_tmp0", SIGNED(64, VARL("ret_val")));\n'
+            "RzILOpEffect *seq_9 = SEQN(2, sextract64_call_7, op_ASSIGN_hybrid_tmp_8);\n"
+            'RzILOpEffect *op_ASSIGN_11 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(VARL("h_tmp0")), VARL("h_tmp0")));\n'
+            "RzILOpEffect *seq_12 = SEQN(2, seq_9, op_ASSIGN_11);"
         )
-        self.assertEqual("AAAA", result)
+        self.assertTrue(expected in result)
+        expected = "RzILOpEffect *instruction_sequence = SEQN(2, seq_12, seq_24);"
+        self.assertTrue(expected in result)
 
     def test_J2_jump(self):
         behavior = self.insn_behavior["J2_jump"][0]
