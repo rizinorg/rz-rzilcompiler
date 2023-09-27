@@ -5,8 +5,9 @@ import logging
 import re
 import unittest
 
-from Compiler import RZILInstruction
-from Transformer.Pures.Parameter import get_parameter_by_decl
+from Compiler import RZILInstruction, Compiler
+from Transformer.Hybrids.SubRoutine import SubRoutine, SubRoutineInitType
+from Transformer.Pures.Parameter import get_parameter_by_decl, Parameter
 from Transformer.helper import get_value_type_by_c_type
 from rzil_compiler.Transformer.Pures.Register import Register
 from rzil_compiler.Transformer.Pures.Cast import Cast
@@ -122,8 +123,11 @@ class TestTransforming(unittest.TestCase):
     def setUpClass(cls):
         cls.insn_behavior = get_hexagon_insn_behavior()
         cls.parser = get_hexagon_parser()
+        cls.compiler = Compiler(ArchEnum.HEXAGON)
 
-    def compile_behavior(self, behavior: str, transformer: RZILTransformer = None) -> Exception:
+    def compile_behavior(
+        self, behavior: str, transformer: RZILTransformer = None
+    ) -> Exception:
         exception = None
         try:
             tree = self.parser.parse(behavior)
@@ -150,11 +154,50 @@ class TestTransforming(unittest.TestCase):
 
     def test_sub_routine(self):
         ret_val = get_value_type_by_c_type("uint64_t")
-        params = [get_parameter_by_decl(p) for p in ["uint64_t value", "int start", "int length"]]
+        params = [
+            get_parameter_by_decl(p)
+            for p in ["uint64_t value", "int start", "int length"]
+        ]
         behavior = "{ return (value >> start) & (~0ULL >> (64 - length)); }"
-        transformer = RZILTransformer(ArchEnum.HEXAGON, parameters=params, return_type=ret_val)
+        transformer = RZILTransformer(
+            ArchEnum.HEXAGON, parameters=params, return_type=ret_val
+        )
         exc = self.compile_behavior(behavior, transformer)
         self.assertIsNone(exc)
+
+    def test_add_sub_routine(self):
+        name = "sextract64"
+        return_type = "int64_t"
+        parameters = ["uint64_t value", "int start", "int length"]
+        code = (
+            "{ return ((int32_t)(value << (32 - length - start))) >> (32 - length); }"
+        )
+        sub_routine = self.compiler.compile_sub_routine(
+            name, return_type, parameters, code
+        )
+        print(sub_routine.il_init(SubRoutineInitType.DEF))
+        # Use sub-routine
+        exc = None
+        try:
+            ast_body = self.parser.parse(
+                "{ RdV = sextract64(0, 0, 0); RdV = sextract64(0, 0, 0); }"
+            )
+            print(ast_body.pretty())
+            transformer = RZILTransformer(
+                ArchEnum.HEXAGON, sub_routines={"sextract64": sub_routine}
+            )
+            result = transformer.transform(ast_body)
+        except Exception as e:
+            exc = e
+
+        self.assertIsNone(exc)
+        expected = (
+            "// READ\n"
+            "const HexOp *Rd_op = ISA2REG(hi, 'd', true);\n\n"
+            "// EXEC\n\n"
+            ""
+        )
+        self.assertEqual("AAAA", result)
 
     def test_J2_jump(self):
         behavior = self.insn_behavior["J2_jump"][0]
@@ -520,7 +563,9 @@ class TestTransformerOutput(unittest.TestCase):
         cls.parser = get_hexagon_parser()
         cls.transformer = RZILTransformer(ArchEnum.HEXAGON)
 
-    def compile_behavior(self, behavior: str, transformer: RZILTransformer = None) -> list[str]:
+    def compile_behavior(
+        self, behavior: str, transformer: RZILTransformer = None
+    ) -> list[str]:
         try:
             tree = self.parser.parse(behavior)
             if transformer:
@@ -554,9 +599,14 @@ class TestTransformerOutput(unittest.TestCase):
 
     def test_sub_routines(self):
         ret_val = get_value_type_by_c_type("uint64_t")
-        params = [get_parameter_by_decl(p) for p in ["uint64_t value", "int start", "int length"]]
+        params = [
+            get_parameter_by_decl(p)
+            for p in ["uint64_t value", "int start", "int length"]
+        ]
         behavior = "{ return (value >> start) & (~0ULL >> (64 - length)); }"
-        transformer = RZILTransformer(ArchEnum.HEXAGON, parameters=params, return_type=ret_val)
+        transformer = RZILTransformer(
+            ArchEnum.HEXAGON, parameters=params, return_type=ret_val
+        )
         output = self.compile_behavior(behavior, transformer)
         expected = (
             "RzILOpPure *op_RSHIFT_0 = SHIFTR0(value, start);\n"
@@ -566,9 +616,7 @@ class TestTransformerOutput(unittest.TestCase):
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
         )
-        expected = (
-            'RzILOpEffect *set_return_val_9 = SETL("ret_val", op_AND_7);'
-        )
+        expected = 'RzILOpEffect *set_return_val_9 = SETL("ret_val", op_AND_7);'
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
         )

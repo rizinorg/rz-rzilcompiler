@@ -2,10 +2,11 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from enum import Enum
 
+from rzil_compiler.Exceptions import OverloadException
 from rzil_compiler.Transformer.Pures.Parameter import Parameter
 from rzil_compiler.Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
 from rzil_compiler.Transformer.PluginInfo import hexagon_c_call_prefix
-from rzil_compiler.Transformer.Pures.Pure import ValueType
+from rzil_compiler.Transformer.Pures.Pure import ValueType, Pure
 
 
 class SubRoutineInitType(Enum):
@@ -30,6 +31,10 @@ class SubRoutine(Hybrid):
 
         Hybrid.__init__(self, name, params, ret_type)
 
+    def get_parameter_value_types(self) -> list[ValueType]:
+        """Returns the parameter value types as ordered list (left to right)."""
+        return [p.value_type for p in self.ops]
+
     def il_init(self, sub_init_type=SubRoutineInitType.CALL) -> str:
         """
         Either as definition, declaration or call.
@@ -49,10 +54,12 @@ class SubRoutine(Hybrid):
         return decl
 
     def il_write(self):
-        raise ValueError("Sub-routines are immutable.")
+        raise OverloadException(
+            "Must be overloaded with the knowledge about args used."
+        )
 
     def il_exec(self):
-        raise ValueError("A sub-routine cannot be executed. Only a SubRoutineCall can.")
+        return ""
 
     def il_read(self):
         # The value of the sub-routine is always stored in "ret_val"
@@ -68,22 +75,27 @@ class SubRoutineCall(Hybrid):
     Represents a call to a sub-routine.
     The operands passed to a SubRoutineCall are arguments instead of parameters.
     """
-    def __init__(
-        self, sub_routine: SubRoutine, args: list[Parameter]
-    ):
+
+    def __init__(self, sub_routine: SubRoutine, args: list[Pure]):
+        self.inlined = True  # Calls are always inlined.
         self.sub_routine = sub_routine
+        self.args: list[Pure] = args
         self.seq_order = HybridSeqOrder.EXEC_THEN_SET_VAL
 
-        Hybrid.__init__(self, sub_routine.get_name() + "_call", args, sub_routine.value_type)
+        Hybrid.__init__(
+            self, sub_routine.get_name() + "_call", args, sub_routine.value_type
+        )
 
     def il_exec(self):
-        raise NotImplementedError()
+        return ""
 
     def il_init(self):
-        raise NotImplementedError()
+        """No initialization needed."""
+        return ""
 
     def il_read(self):
-        raise NotImplementedError()
+        return self.sub_routine.il_read()
 
     def il_write(self):
-        raise ValueError("Sub-routines are immutable.")
+        code = f'{hexagon_c_call_prefix + self.sub_routine.get_name()}({", ".join([a.il_read() for a in self.args])})'
+        return code

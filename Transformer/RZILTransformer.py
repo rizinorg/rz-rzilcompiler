@@ -3,6 +3,7 @@
 
 from lark import Transformer, Token
 
+from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine, SubRoutineCall
 from rzil_compiler.Transformer.Pures.ReturnValue import ReturnValue
 from rzil_compiler.Transformer.Pures.Parameter import Parameter
 from rzil_compiler.ArchEnum import ArchEnum
@@ -57,9 +58,10 @@ class RZILTransformer(Transformer):
     hybrid_effect_dict = dict()
     imm_set_effect_list = list()
 
-    def __init__(self, arch: ArchEnum, parameters: list[Parameter] = None, return_type: ValueType = None):
+    def __init__(self, arch: ArchEnum, sub_routines: dict[str: SubRoutine] = None, parameters: list[Parameter] = None, return_type: ValueType = None):
         self.arch = arch
         self.gcc_ext_effects = list()
+        self.sub_routines: dict[str: SubRoutine] = dict() if not sub_routines else sub_routines
         self.return_type = return_type
         # List of parameters this transformer can take as given from outer scope.
         self.parameters: dict[str: Parameter] = dict() if not parameters else {p.get_name(): p for p in parameters}
@@ -82,6 +84,12 @@ class RZILTransformer(Transformer):
         self.hybrid_effect_dict.clear()
         self.imm_set_effect_list.clear()
         self.il_ops_holder.clear()
+        self.return_type = None
+        self.parameters.clear()
+        self.sub_routines.clear()
+
+    def update_sub_routines(self, new_routines: dict[str: SubRoutine]) -> None:
+        self.sub_routines.update(new_routines)
 
     def get_op_id(self) -> int:
         return self.il_ops_holder.get_op_count()
@@ -598,6 +606,21 @@ class RZILTransformer(Transformer):
             raise NotImplementedError(f"Unary expression {items[0]} not handler.")
         return v
 
+    def argument_expr_list(self, items):
+        self.ext.set_token_meta_data("argument_expr_list")
+        return flatten_list(items)
+
+    def sub_routine(self, items):
+        routine_name = items[0]
+        if routine_name not in self.sub_routines:
+            # Handle it in legacy c_call handler.
+            return self.c_call(items)
+        args = items[1:]
+        sub_routine: SubRoutine = self.sub_routines[routine_name]
+        casted_args = self.cast_sub_routine_args(sub_routine.get_name(), args, sub_routine.get_parameter_value_types())
+
+        return self.resolve_hybrid(self.add_op(SubRoutineCall(self.sub_routines[routine_name], casted_args)))
+
     def postfix_expr(self, items):
         self.ext.set_token_meta_data("postfix_expr")
         t = HybridType(items[1])
@@ -653,18 +676,21 @@ class RZILTransformer(Transformer):
 
         return self.add_op(MemLoad(f"ml_{va.get_name()}", va, mem_acc_type))
 
-    def cast_call_params(self, fcn_name: str, params: list[Pure]) -> list[Pure]:
-        param_types = get_fcn_param_types(fcn_name)
-        if len(params) != len(param_types):
+    def cast_sub_routine_args(self, fcn_name: str, args: list[Pure], predefined_types: list[ValueType] = None) -> list[Pure]:
+        if predefined_types:
+            param_types = predefined_types
+        else:
+            param_types = get_fcn_param_types(fcn_name)
+        if len(args) != len(param_types):
             raise NotImplementedError("Not all ops have a type assigned.")
-        for i, (param, a_type) in enumerate(zip(params, param_types)):
+        for i, (param, a_type) in enumerate(zip(args, param_types)):
             if isinstance(param, str):
                 continue
             if not a_type or param.value_type == a_type:
                 continue
 
-            params[i] = self.init_a_cast(a_type, param, "param_cast")
-        return params
+            args[i] = self.init_a_cast(a_type, param, "param_cast")
+        return args
 
     def c_call(self, items):
         self.ext.set_token_meta_data("c_call")
@@ -673,11 +699,10 @@ class RZILTransformer(Transformer):
             op = items[1]
             return self.add_op(Sizeof(f"op_sizeof_{op.get_name()}", op))
         val_type = self.ext.get_val_type_by_fcn(prefix)
+        param = self.cast_sub_routine_args(prefix, items[1:])
 
-        fcn_name = items[0]
-        param = self.cast_call_params(fcn_name, items[1:])
         return self.resolve_hybrid(
-            self.add_op(Call(f"c_call", val_type, [fcn_name] + param))
+            self.add_op(Call(f"c_call", val_type, [prefix] + param))
         )
 
     def identifier(self, items):

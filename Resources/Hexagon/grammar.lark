@@ -26,12 +26,12 @@ mem_store: MEM_STORE SIGN_TYPE BIT_WIDTH "(" _argument_expr_list ")" ";"
 ?generic_association: type_name ":" assignment_expr
 	| DEFAULT ":" assignment_expr
 
-?c_call: identifier "(" [_argument_expr_list] ")"
+sub_routine: identifier "(" [_argument_expr_list] ")"
 
 ?postfix_expr: primary_expr
 	| postfix_expr "[" expr "]"
 	| postfix_expr "(" ")"
-	| c_call
+	| sub_routine
 	| mem_load
 	| postfix_expr "." IDENTIFIER
 	| postfix_expr PTR_OP IDENTIFIER

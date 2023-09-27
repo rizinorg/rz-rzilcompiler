@@ -58,6 +58,8 @@ class Parser:
         ]
         result = dict()
         with Pool() as pool:
-            for res in tqdm(pool.imap(parse_single, args), total=len(args), desc="Parse shortcode"):
+            for res in tqdm(
+                pool.imap(parse_single, args), total=len(args), desc="Parse shortcode"
+            ):
                 result.update(res)
         return result

@@ -109,7 +109,9 @@ class Compiler:
     transformer = None
     compiled_insns = dict()
     asts = dict()  # Abstract syntax trees
-    sub_routines = dict()  # dict of sub-routines which can be used by other instructions.
+    sub_routines = (
+        dict()
+    )  # dict of sub-routines which can be used by other instructions.
     ext = None
 
     def __init__(self, arch: ArchEnum):
@@ -132,7 +134,7 @@ class Compiler:
             raise NotImplementedError(f"No compiler extension for {self.arch} given.")
 
     def set_transformer(self):
-        self.transformer = RZILTransformer(self.arch)
+        self.transformer = RZILTransformer(self.arch, sub_routines=self.sub_routines)
 
     def set_preprocessor(self):
         log(f"Set up preprocessor for: {self.arch.name}")
@@ -148,7 +150,9 @@ class Compiler:
         log("Run preprocessor...")
         self.preprocessor.run_preprocess_steps()
 
-    def add_sub_routine(self, name: str, ret_type: str, params: list[str], body: str) -> None:
+    def add_sub_routine(
+        self, name: str, ret_type: str, params: list[str], body: str
+    ) -> None:
         """
         Compiles a sub-routine and buffers it for later usage.
         :param name: The name of the sub_routine.
@@ -159,6 +163,7 @@ class Compiler:
         log(f"Add sub-routine {name}")
         sub_routine = self.compile_sub_routine(name, ret_type, params, body)
         self.sub_routines[name] = sub_routine
+        self.transformer.update_sub_routines(self.sub_routines)
 
     def get_sub_routine(self, name: str) -> SubRoutine:
         return self.sub_routines[name]
@@ -210,7 +215,9 @@ class Compiler:
         for k, v in stats.items():
             print(f'\t{k} = {v["count"]}')
 
-    def compile_sub_routine(self, name: str, return_type: str, parameter: list[str], body: str) -> SubRoutine:
+    def compile_sub_routine(
+        self, name: str, return_type: str, parameter: list[str], body: str
+    ) -> SubRoutine:
         """
         Returns a SubRoutine object initialized with the given arguments.
         :param name: The name of the sub_routine.
@@ -232,7 +239,12 @@ class Compiler:
         ret_type = get_value_type_by_c_type(return_type)
         # Compile the body
         ast_body = self.parser.parse(body)
-        transformed_body = RZILTransformer(ArchEnum.HEXAGON, params, ret_type).transform(ast_body)
+        transformed_body = RZILTransformer(
+            ArchEnum.HEXAGON,
+            sub_routines=self.sub_routines,
+            parameters=params,
+            return_type=ret_type,
+        ).transform(ast_body)
         return SubRoutine(name, ret_type, params, transformed_body)
 
     def compile_c_stmt(self, code: str) -> str:
@@ -255,9 +267,7 @@ class Compiler:
         log("Parse shortcode...")
         self.asts = Parser().parse(self.preprocessor.behaviors)
 
-    def transform_insn(
-        self, insn_name: str, parse_trees: list
-    ) -> RZILInstruction:
+    def transform_insn(self, insn_name: str, parse_trees: list) -> RZILInstruction:
         """Compiles the instruction <insn_name> and returns the RZIL code.
         An instruction of certain architectures can have multiple behaviors,
         so this method returns a list of compiled behaviors.
