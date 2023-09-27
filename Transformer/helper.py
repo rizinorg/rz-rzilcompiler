@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
+import re
 from copy import deepcopy
 
 from rzil_compiler.Transformer.Pures.Cast import Cast
@@ -77,3 +78,27 @@ def drain_list(l: list) -> list:
     """Returns the content of a list and clears it."""
     result, l[:] = l[:], []
     return result
+
+
+def get_value_type_by_c_type(type_id: str) -> ValueType:
+    """
+    Returns a value type for C type identifiers.
+
+    :param type_id: The type identifier.
+    :return: The Value type it correspond.
+    """
+    if type_id == "int":
+        return ValueType(True, 32)
+    elif type_id == "unsigned":
+        return ValueType(False, 32)
+
+    if type_id.startswith("size"):
+        type_match = re.search(r"size(?P<width>\d+)(?P<sign>[us])_t", type_id)
+    else:
+        type_match = re.search(r"(?P<sign>u?)int(?P<width>\d+)_t", type_id)
+    if len(type_match.groups()) != 2:
+        raise ValueError(f"Types of the form {type_id} can't be parsed yet.")
+
+    is_signed = False if type_match["sign"] == "u" else True
+    width = int(type_match["width"])
+    return ValueType(is_signed, width)
