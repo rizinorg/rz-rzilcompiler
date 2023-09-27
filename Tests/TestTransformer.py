@@ -150,9 +150,9 @@ class TestTransforming(unittest.TestCase):
 
     def test_sub_routine(self):
         ret_val = get_value_type_by_c_type("uint64_t")
-        params = {p.split(" ")[1]: get_parameter_by_decl(p) for p in ["uint64_t value", "int start", "int length"]}
+        params = [get_parameter_by_decl(p) for p in ["uint64_t value", "int start", "int length"]]
         behavior = "{ return (value >> start) & (~0ULL >> (64 - length)); }"
-        transformer = RZILTransformer(ArchEnum.HEXAGON, params, ret_val)
+        transformer = RZILTransformer(ArchEnum.HEXAGON, parameters=params, return_type=ret_val)
         exc = self.compile_behavior(behavior, transformer)
         self.assertIsNone(exc)
 
@@ -554,9 +554,9 @@ class TestTransformerOutput(unittest.TestCase):
 
     def test_sub_routines(self):
         ret_val = get_value_type_by_c_type("uint64_t")
-        params = {p.split(" ")[1]: get_parameter_by_decl(p) for p in ["uint64_t value", "int start", "int length"]}
+        params = [get_parameter_by_decl(p) for p in ["uint64_t value", "int start", "int length"]]
         behavior = "{ return (value >> start) & (~0ULL >> (64 - length)); }"
-        transformer = RZILTransformer(ArchEnum.HEXAGON, params, ret_val)
+        transformer = RZILTransformer(ArchEnum.HEXAGON, parameters=params, return_type=ret_val)
         output = self.compile_behavior(behavior, transformer)
         expected = (
             "RzILOpPure *op_RSHIFT_0 = SHIFTR0(value, start);\n"

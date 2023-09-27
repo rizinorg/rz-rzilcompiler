@@ -34,7 +34,7 @@ class TestHybrids(unittest.TestCase):
         # Compile the body
         ast_body = self.compiler.parser.parse(code)
         transformed_body = RZILTransformer(
-            ArchEnum.HEXAGON, params, ret_type
+            ArchEnum.HEXAGON, parameters=params, return_type=ret_type
         ).transform(ast_body)
         sub_routine = SubRoutine(name, ret_type, params, transformed_body)
         self.assertEqual(sub_routine.value_type, ValueType(True, 64))
