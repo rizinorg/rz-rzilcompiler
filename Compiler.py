@@ -9,6 +9,9 @@ from lark import Lark
 from lark.exceptions import VisitError
 from tqdm import tqdm
 
+from rzil_compiler.Transformer.helper import get_value_type_by_c_type
+from rzil_compiler.Transformer.Pures.Parameter import Parameter
+from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine
 from rzil_compiler.Parser import Parser, ParserException
 from rzil_compiler.ArchEnum import ArchEnum
 from rzil_compiler.Configuration import Conf, InputFile
@@ -189,6 +192,26 @@ class Compiler:
         log("Results:")
         for k, v in stats.items():
             print(f'\t{k} = {v["count"]}')
+
+    def compile_sub_routine(self, name: str, return_type: str, parameter: list[str], body: str) -> SubRoutine:
+        """
+        Returns a SubRoutine object initialized with the given arguments.
+        :param name: The name of the sub_routine.
+        :param return_type: The return type in c syntax
+        :param parameter: A list of parameters of this sub-routine. tuples have "<type> <id>"
+        :param body: The code of the sub-routines body.
+        :return: The sub-routine object to initialization.
+        """
+        params = list()
+        for param in parameter:
+            ptype, pname = param.split(" ")
+            params.append(Parameter(pname, ptype))
+
+        ret_type = get_value_type_by_c_type(return_type)
+        # Compile the body
+        ast_body = self.parser.parse(body)
+        transformed_body = RZILTransformer(ArchEnum.HEXAGON, params, ret_type).transform(ast_body)
+        return SubRoutine(name, ret_type, params, transformed_body)
 
     def compile_c_stmt(self, code: str) -> str:
         """

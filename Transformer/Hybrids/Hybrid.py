@@ -12,6 +12,7 @@ class HybridType(StrEnum):
     INC = "++"
     DEC = "--"
     CALL = "call"
+    SUB_ROUTINE = "sub_routine"
 
 
 class HybridSeqOrder(Enum):

@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
-from Transformer.helper import get_value_type_by_c_type
+from rzil_compiler.Transformer.helper import get_value_type_by_c_type
 from rzil_compiler.Transformer.Pures.Pure import Pure, PureType, ValueType
 
 
@@ -30,6 +30,9 @@ class Parameter(Pure):
 
     def vm_id(self, write_usage: bool):
         return self.get_rzil_val()
+
+    def get_rzi_decl(self):
+        return f"RZ_BORROW RzILOpPure *{self.get_name()}"
 
 
 def get_parameter_by_decl(decl: str) -> Parameter:
