@@ -198,7 +198,7 @@ class Compiler:
         Returns a SubRoutine object initialized with the given arguments.
         :param name: The name of the sub_routine.
         :param return_type: The return type in c syntax
-        :param parameter: A list of parameters of this sub-routine. tuples have "<type> <id>"
+        :param parameter: A list of parameters of this sub-routine in the form of "<type> <id>"
         :param body: The code of the sub-routines body.
         :return: The sub-routine object to initialization.
         """
