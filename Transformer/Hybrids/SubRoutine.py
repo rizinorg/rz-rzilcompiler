@@ -34,11 +34,11 @@ class SubRoutine(Hybrid):
         Hybrid.__init__(self, name, params, ret_type)
 
     def check_for_bundle_usage(self, code: str) -> str:
-        if re.search(r"\Whi\W", code):
-            code = "const HexInsn *hi = bundle->insn;\n" + code
         if re.search(r"\Wpkt\W", code):
             code = "HexPkt *pkt = bundle->pkt;\n" + code
-        return "{" + code + "}"
+        if re.search(r"\Whi\W", code):
+            code = "const HexInsn *hi = bundle->insn;\n" + code
+        return " {\n" + code + "\n}"
 
     def get_parameter_value_types(self) -> list[ValueType]:
         """Returns the parameter value types as ordered list (left to right)."""
