@@ -600,6 +600,50 @@ class TestTransformerOutput(unittest.TestCase):
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
         )
 
+    def test_sub_routines_with_external_types(self):
+        self.maxDiff = 1000
+        name = "test_routine"
+        ret_type = get_value_type_by_c_type("uint64_t")
+        params = [
+            get_parameter_by_decl(p)
+            for p in [
+                "HexInsnPktBundle *bundle",
+                "const HexOp *RdV",
+                "int start",
+                "const HexOp *RsV",
+            ]
+        ]
+        code = "{ RdV = RsV + start; }"
+        ast_body = self.parser.parse(code)
+        body = RZILTransformer(
+            ArchEnum.HEXAGON, parameters=params, return_type=ret_type
+        ).transform(ast_body)
+        sub_routine = SubRoutine(name, ret_type, params, body)
+
+        self.assertEqual(
+            """RZ_OWN RzILOpEffect *hex_test_routine(HexInsnPktBundle *bundle, const HexOp *RdV, RZ_BORROW RzILOpPure *start, const HexOp *RsV) {
+            const HexInsn *hi = bundle->insn;
+            HexPkt *pkt = bundle->pkt;
+
+            // READ
+            const HexOp *Rd_op = ISA2REG(hi, 'd', true);
+            const HexOp *Rs_op = ISA2REG(hi, 's', false);
+            RzILOpPure *Rs = READ_REG(pkt, Rs_op, false);
+
+            // EXEC
+            RzILOpPure *op_ADD_2 = ADD(Rs, start);
+
+            // WRITE
+            RzILOpEffect *op_ASSIGN_3 = WRITE_REG(pkt, Rd_op, op_ADD_2);
+            RzILOpEffect *instruction_sequence = op_ASSIGN_3;
+
+            return instruction_sequence;
+        }""".replace(
+                "  ", ""
+            ),
+            sub_routine.il_init(SubRoutineInitType.DEF),
+        )
+
     def test_sub_routines(self):
         ret_val = get_value_type_by_c_type("uint64_t")
         params = [

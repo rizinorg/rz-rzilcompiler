@@ -32,7 +32,9 @@ class Parameter(Pure):
         return self.get_rzil_val()
 
     def get_rzi_decl(self):
-        return f"RZ_BORROW RzILOpPure *{self.get_name()}"
+        param_type = self.value_type.get_param_decl_type()
+        space = "" if param_type[-1] == "*" else " "  # No space after *
+        return f"{param_type}{space}{self.get_name()}"
 
 
 def get_parameter_by_decl(decl: str) -> Parameter:

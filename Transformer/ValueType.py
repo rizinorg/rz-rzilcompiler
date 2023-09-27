@@ -22,10 +22,21 @@ class VTGroup(Flag):
 class ValueType:
     """Is used to match value against their UN() and SN() equivalence."""
 
-    def __init__(self, signed: bool, bit_width: int, group: VTGroup = VTGroup.PURE):
+    def __init__(
+        self,
+        signed: bool,
+        bit_width: int,
+        group: VTGroup = VTGroup.PURE,
+        external_type: str = None,
+    ):
         self._signed = signed
         self._bit_width = bit_width
         self.group: VTGroup = group
+        self.external_type = external_type
+        if self.group == VTGroup.EXTERNAL and not self.external_type:
+            raise ValueError(
+                "If the ValueTypeGroup is EXTERNAL a type name must be given as well."
+            )
 
     @property
     def signed(self) -> bool:
@@ -61,6 +72,14 @@ class ValueType:
         s += f"({self.bit_width}, {value:#x})"
         return s
 
+    def get_param_decl_type(self) -> str:
+        """Returns the type used for parameters."""
+        if self.group & VTGroup.EXTERNAL:
+            return self.external_type
+        elif self.group & VTGroup.PURE:
+            return "RZ_BORROW RzILOpPure *"
+        raise ValueError(f"{self.group} not handled.")
+
     def __eq__(self, other):
         return self.bit_width == other.bit_width and self.signed == other.signed
 
@@ -77,6 +96,8 @@ class ValueType:
         return self.bit_width <= other.bit_width
 
     def __str__(self):
+        if self.group & VTGroup.EXTERNAL:
+            return self.external_type
         return f'{"st" if self.signed else "ut"}{self.bit_width}'
 
 
@@ -104,7 +125,7 @@ def get_value_type_by_c_type(type_id: str) -> ValueType:
     elif type_id == "unsigned":
         return ValueType(False, 32)
     elif any([t in type_id for t in VTGroup.get_external_types()]):
-        return ValueType(False, 64, VTGroup.EXTERNAL)
+        return ValueType(False, 64, VTGroup.EXTERNAL, type_id)
 
     if type_id.startswith("size"):
         type_match = re.search(r"size(?P<width>\d+)(?P<sign>[us])_t", type_id)
