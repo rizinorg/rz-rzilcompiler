@@ -3,6 +3,8 @@
 
 from lark import Transformer, Token
 
+from rzil_compiler.Transformer.Pures.ReturnValue import ReturnValue
+from rzil_compiler.Transformer.Pures.Parameter import Parameter
 from rzil_compiler.ArchEnum import ArchEnum
 from rzil_compiler.Transformer.Effects.Branch import Branch
 from rzil_compiler.Transformer.Effects.Effect import Effect
@@ -55,9 +57,15 @@ class RZILTransformer(Transformer):
     hybrid_effect_dict = dict()
     imm_set_effect_list = list()
 
-    def __init__(self, arch: ArchEnum):
+    def __init__(self, arch: ArchEnum, parameters: dict[str: Parameter] = None, return_type: ValueType = None):
         self.arch = arch
         self.gcc_ext_effects = list()
+        self.return_type = return_type
+        # List of parameters this transformer can take as given from outer scope.
+        self.parameters: dict[str: Parameter] = dict() if not parameters else parameters
+        if (self.return_type and not self.parameters) or (not self.return_type and self.parameters):
+            raise ValueError("If parameters and return type must be set or unset. But never just one of them.")
+
         self.il_ops_holder = ILOpsHolder()
 
         if self.arch == ArchEnum.HEXAGON:
@@ -79,7 +87,9 @@ class RZILTransformer(Transformer):
         return self.il_ops_holder.get_op_count()
 
     def add_op(self, op):
-        if self.il_ops_holder.has_op(op.get_name()):
+        if op.get_name() in self.parameters:
+            raise ValueError(f"Operand {op.get_name()} already defined as parameter.")
+        elif self.il_ops_holder.has_op(op.get_name()):
             return self.il_ops_holder.get_op_by_name(op.get_name())
 
         num_id = self.il_ops_holder.get_op_count()
@@ -89,7 +99,7 @@ class RZILTransformer(Transformer):
                 NotImplementedError(f"{op} can not be inlined yet.")
             op.inlined = True
 
-        if not isinstance(op, Variable) and not isinstance(op, Register):
+        if not isinstance(op, Variable) and not isinstance(op, Register) and not isinstance(op, ReturnValue):
             # Those have already a unique name
             op.set_name(f"{op.get_name()}_{num_id}")
         self.il_ops_holder.add_op(op)
@@ -154,6 +164,16 @@ class RZILTransformer(Transformer):
         res += instruction_sequence.il_init_var() + "\n"
         res += f"\nreturn {instruction_sequence.effect_var()};"
         return res
+
+    def jump_stmt(self, items):
+        if items[0] == "return":
+            # Set result of the expression.
+            if self.il_ops_holder.has_op("ret_val"):
+                ret_val = self.il_ops_holder.get_op_by_name("ret_val")
+            else:
+                ret_val = self.add_op(ReturnValue(self.return_type))
+            return self.add_op(Assignment("set_return_val", AssignmentType.ASSIGN, ret_val, items[1]))
+        return items  # Pass them upwards
 
     def relational_expr(self, items):
         self.ext.set_token_meta_data("relational_expr")
@@ -665,6 +685,9 @@ class RZILTransformer(Transformer):
         # Hexagon shortcode can initialize certain variables without type.
         # Those are converted to a local var here.
         identifier = items[0].value
+        if identifier in self.parameters:
+            return self.parameters[identifier]
+
         holder = self.il_ops_holder
         if identifier in holder.read_ops:
             return holder.read_ops[identifier]

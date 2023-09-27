@@ -6,6 +6,8 @@ import re
 import unittest
 
 from Compiler import RZILInstruction
+from Transformer.Pures.Parameter import get_parameter_by_decl
+from Transformer.helper import get_value_type_by_c_type
 from rzil_compiler.Transformer.Pures.Register import Register
 from rzil_compiler.Transformer.Pures.Cast import Cast
 from rzil_compiler.Transformer.Pures.Number import Number
@@ -121,12 +123,15 @@ class TestTransforming(unittest.TestCase):
         cls.insn_behavior = get_hexagon_insn_behavior()
         cls.parser = get_hexagon_parser()
 
-    def compile_behavior(self, behavior: str) -> Exception:
+    def compile_behavior(self, behavior: str, transformer: RZILTransformer = None) -> Exception:
         exception = None
         try:
             tree = self.parser.parse(behavior)
-            transformer = RZILTransformer(ArchEnum.HEXAGON)
-            transformer.transform(tree)
+            if transformer:
+                transformer.transform(tree)
+            else:
+                transformer = RZILTransformer(ArchEnum.HEXAGON)
+                transformer.transform(tree)
         except UnexpectedToken as e:
             # Parser got unexpected token
             exception = e
@@ -141,11 +146,15 @@ class TestTransforming(unittest.TestCase):
             exception = e
         except Exception as e:
             exception = e
-
-        if self.debug and exception:
-            raise exception
-
         return exception
+
+    def test_sub_routine(self):
+        ret_val = get_value_type_by_c_type("uint64_t")
+        params = {p.split(" ")[1]: get_parameter_by_decl(p) for p in ["uint64_t value", "int start", "int length"]}
+        behavior = "{ return (value >> start) & (~0ULL >> (64 - length)); }"
+        transformer = RZILTransformer(ArchEnum.HEXAGON, params, ret_val)
+        exc = self.compile_behavior(behavior, transformer)
+        self.assertIsNone(exc)
 
     def test_J2_jump(self):
         behavior = self.insn_behavior["J2_jump"][0]
@@ -511,11 +520,14 @@ class TestTransformerOutput(unittest.TestCase):
         cls.parser = get_hexagon_parser()
         cls.transformer = RZILTransformer(ArchEnum.HEXAGON)
 
-    def compile_behavior(self, behavior: str) -> list[str]:
+    def compile_behavior(self, behavior: str, transformer: RZILTransformer = None) -> list[str]:
         try:
             tree = self.parser.parse(behavior)
-            self.transformer.reset()
-            return self.transformer.transform(tree)
+            if transformer:
+                return transformer.transform(tree)
+            else:
+                self.transformer.reset()
+                return self.transformer.transform(tree)
         except UnexpectedToken as e:
             # Parser got unexpected token
             exception = e
@@ -536,6 +548,27 @@ class TestTransformerOutput(unittest.TestCase):
         behavior = "{}"
         output = self.compile_behavior(behavior)
         expected = "RzILOpEffect *instruction_sequence = EMPTY();\n\nreturn instruction_sequence;"
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+
+    def test_sub_routines(self):
+        ret_val = get_value_type_by_c_type("uint64_t")
+        params = {p.split(" ")[1]: get_parameter_by_decl(p) for p in ["uint64_t value", "int start", "int length"]}
+        behavior = "{ return (value >> start) & (~0ULL >> (64 - length)); }"
+        transformer = RZILTransformer(ArchEnum.HEXAGON, params, ret_val)
+        output = self.compile_behavior(behavior, transformer)
+        expected = (
+            "RzILOpPure *op_RSHIFT_0 = SHIFTR0(value, start);\n"
+            "RzILOpPure *op_NOT_2 = LOGNOT(UN(64, 0));\n"
+            "RzILOpPure *op_SUB_5 = SUB(UN(32, 0x40), CAST(32, IL_FALSE, length));\n"
+        )
+        self.assertTrue(
+            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+        expected = (
+            'RzILOpEffect *set_return_val_9 = SETL("ret_val", op_AND_7);'
+        )
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
         )
@@ -650,7 +683,7 @@ class TestTransformerOutput(unittest.TestCase):
     def test_store_cancelled_fcn(self):
         behavior = "{ STORE_SLOT_CANCELLED(slot); }"
         output = self.compile_behavior(behavior)
-        expected = "RzILOpEffect *c_call_0 = HEX_STORE_SLOT_CANCELLED(insn->slot);\n"
+        expected = "RzILOpEffect *c_call_0 = HEX_STORE_SLOT_CANCELLED(pkt, hi->slot);\n"
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
         )
