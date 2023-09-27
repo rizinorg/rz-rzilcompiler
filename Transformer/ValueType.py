@@ -14,14 +14,46 @@ class VTGroup(Flag):
     # supporting architectures).
     VOID = auto()  # A void type.
 
+    @staticmethod
+    def get_external_types() -> list[str]:
+        return ["HexOp", "HexInsnPktBundle"]
+
 
 class ValueType:
     """Is used to match value against their UN() and SN() equivalence."""
 
     def __init__(self, signed: bool, bit_width: int, group: VTGroup = VTGroup.PURE):
-        self.signed = signed
-        self.bit_width = bit_width
+        self._signed = signed
+        self._bit_width = bit_width
         self.group: VTGroup = group
+
+    @property
+    def signed(self) -> bool:
+        if self.group & VTGroup.EXTERNAL:
+            raise ValueError(f"ValueType {self} is of type {self.group}. "
+                             f"The signed flag should not be used on those groups.")
+        return self._signed
+
+    @signed.setter
+    def signed(self, val):
+        if self.group & VTGroup.EXTERNAL:
+            raise ValueError(f"ValueType {self} is of type {self.group}. "
+                             f"The signed flag should not be used on those groups.")
+        self._signed = val
+
+    @property
+    def bit_width(self):
+        if self.group & VTGroup.EXTERNAL:
+            raise ValueError(f"ValueType {self} is of type {self.group}. "
+                             f"bit_width should not be used on those groups.")
+        return self._bit_width
+
+    @bit_width.setter
+    def bit_width(self, val):
+        if self.group & VTGroup.EXTERNAL:
+            raise ValueError(f"ValueType {self} is of type {self.group}. "
+                             f"The signed flag should not be used on those groups.")
+        self._bit_width = val
 
     def il_op(self, value: int):
         """Returns the corresponding SN/UN(size, val) string."""
@@ -73,6 +105,8 @@ def get_value_type_by_c_type(type_id: str) -> ValueType:
         return ValueType(True, 32)
     elif type_id == "unsigned":
         return ValueType(False, 32)
+    elif any([t in type_id for t in VTGroup.get_external_types()]):
+        return ValueType(False, 64, VTGroup.EXTERNAL)
 
     if type_id.startswith("size"):
         type_match = re.search(r"size(?P<width>\d+)(?P<sign>[us])_t", type_id)
