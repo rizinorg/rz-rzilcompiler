@@ -580,7 +580,7 @@ class RZILTransformer(Transformer):
             v = BooleanOp(name, items[1], None, t)
         else:
             t = BooleanOpType(items[1])
-            name = f"op_{t}"
+            name = f"op_{t.name}"
             a = items[0]
             b = items[2] if len(items) == 3 else None
             if a and b:
