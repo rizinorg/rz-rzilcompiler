@@ -6,7 +6,6 @@ from rzil_compiler.Transformer.Pures.Parameter import Parameter
 from rzil_compiler.Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
 from rzil_compiler.Transformer.PluginInfo import hexagon_c_call_prefix
 from rzil_compiler.Transformer.Pures.Pure import ValueType
-from rzil_compiler.Transformer.Pures.Register import Register
 
 
 class SubRoutineInitType(Enum):
@@ -52,6 +51,9 @@ class SubRoutine(Hybrid):
     def il_write(self):
         raise ValueError("Sub-routines are immutable.")
 
+    def il_exec(self):
+        raise ValueError("A sub-routine cannot be executed. Only a SubRoutineCall can.")
+
     def il_read(self):
         # The value of the sub-routine is always stored in "ret_val"
         tmp = "SIGNED(" if self.value_type.signed else "UNSIGNED("
@@ -59,3 +61,29 @@ class SubRoutine(Hybrid):
             f"{self.value_type.bit_width}" if self.value_type.bit_width != 0 else "32"
         )
         return f'{tmp}, VARL("ret_val"))'
+
+
+class SubRoutineCall(Hybrid):
+    """
+    Represents a call to a sub-routine.
+    The operands passed to a SubRoutineCall are arguments instead of parameters.
+    """
+    def __init__(
+        self, sub_routine: SubRoutine, args: list[Parameter]
+    ):
+        self.sub_routine = sub_routine
+        self.seq_order = HybridSeqOrder.EXEC_THEN_SET_VAL
+
+        Hybrid.__init__(self, sub_routine.get_name() + "_call", args, sub_routine.value_type)
+
+    def il_exec(self):
+        raise NotImplementedError()
+
+    def il_init(self):
+        raise NotImplementedError()
+
+    def il_read(self):
+        raise NotImplementedError()
+
+    def il_write(self):
+        raise ValueError("Sub-routines are immutable.")
