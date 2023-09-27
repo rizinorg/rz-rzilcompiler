@@ -8,11 +8,12 @@ from rzil_compiler.Transformer.Pures.Variable import Variable
 
 
 class ILOpsHolder:
-    read_ops: dict = dict()
-    exec_ops: dict = dict()
-    write_ops: dict = dict()
-    let_ops: dict = dict()  # immutable LET vars.
-    op_count = 0
+    def __init__(self):
+        self.read_ops: dict = dict()
+        self.exec_ops: dict = dict()
+        self.write_ops: dict = dict()
+        self.let_ops: dict = dict()  # immutable LET vars.
+        self.op_count = 0
 
     def get_op_count(self):
         cnt = self.op_count
