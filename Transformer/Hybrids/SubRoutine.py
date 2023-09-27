@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
+import re
 from enum import Enum
 
 from rzil_compiler.Exceptions import OverloadException
@@ -25,11 +26,19 @@ class SubRoutine(Hybrid):
     ):
         self.routine_name = name
         # Precompiled subroutine's body.
-        self.body = "{\n" + body + "\n}"
+        self.body = self.check_for_bundle_usage(body)
         self.op_type = HybridType.SUB_ROUTINE
         self.seq_order = HybridSeqOrder.EXEC_THEN_SET_VAL
 
         Hybrid.__init__(self, name, params, ret_type)
+
+    def check_for_bundle_usage(self, code: str) -> str:
+        if re.search(r"\Whi\W", code):
+            code = "const HexInsn *hi = bundle->insn;\n" + code
+        if re.search(r"\Wpkt\W", code):
+            code = "HexPkt *pkt = bundle->pkt;\n" + code
+        return "{" + code + "}"
+
 
     def get_parameter_value_types(self) -> list[ValueType]:
         """Returns the parameter value types as ordered list (left to right)."""
