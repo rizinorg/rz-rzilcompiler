@@ -6,8 +6,8 @@ import re
 import unittest
 
 from Compiler import RZILInstruction, Compiler
-from Transformer.Hybrids.SubRoutine import SubRoutine, SubRoutineInitType
-from Transformer.Pures.Parameter import get_parameter_by_decl, Parameter
+from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine, SubRoutineInitType
+from rzil_compiler.Transformer.Pures.Parameter import get_parameter_by_decl, Parameter
 from rzil_compiler.Transformer.ValueType import get_value_type_by_c_type
 from rzil_compiler.Transformer.Pures.Register import Register
 from rzil_compiler.Transformer.Pures.Cast import Cast
@@ -642,6 +642,44 @@ class TestTransformerOutput(unittest.TestCase):
                 "  ", ""
             ),
             sub_routine.il_init(SubRoutineInitType.DEF),
+        )
+
+        ret_type = get_value_type_by_c_type("RzILOpEffect *")
+        params = [
+            get_parameter_by_decl(p)
+            for p in [
+                "HexInsnPktBundle *bundle",
+            ]
+        ]
+
+        code = "{ hex_test_routine(bundle, RdV, 0x0, RsV); }"
+        ast_body = self.parser.parse(code)
+        body = RZILTransformer(
+            ArchEnum.HEXAGON,
+            parameters=params,
+            return_type=ret_type,
+            sub_routines={"hex_test_routine": sub_routine},
+        ).transform(ast_body)
+
+        self.assertEqual(
+            """
+            // READ
+            const HexOp *Rd_op = ISA2REG(hi, 'd', true);
+            const HexOp *Rs_op = ISA2REG(hi, 's', false);
+            RzILOpPure *Rs = READ_REG(pkt, Rs_op, false);
+
+            // EXEC
+
+            // WRITE
+            RzILOpEffect *test_routine_call_4 = hex_test_routine(bundle, Rd_op, CAST(32, MSB(UN(32, 0)), UN(32, 0)), Rs_op);
+            RzILOpEffect *op_ASSIGN_hybrid_tmp_5 = SETL("h_tmp0", UNSIGNED(64, VARL("ret_val")));
+            RzILOpEffect *seq_6 = SEQN(2, test_routine_call_4, op_ASSIGN_hybrid_tmp_5);
+            RzILOpEffect *instruction_sequence = seq_6;
+
+            return instruction_sequence;""".replace(
+                "  ", ""
+            ),
+            body,
         )
 
     def test_sub_routines(self):

@@ -36,6 +36,7 @@ from rzil_compiler.Transformer.ValueType import (
     ValueType,
     c11_cast,
     get_value_type_by_c_number,
+    VTGroup,
 )
 from rzil_compiler.Transformer.Effects.Assignment import Assignment, AssignmentType
 from rzil_compiler.Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
@@ -713,13 +714,14 @@ class RZILTransformer(Transformer):
             param_types = get_fcn_param_types(fcn_name)
         if len(args) != len(param_types):
             raise NotImplementedError("Not all ops have a type assigned.")
-        for i, (param, a_type) in enumerate(zip(args, param_types)):
-            if isinstance(param, str):
+        for i, (arg, p_type) in enumerate(zip(args, param_types)):
+            if p_type.group & VTGroup.EXTERNAL:
+                # Here we pass non Pures. So we can't cast them.
                 continue
-            if not a_type or param.value_type == a_type:
+            if not p_type or arg.value_type == p_type:
                 continue
 
-            args[i] = self.init_a_cast(a_type, param, "param_cast")
+            args[i] = self.init_a_cast(p_type, arg, "param_cast")
         return args
 
     def c_call(self, items):

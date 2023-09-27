@@ -4,7 +4,7 @@ from enum import Flag, auto
 
 from lark import Token
 
-from Transformer.helper_hexagon import get_num_base_by_token
+from rzil_compiler.Transformer.helper_hexagon import get_num_base_by_token
 
 
 class VTGroup(Flag):
@@ -18,7 +18,7 @@ class VTGroup(Flag):
 
     @staticmethod
     def get_external_types() -> list[str]:
-        return ["HexOp", "HexInsnPktBundle"]
+        return ["HexOp", "HexInsnPktBundle", "RzILOpEffect"]
 
 
 class ValueType:
@@ -34,7 +34,7 @@ class ValueType:
         self._signed = signed
         self._bit_width = bit_width
         self.group: VTGroup = group
-        self.external_type = external_type
+        self.external_type: str = external_type
         if self.group == VTGroup.EXTERNAL and not self.external_type:
             raise ValueError(
                 "If the ValueTypeGroup is EXTERNAL a type name must be given as well."
@@ -107,7 +107,7 @@ class ValueType:
 
     def __str__(self):
         if self.group & VTGroup.EXTERNAL:
-            return self.external_type
+            return f"EXTERNAL::{self.external_type}"
         return f'{"st" if self.signed else "ut"}{self.bit_width}'
 
 
