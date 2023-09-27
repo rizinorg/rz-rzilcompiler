@@ -886,6 +886,15 @@ class TestGrammar(unittest.TestCase):
             exc = e
         self.assertIsNone(exc)
 
+    def test_and_ambiguity(self):
+        behavior = "{ 0x0 & 0xffffff; 0x0 && 0xffffff; }"
+        with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
+            grammar = "".join(f.readlines())
+        self.parser = Lark(grammar, start="fbody", parser="earley")
+        ast = self.parser.parse(behavior)
+        result = RZILTransformer(ArchEnum.HEXAGON).transform(ast)
+        self.assertNotIn("&", result)
+
 
 if __name__ == "__main__":
     TestTransforming().main()
