@@ -57,12 +57,12 @@ class RZILTransformer(Transformer):
     hybrid_effect_dict = dict()
     imm_set_effect_list = list()
 
-    def __init__(self, arch: ArchEnum, parameters: dict[str: Parameter] = None, return_type: ValueType = None):
+    def __init__(self, arch: ArchEnum, parameters: list[Parameter] = None, return_type: ValueType = None):
         self.arch = arch
         self.gcc_ext_effects = list()
         self.return_type = return_type
         # List of parameters this transformer can take as given from outer scope.
-        self.parameters: dict[str: Parameter] = dict() if not parameters else parameters
+        self.parameters: dict[str: Parameter] = dict() if not parameters else {p.get_name(): p for p in parameters}
         if (self.return_type and not self.parameters) or (not self.return_type and self.parameters):
             raise ValueError("If parameters and return type must be set or unset. But never just one of them.")
 

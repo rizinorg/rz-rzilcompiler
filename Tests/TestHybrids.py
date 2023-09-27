@@ -25,20 +25,18 @@ class TestHybrids(unittest.TestCase):
         code = (
             "{ return ((int32_t)(value << (32 - length - start))) >> (32 - length); }"
         )
-        params_map = dict()
-        params_only = list()
+        params = list()
         for param in parameters:
             ptype, pname = param.split(" ")
-            params_map[pname] = Parameter(pname, get_value_type_by_c_type(ptype))
-            params_only.append(params_map[pname])
+            params.append(Parameter(pname, get_value_type_by_c_type(ptype)))
 
         ret_type = get_value_type_by_c_type(return_type)
         # Compile the body
         ast_body = self.compiler.parser.parse(code)
         transformed_body = RZILTransformer(
-            ArchEnum.HEXAGON, params_map, ret_type
+            ArchEnum.HEXAGON, params, ret_type
         ).transform(ast_body)
-        sub_routine = SubRoutine(name, ret_type, params_only, transformed_body)
+        sub_routine = SubRoutine(name, ret_type, params, transformed_body)
         self.assertEqual(sub_routine.value_type, ValueType(True, 64))
         self.assertEqual(sub_routine.routine_name, "sextract64")
         self.assertEqual(
@@ -52,6 +50,17 @@ class TestHybrids(unittest.TestCase):
             'RzILOpEffect *set_return_val_12 = SETL("ret_val", op_RSHIFT_10);'
             in sub_routine.il_init(SubRoutineInitType.DEF)
         )
+
+    def test_sub_routine_2(self):
+        ret_val = "uint64_t"
+        params = ["uint64_t value", "int start", "int length"]
+        behavior = "{ return (value >> start) & (~0ULL >> (64 - length)); }"
+        exc = None
+        try:
+            self.compiler.compile_sub_routine("dummy", ret_val, params, behavior)
+        except Exception as e:
+            exc = e
+        self.assertIsNone(exc)
 
 
 if __name__ == "__main__":

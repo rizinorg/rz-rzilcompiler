@@ -205,7 +205,8 @@ class Compiler:
         params = list()
         for param in parameter:
             ptype, pname = param.split(" ")
-            params.append(Parameter(pname, ptype))
+            p = Parameter(pname, get_value_type_by_c_type(ptype))
+            params.append(p)
 
         ret_type = get_value_type_by_c_type(return_type)
         # Compile the body
