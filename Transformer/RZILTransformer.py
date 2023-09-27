@@ -56,13 +56,6 @@ class RZILTransformer(Transformer):
     The classes do the actual code generation.
     """
 
-    # Classes of Pures which should not be initialized in the C code.
-    inlined_pure_classes = (Number, Sizeof, Cast)
-    # Total count of hybrids seen during transformation
-    hybrid_op_count = 0
-    hybrid_effect_dict = dict()
-    imm_set_effect_list = list()
-
     def __init__(
         self,
         arch: ArchEnum,
@@ -70,6 +63,13 @@ class RZILTransformer(Transformer):
         parameters: list[Parameter] = None,
         return_type: ValueType = None,
     ):
+        # Classes of Pures which should not be initialized in the C code.
+        self.inlined_pure_classes = (Number, Sizeof, Cast)
+        # Total count of hybrids seen during transformation
+        self.hybrid_op_count = 0
+        self.hybrid_effect_dict = dict()
+        self.imm_set_effect_list = list()
+
         self.arch = arch
         self.gcc_ext_effects = list()
         self.sub_routines: dict[str:SubRoutine] = (
@@ -715,10 +715,14 @@ class RZILTransformer(Transformer):
         if len(args) != len(param_types):
             raise NotImplementedError("Not all ops have a type assigned.")
         for i, (arg, p_type) in enumerate(zip(args, param_types)):
+            if not p_type or isinstance(arg, str):
+                # Those sub-routines are not yet implemented properly and
+                # get handled by Call.py
+                continue
             if p_type.group & VTGroup.EXTERNAL:
                 # Here we pass non Pures. So we can't cast them.
                 continue
-            if not p_type or arg.value_type == p_type:
+            if arg.value_type == p_type:
                 continue
 
             args[i] = self.init_a_cast(p_type, arg, "param_cast")

@@ -165,43 +165,6 @@ class TestTransforming(unittest.TestCase):
         exc = self.compile_behavior(behavior, transformer)
         self.assertIsNone(exc)
 
-    def test_add_sub_routine(self):
-        name = "sextract64"
-        return_type = "int64_t"
-        parameters = ["uint64_t value", "int start", "int length"]
-        code = (
-            "{ return ((int32_t)(value << (32 - length - start))) >> (32 - length); }"
-        )
-        sub_routine = self.compiler.compile_sub_routine(
-            name, return_type, parameters, code
-        )
-        # Use sub-routine
-        exc = None
-        result = "FAILED"
-        try:
-            ast_body = self.parser.parse(
-                "{ RdV = sextract64(0, 0, 0); RdV = sextract64(0, 0, 0); }"
-            )
-            transformer = RZILTransformer(
-                ArchEnum.HEXAGON, sub_routines={"sextract64": sub_routine}
-            )
-            result = transformer.transform(ast_body)
-        except Exception as e:
-            exc = e
-
-        self.assertIsNone(exc)
-        expected = (
-            "RzILOpEffect *sextract64_call_7 = "
-            "hex_sextract64(CAST(64, IL_FALSE, UN(32, 0)), CAST(32, MSB(UN(32, 0)), UN(32, 0)), CAST(32, MSB(UN(32, 0)), UN(32, 0)));\n"
-            'RzILOpEffect *op_ASSIGN_hybrid_tmp_8 = SETL("h_tmp0", SIGNED(64, VARL("ret_val")));\n'
-            "RzILOpEffect *seq_9 = SEQN(2, sextract64_call_7, op_ASSIGN_hybrid_tmp_8);\n"
-            'RzILOpEffect *op_ASSIGN_11 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(VARL("h_tmp0")), VARL("h_tmp0")));\n'
-            "RzILOpEffect *seq_12 = SEQN(2, seq_9, op_ASSIGN_11);"
-        )
-        self.assertTrue(expected in result)
-        expected = "RzILOpEffect *instruction_sequence = SEQN(2, seq_12, seq_24);"
-        self.assertTrue(expected in result)
-
     def test_J2_jump(self):
         behavior = self.insn_behavior["J2_jump"][0]
         exc = self.compile_behavior(behavior)
@@ -564,6 +527,7 @@ class TestTransformerOutput(unittest.TestCase):
     def setUpClass(cls):
         cls.insn_behavior = get_hexagon_insn_behavior()
         cls.parser = get_hexagon_parser()
+        cls.compiler = Compiler(ArchEnum.HEXAGON)
         cls.transformer = RZILTransformer(ArchEnum.HEXAGON)
 
     def compile_behavior(
@@ -682,6 +646,43 @@ class TestTransformerOutput(unittest.TestCase):
             body,
         )
 
+    def test_add_sub_routine(self):
+        name = "sextract64"
+        return_type = "int64_t"
+        parameters = ["uint64_t value", "int start", "int length"]
+        code = (
+            "{ return ((int32_t)(value << (32 - length - start))) >> (32 - length); }"
+        )
+        sub_routine = self.compiler.compile_sub_routine(
+            name, return_type, parameters, code
+        )
+        # Use sub-routine
+        ast_body = self.parser.parse("{ RdV = sextract64(0, 0, 0); }")
+        transformer = RZILTransformer(
+            ArchEnum.HEXAGON, sub_routines={"sextract64": sub_routine}
+        )
+        result = transformer.transform(ast_body)
+        self.assertEqual(
+            """
+            // READ
+            const HexOp *Rd_op = ISA2REG(hi, 'd', true);
+
+            // EXEC
+
+            // WRITE
+            RzILOpEffect *sextract64_call_7 = hex_sextract64(CAST(64, IL_FALSE, UN(32, 0)), CAST(32, MSB(UN(32, 0)), UN(32, 0)), CAST(32, MSB(UN(32, 0)), UN(32, 0)));
+            RzILOpEffect *op_ASSIGN_hybrid_tmp_8 = SETL("h_tmp0", SIGNED(64, VARL("ret_val")));
+            RzILOpEffect *seq_9 = SEQN(2, sextract64_call_7, op_ASSIGN_hybrid_tmp_8);
+            RzILOpEffect *op_ASSIGN_11 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(VARL("h_tmp0")), VARL("h_tmp0")));
+            RzILOpEffect *seq_12 = SEQN(2, seq_9, op_ASSIGN_11);
+            RzILOpEffect *instruction_sequence = seq_12;
+
+            return instruction_sequence;""".replace(
+                "  ", ""
+            ),
+            result,
+        )
+
     def test_sub_routines(self):
         ret_val = get_value_type_by_c_type("uint64_t")
         params = [
@@ -693,17 +694,24 @@ class TestTransformerOutput(unittest.TestCase):
             ArchEnum.HEXAGON, parameters=params, return_type=ret_val
         )
         output = self.compile_behavior(behavior, transformer)
-        expected = (
-            "RzILOpPure *op_RSHIFT_0 = SHIFTR0(value, start);\n"
-            "RzILOpPure *op_NOT_2 = LOGNOT(UN(64, 0));\n"
-            "RzILOpPure *op_SUB_5 = SUB(UN(32, 0x40), CAST(32, IL_FALSE, length));\n"
-        )
-        self.assertTrue(
-            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
-        )
-        expected = 'RzILOpEffect *set_return_val_9 = SETL("ret_val", op_AND_7);'
-        self.assertTrue(
-            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        self.assertEqual(
+            """
+            // READ
+
+            // EXEC
+            RzILOpPure *op_RSHIFT_0 = SHIFTR0(value, start);
+            RzILOpPure *op_SUB_4 = SUB(UN(32, 0x40), CAST(32, IL_FALSE, length));
+            RzILOpPure *op_RSHIFT_5 = SHIFTR0(UN(64, 0), op_SUB_4);
+            RzILOpPure *op_AND_6 = LOGAND(op_RSHIFT_0, op_RSHIFT_5);
+
+            // WRITE
+            RzILOpEffect *set_return_val_8 = SETL("ret_val", op_AND_6);
+            RzILOpEffect *instruction_sequence = set_return_val_8;
+
+            return instruction_sequence;""".replace(
+                "  ", ""
+            ),
+            output,
         )
 
     def test_cast_simplification_1(self):
