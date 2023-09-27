@@ -23,7 +23,8 @@ class TestHelper(unittest.TestCase):
     def test_var_decl_split(self):
         self.assertEqual(split_var_decl("uint64_t var"), ("uint64_t", "var"))
         self.assertEqual(split_var_decl("  uint64_t     var"), ("uint64_t", "var"))
-        self.assertEqual(split_var_decl("HexOp *var"), ("HexOp*", "var"))
+        self.assertEqual(split_var_decl("HexOp *var"), ("HexOp *", "var"))
+        self.assertEqual(split_var_decl("const HexOp *var"), ("const HexOp *", "var"))
         self.assertEqual(split_var_decl("HexOp*var"), ("HexOp*", "var"))
         exc = None
         try:

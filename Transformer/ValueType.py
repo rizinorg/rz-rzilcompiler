@@ -88,10 +88,8 @@ def split_var_decl(decl: str) -> tuple[str, str]:
     :return: A tuple with the type string at index 0 and the var name at index 1.
     """
     decl = decl.strip()
-    matches = re.search(r"(\w+[ *]{1,2})\s*(\w+$)", decl)
-    if not matches or not len(matches.groups()) == 2:
-        raise ValueError(f"{decl} not a valid variable declaration.")
-    return matches.group(1).replace(" ", ""), matches.group(2).strip()
+    matches = re.search(r"(?P<type>(\s*\w+[ *]+)+)\s*(?P<name>\w+$)", decl)
+    return matches.group("type").strip(), matches.group("name").strip()
 
 
 def get_value_type_by_c_type(type_id: str) -> ValueType:
