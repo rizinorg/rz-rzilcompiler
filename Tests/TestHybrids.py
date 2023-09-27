@@ -6,7 +6,11 @@ import unittest
 
 from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine, SubRoutineInitType
 from rzil_compiler.Transformer.Pures.Parameter import Parameter
-from rzil_compiler.Transformer.ValueType import ValueType, get_value_type_by_c_type, split_var_decl
+from rzil_compiler.Transformer.ValueType import (
+    ValueType,
+    get_value_type_by_c_type,
+    split_var_decl,
+)
 from rzil_compiler.Transformer.RZILTransformer import RZILTransformer
 from rzil_compiler.ArchEnum import ArchEnum
 from rzil_compiler.Compiler import Compiler

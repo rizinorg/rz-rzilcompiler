@@ -10,7 +10,9 @@ from Transformer.helper_hexagon import get_num_base_by_token
 class VTGroup(Flag):
     PURE = auto()  # Normal Pure value
     EXTERNAL = auto()  # ValueType not known and used by the VM.
-    ARCH_LONG = auto()  # ValueType has the same bit-width as a long on the current architecture (used for varying bit
+    ARCH_LONG = (
+        auto()
+    )  # ValueType has the same bit-width as a long on the current architecture (used for varying bit
     # supporting architectures).
     VOID = auto()  # A void type.
 
@@ -41,29 +43,37 @@ class ValueType:
     @property
     def signed(self) -> bool:
         if self.group & VTGroup.EXTERNAL:
-            raise ValueError(f"ValueType {self} is of type {self.group}. "
-                             f"The signed flag should not be used on those groups.")
+            raise ValueError(
+                f"ValueType {self} is of type {self.group}. "
+                f"The signed flag should not be used on those groups."
+            )
         return self._signed
 
     @signed.setter
     def signed(self, val):
         if self.group & VTGroup.EXTERNAL:
-            raise ValueError(f"ValueType {self} is of type {self.group}. "
-                             f"The signed flag should not be used on those groups.")
+            raise ValueError(
+                f"ValueType {self} is of type {self.group}. "
+                f"The signed flag should not be used on those groups."
+            )
         self._signed = val
 
     @property
     def bit_width(self):
         if self.group & VTGroup.EXTERNAL:
-            raise ValueError(f"ValueType {self} is of type {self.group}. "
-                             f"bit_width should not be used on those groups.")
+            raise ValueError(
+                f"ValueType {self} is of type {self.group}. "
+                f"bit_width should not be used on those groups."
+            )
         return self._bit_width
 
     @bit_width.setter
     def bit_width(self, val):
         if self.group & VTGroup.EXTERNAL:
-            raise ValueError(f"ValueType {self} is of type {self.group}. "
-                             f"The signed flag should not be used on those groups.")
+            raise ValueError(
+                f"ValueType {self} is of type {self.group}. "
+                f"The signed flag should not be used on those groups."
+            )
         self._bit_width = val
 
     def il_op(self, value: int):

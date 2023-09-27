@@ -32,7 +32,11 @@ from rzil_compiler.Transformer.Pures.LocalVar import LocalVar
 from rzil_compiler.Transformer.Pures.MemLoad import MemAccessType, MemLoad
 from rzil_compiler.Transformer.Pures.Number import Number
 from rzil_compiler.Transformer.Pures.Pure import Pure, PureType
-from rzil_compiler.Transformer.ValueType import ValueType, c11_cast, get_value_type_by_c_number
+from rzil_compiler.Transformer.ValueType import (
+    ValueType,
+    c11_cast,
+    get_value_type_by_c_number,
+)
 from rzil_compiler.Transformer.Effects.Assignment import Assignment, AssignmentType
 from rzil_compiler.Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from rzil_compiler.Transformer.Pures.Register import Register
@@ -58,15 +62,29 @@ class RZILTransformer(Transformer):
     hybrid_effect_dict = dict()
     imm_set_effect_list = list()
 
-    def __init__(self, arch: ArchEnum, sub_routines: dict[str: SubRoutine] = None, parameters: list[Parameter] = None, return_type: ValueType = None):
+    def __init__(
+        self,
+        arch: ArchEnum,
+        sub_routines: dict[str:SubRoutine] = None,
+        parameters: list[Parameter] = None,
+        return_type: ValueType = None,
+    ):
         self.arch = arch
         self.gcc_ext_effects = list()
-        self.sub_routines: dict[str: SubRoutine] = dict() if not sub_routines else sub_routines
+        self.sub_routines: dict[str:SubRoutine] = (
+            dict() if not sub_routines else sub_routines
+        )
         self.return_type = return_type
         # List of parameters this transformer can take as given from outer scope.
-        self.parameters: dict[str: Parameter] = dict() if not parameters else {p.get_name(): p for p in parameters}
-        if (self.return_type and not self.parameters) or (not self.return_type and self.parameters):
-            raise ValueError("If parameters and return type must be set or unset. But never just one of them.")
+        self.parameters: dict[str:Parameter] = (
+            dict() if not parameters else {p.get_name(): p for p in parameters}
+        )
+        if (self.return_type and not self.parameters) or (
+            not self.return_type and self.parameters
+        ):
+            raise ValueError(
+                "If parameters and return type must be set or unset. But never just one of them."
+            )
 
         self.il_ops_holder = ILOpsHolder()
 
@@ -88,7 +106,7 @@ class RZILTransformer(Transformer):
         self.parameters.clear()
         self.sub_routines.clear()
 
-    def update_sub_routines(self, new_routines: dict[str: SubRoutine]) -> None:
+    def update_sub_routines(self, new_routines: dict[str:SubRoutine]) -> None:
         self.sub_routines.update(new_routines)
 
     def get_op_id(self) -> int:
@@ -107,7 +125,11 @@ class RZILTransformer(Transformer):
                 NotImplementedError(f"{op} can not be inlined yet.")
             op.inlined = True
 
-        if not isinstance(op, Variable) and not isinstance(op, Register) and not isinstance(op, ReturnValue):
+        if (
+            not isinstance(op, Variable)
+            and not isinstance(op, Register)
+            and not isinstance(op, ReturnValue)
+        ):
             # Those have already a unique name
             op.set_name(f"{op.get_name()}_{num_id}")
         self.il_ops_holder.add_op(op)
@@ -180,7 +202,9 @@ class RZILTransformer(Transformer):
                 ret_val = self.il_ops_holder.get_op_by_name("ret_val")
             else:
                 ret_val = self.add_op(ReturnValue(self.return_type))
-            return self.add_op(Assignment("set_return_val", AssignmentType.ASSIGN, ret_val, items[1]))
+            return self.add_op(
+                Assignment("set_return_val", AssignmentType.ASSIGN, ret_val, items[1])
+            )
         return items  # Pass them upwards
 
     def relational_expr(self, items):
@@ -617,9 +641,13 @@ class RZILTransformer(Transformer):
             return self.c_call(items)
         args = items[1:]
         sub_routine: SubRoutine = self.sub_routines[routine_name]
-        casted_args = self.cast_sub_routine_args(sub_routine.get_name(), args, sub_routine.get_parameter_value_types())
+        casted_args = self.cast_sub_routine_args(
+            sub_routine.get_name(), args, sub_routine.get_parameter_value_types()
+        )
 
-        return self.resolve_hybrid(self.add_op(SubRoutineCall(self.sub_routines[routine_name], casted_args)))
+        return self.resolve_hybrid(
+            self.add_op(SubRoutineCall(self.sub_routines[routine_name], casted_args))
+        )
 
     def postfix_expr(self, items):
         self.ext.set_token_meta_data("postfix_expr")
@@ -676,7 +704,9 @@ class RZILTransformer(Transformer):
 
         return self.add_op(MemLoad(f"ml_{va.get_name()}", va, mem_acc_type))
 
-    def cast_sub_routine_args(self, fcn_name: str, args: list[Pure], predefined_types: list[ValueType] = None) -> list[Pure]:
+    def cast_sub_routine_args(
+        self, fcn_name: str, args: list[Pure], predefined_types: list[ValueType] = None
+    ) -> list[Pure]:
         if predefined_types:
             param_types = predefined_types
         else:
