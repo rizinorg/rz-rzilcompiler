@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from enum import Enum
+
+from rzil_compiler.Transformer.ValueType import ValueType
 from rzil_compiler.Exceptions import OverloadException
 
 
@@ -11,38 +13,6 @@ class PureType(Enum):
     LET = 2  # Let variables
     EXEC = 3  # Read memory access, math ops etc.
     C_CODE = 4  # Anything Pure returned by a C code call
-
-
-class ValueType:
-    """Is used to match value against their UN() and SN() equivalence."""
-
-    def __init__(self, signed: bool, bit_width: int):
-        self.signed = signed
-        self.bit_width = bit_width
-
-    def il_op(self, value: int):
-        """Returns the corresponding SN/UN(size, val) string."""
-        s = "SN" if self.signed else "UN"
-        s += f"({self.bit_width}, {value:#x})"
-        return s
-
-    def __eq__(self, other):
-        return self.bit_width == other.bit_width and self.signed == other.signed
-
-    def __gt__(self, other):
-        return self.bit_width > other.bit_width
-
-    def __lt__(self, other):
-        return self.bit_width < other.bit_width
-
-    def __ge__(self, other):
-        return self.bit_width >= other.bit_width
-
-    def __le__(self, other):
-        return self.bit_width <= other.bit_width
-
-    def __str__(self):
-        return f'{"st" if self.signed else "ut"}{self.bit_width}'
 
 
 class Pure:

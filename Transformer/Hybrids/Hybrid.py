@@ -4,7 +4,8 @@
 from enum import StrEnum, Enum
 
 from rzil_compiler.Transformer.Effects.Effect import Effect, EffectType
-from rzil_compiler.Transformer.Pures.Pure import ValueType, Pure
+from rzil_compiler.Transformer.Pures.Pure import Pure
+from rzil_compiler.Transformer.ValueType import ValueType
 from rzil_compiler.Transformer.Pures.PureExec import PureExec
 
 

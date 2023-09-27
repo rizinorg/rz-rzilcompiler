@@ -3,7 +3,8 @@
 
 from rzil_compiler.Exceptions import OverloadException
 from rzil_compiler.Transformer.Pures.LetVar import LetVar, resolve_lets, get_local_pures
-from rzil_compiler.Transformer.Pures.Pure import Pure, PureType, ValueType
+from rzil_compiler.Transformer.Pures.Pure import Pure, PureType
+from rzil_compiler.Transformer.ValueType import ValueType
 
 
 class PureExec(Pure):

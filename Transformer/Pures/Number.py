@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from rzil_compiler.Transformer.Pures.LetVar import LetVar
-from rzil_compiler.Transformer.Pures.Pure import ValueType
+from rzil_compiler.Transformer.ValueType import ValueType
 
 
 class Number(LetVar):

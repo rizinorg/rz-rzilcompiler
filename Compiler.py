@@ -10,7 +10,7 @@ from lark.exceptions import VisitError
 from tqdm import tqdm
 
 from helperFunctions import LogLevel
-from rzil_compiler.Transformer.helper import get_value_type_by_c_type
+from rzil_compiler.Transformer.ValueType import get_value_type_by_c_type
 from rzil_compiler.Transformer.Pures.Parameter import Parameter
 from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine
 from rzil_compiler.Parser import Parser, ParserException

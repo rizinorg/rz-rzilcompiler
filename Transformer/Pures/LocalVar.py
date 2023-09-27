@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from rzil_compiler.Exceptions import OverloadException
-from rzil_compiler.Transformer.Pures.Pure import Pure, PureType, ValueType
+from rzil_compiler.Transformer.Pures.Pure import Pure, PureType
+from rzil_compiler.Transformer.ValueType import ValueType
 
 
 class LocalVar(Pure):

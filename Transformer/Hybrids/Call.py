@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from rzil_compiler.Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
 from rzil_compiler.Transformer.PluginInfo import hexagon_c_call_prefix
-from rzil_compiler.Transformer.Pures.Pure import ValueType
+from rzil_compiler.Transformer.ValueType import ValueType
 from rzil_compiler.Transformer.Pures.Register import Register
 from rzil_compiler.Transformer.Pures.LetVar import LetVar, resolve_lets
 

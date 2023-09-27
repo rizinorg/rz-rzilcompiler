@@ -4,8 +4,7 @@
 
 import unittest
 
-from rzil_compiler.Transformer.Pures.Pure import ValueType
-from rzil_compiler.Transformer.helper import get_value_type_by_c_type
+from rzil_compiler.Transformer.ValueType import ValueType, get_value_type_by_c_type
 
 
 class TestHelper(unittest.TestCase):

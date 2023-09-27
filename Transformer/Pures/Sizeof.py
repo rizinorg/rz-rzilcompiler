@@ -4,7 +4,8 @@
 from math import ceil
 
 from rzil_compiler.Transformer.Pures.LetVar import LetVar
-from rzil_compiler.Transformer.Pures.Pure import ValueType, Pure
+from rzil_compiler.Transformer.Pures.Pure import Pure
+from rzil_compiler.Transformer.ValueType import ValueType
 
 
 class Sizeof(LetVar):

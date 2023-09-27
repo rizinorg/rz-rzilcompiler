@@ -7,7 +7,8 @@ from rzil_compiler.Exceptions import OverloadException
 from rzil_compiler.Transformer.Pures.Parameter import Parameter
 from rzil_compiler.Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
 from rzil_compiler.Transformer.PluginInfo import hexagon_c_call_prefix
-from rzil_compiler.Transformer.Pures.Pure import ValueType, Pure
+from rzil_compiler.Transformer.Pures.Pure import Pure
+from rzil_compiler.Transformer.ValueType import ValueType
 
 
 class SubRoutineInitType(Enum):
@@ -38,7 +39,6 @@ class SubRoutine(Hybrid):
         if re.search(r"\Wpkt\W", code):
             code = "HexPkt *pkt = bundle->pkt;\n" + code
         return "{" + code + "}"
-
 
     def get_parameter_value_types(self) -> list[ValueType]:
         """Returns the parameter value types as ordered list (left to right)."""

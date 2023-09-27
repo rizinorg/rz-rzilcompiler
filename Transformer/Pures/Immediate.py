@@ -3,7 +3,7 @@
 
 from rzil_compiler.Transformer.PluginInfo import isa_to_imm_fnc, isa_to_imm_args
 from rzil_compiler.Transformer.Pures.LocalVar import LocalVar
-from rzil_compiler.Transformer.Pures.Pure import ValueType
+from rzil_compiler.Transformer.ValueType import ValueType
 
 
 class Immediate(LocalVar):

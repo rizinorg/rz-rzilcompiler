@@ -4,7 +4,8 @@
 from rzil_compiler.Transformer.Hybrids.Hybrid import HybridType, Hybrid, HybridSeqOrder
 from rzil_compiler.Transformer.Pures.GlobalVar import GlobalVar
 from rzil_compiler.Transformer.Pures.LocalVar import LocalVar
-from rzil_compiler.Transformer.Pures.Pure import ValueType, Pure
+from rzil_compiler.Transformer.Pures.Pure import Pure
+from rzil_compiler.Transformer.ValueType import ValueType
 
 
 class PostfixIncDec(Hybrid):

@@ -8,7 +8,7 @@ import unittest
 from Compiler import RZILInstruction, Compiler
 from Transformer.Hybrids.SubRoutine import SubRoutine, SubRoutineInitType
 from Transformer.Pures.Parameter import get_parameter_by_decl, Parameter
-from Transformer.helper import get_value_type_by_c_type
+from rzil_compiler.Transformer.ValueType import get_value_type_by_c_type
 from rzil_compiler.Transformer.Pures.Register import Register
 from rzil_compiler.Transformer.Pures.Cast import Cast
 from rzil_compiler.Transformer.Pures.Number import Number

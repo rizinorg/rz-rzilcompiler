@@ -13,7 +13,7 @@ from rzil_compiler.Transformer.PluginInfo import (
 from rzil_compiler.Transformer.Pures.GlobalVar import GlobalVar
 from enum import StrEnum
 
-from rzil_compiler.Transformer.Pures.Pure import ValueType
+from rzil_compiler.Transformer.ValueType import ValueType
 
 
 class RegisterAccessType(StrEnum):

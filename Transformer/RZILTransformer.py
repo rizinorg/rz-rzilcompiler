@@ -31,16 +31,16 @@ from rzil_compiler.Transformer.Pures.LetVar import LetVar
 from rzil_compiler.Transformer.Pures.LocalVar import LocalVar
 from rzil_compiler.Transformer.Pures.MemLoad import MemAccessType, MemLoad
 from rzil_compiler.Transformer.Pures.Number import Number
-from rzil_compiler.Transformer.Pures.Pure import Pure, ValueType, PureType
+from rzil_compiler.Transformer.Pures.Pure import Pure, PureType
+from rzil_compiler.Transformer.ValueType import ValueType, c11_cast, get_value_type_by_c_number
 from rzil_compiler.Transformer.Effects.Assignment import Assignment, AssignmentType
 from rzil_compiler.Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
 from rzil_compiler.Transformer.Pures.Register import Register
 from rzil_compiler.Transformer.Pures.Sizeof import Sizeof
 from rzil_compiler.Transformer.Pures.Ternary import Ternary
 from rzil_compiler.Transformer.Pures.Variable import Variable
-from rzil_compiler.Transformer.helper import flatten_list, c11_cast
+from rzil_compiler.Transformer.helper import flatten_list
 from rzil_compiler.Transformer.helper_hexagon import (
-    get_value_type_by_c_number,
     get_num_base_by_token,
 )
 
