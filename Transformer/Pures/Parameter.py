@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 from rzil_compiler.Transformer.Pures.Pure import Pure, PureType
-from rzil_compiler.Transformer.ValueType import ValueType, get_value_type_by_c_type
+from rzil_compiler.Transformer.ValueType import ValueType, get_value_type_by_c_type, split_var_decl
 
 
 class Parameter(Pure):
@@ -42,5 +42,5 @@ def get_parameter_by_decl(decl: str) -> Parameter:
     :param decl: The declaration of the for "<c_type> <id>"
     :return: And initialized Parameter object with the type and name of the declaration.
     """
-    ptype, name = decl.split(" ")
+    ptype, name = split_var_decl(decl)
     return Parameter(name, get_value_type_by_c_type(ptype))

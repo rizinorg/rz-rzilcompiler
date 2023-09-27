@@ -6,7 +6,7 @@ import unittest
 
 from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine, SubRoutineInitType
 from rzil_compiler.Transformer.Pures.Parameter import Parameter
-from rzil_compiler.Transformer.ValueType import ValueType, get_value_type_by_c_type
+from rzil_compiler.Transformer.ValueType import ValueType, get_value_type_by_c_type, split_var_decl
 from rzil_compiler.Transformer.RZILTransformer import RZILTransformer
 from rzil_compiler.ArchEnum import ArchEnum
 from rzil_compiler.Compiler import Compiler
@@ -26,7 +26,7 @@ class TestHybrids(unittest.TestCase):
         )
         params = list()
         for param in parameters:
-            ptype, pname = param.split(" ")
+            ptype, pname = split_var_decl(param)
             params.append(Parameter(pname, get_value_type_by_c_type(ptype)))
 
         ret_type = get_value_type_by_c_type(return_type)

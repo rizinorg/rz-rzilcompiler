@@ -48,6 +48,20 @@ class ValueType:
         return f'{"st" if self.signed else "ut"}{self.bit_width}'
 
 
+def split_var_decl(decl: str) -> tuple[str, str]:
+    """
+    Splits a variable declaration of the form '<type> <name>' into its two parts.
+
+    :param decl: The variable declaration.
+    :return: A tuple with the type string at index 0 and the var name at index 1.
+    """
+    decl = decl.strip()
+    matches = re.search(r"(\w+[ *]{1,2})\s*(\w+$)", decl)
+    if not matches or not len(matches.groups()) == 2:
+        raise ValueError(f"{decl} not a valid variable declaration.")
+    return matches.group(1).replace(" ", ""), matches.group(2).strip()
+
+
 def get_value_type_by_c_type(type_id: str) -> ValueType:
     """
     Returns a value type for C type identifiers.

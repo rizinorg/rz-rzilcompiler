@@ -10,7 +10,7 @@ from lark.exceptions import VisitError
 from tqdm import tqdm
 
 from helperFunctions import LogLevel
-from rzil_compiler.Transformer.ValueType import get_value_type_by_c_type
+from rzil_compiler.Transformer.ValueType import get_value_type_by_c_type, split_var_decl
 from rzil_compiler.Transformer.Pures.Parameter import Parameter
 from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine
 from rzil_compiler.Parser import Parser, ParserException
@@ -232,7 +232,7 @@ class Compiler:
 
         params = list()
         for param in parameter:
-            ptype, pname = param.split(" ")
+            ptype, pname = split_var_decl(param)
             p = Parameter(pname, get_value_type_by_c_type(ptype))
             params.append(p)
 
