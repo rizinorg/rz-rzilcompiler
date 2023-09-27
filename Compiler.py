@@ -9,6 +9,7 @@ from lark import Lark
 from lark.exceptions import VisitError
 from tqdm import tqdm
 
+from helperFunctions import LogLevel
 from rzil_compiler.Transformer.helper import get_value_type_by_c_type
 from rzil_compiler.Transformer.Pures.Parameter import Parameter
 from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine
@@ -108,6 +109,7 @@ class Compiler:
     transformer = None
     compiled_insns = dict()
     asts = dict()  # Abstract syntax trees
+    sub_routines = dict()  # dict of sub-routines which can be used by other instructions.
     ext = None
 
     def __init__(self, arch: ArchEnum):
@@ -145,6 +147,21 @@ class Compiler:
     def run_preprocessor(self):
         log("Run preprocessor...")
         self.preprocessor.run_preprocess_steps()
+
+    def add_sub_routine(self, name: str, ret_type: str, params: list[str], body: str) -> None:
+        """
+        Compiles a sub-routine and buffers it for later usage.
+        :param name: The name of the sub_routine.
+        :param ret_type: The return type in c syntax
+        :param params: A list of parameters of this sub-routine in the form of "<type> <id>"
+        :param body: The code of the sub-routines body.
+        """
+        log(f"Add sub-routine {name}")
+        sub_routine = self.compile_sub_routine(name, ret_type, params, body)
+        self.sub_routines[name] = sub_routine
+
+    def get_sub_routine(self, name: str) -> SubRoutine:
+        return self.sub_routines[name]
 
     def test_compile_all(self):
         self.parse_shortcode()
@@ -202,6 +219,10 @@ class Compiler:
         :param body: The code of the sub-routines body.
         :return: The sub-routine object to initialization.
         """
+        if name in self.sub_routines:
+            log(f"Return already compiled sub-routine {name}")
+            return self.sub_routines[name]
+
         params = list()
         for param in parameter:
             ptype, pname = param.split(" ")
