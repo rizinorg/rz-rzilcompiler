@@ -45,6 +45,8 @@ class PureExec(Pure):
         self.reads += 1
         if self.inlined:
             return resolve_lets(self.ops, self)
+        if self.reads >= 1:
+            return f"DUP({self.pure_var()})"
         return self.pure_var()
 
     def vm_id(self, write_usage):
