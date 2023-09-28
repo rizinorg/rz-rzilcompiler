@@ -147,12 +147,10 @@
 #define fWRITE_LC0(VAL) (HEX_REG_LC0 = VAL)
 
 /* Post Modify Register using Circular arithmetic by Immediate */
-#define fPM_CIRI(REG, IMM, MVAL) \
-    do { fcirc_add(bundle, REG,IMM,MuV); } while (0)
+#define fPM_CIRI(REG, IMM, MVAL) do { fcirc_add(bundle, REG,IMM,MuV); } while (0)
 
 /* Post Modify Register using Circular arithmetic by Register */
-#define fPM_CIRR(REG, VAL, MVAL) \
-    do { fcirc_add(bundle, REG,VAL,MuV); } while (0)
+#define fPM_CIRR(REG, VAL, MVAL) do { fcirc_add(bundle, REG,VAL,MuV); } while (0)
 
 /* read modifier register */
 #define fREAD_IREG(VAL) (fSXTN(11,64,(((VAL) & 0xf0000000)>>21) | ((VAL>>17)&0x7f) ))

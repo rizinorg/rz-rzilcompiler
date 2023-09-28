@@ -33,19 +33,6 @@ class Call(Hybrid):
 
         if self.fcn_name.upper() == "STORE_SLOT_CANCELLED":
             return f"{hexagon_c_call_prefix + self.fcn_name.upper()}(pkt, hi->slot)"
-        elif self.fcn_name.upper() == "FCIRC_ADD":
-            # For those we need to pass the name of the tmp register as well.
-            in_out_reg = self.ops[0]
-            while not isinstance(in_out_reg, Register):
-                # We might have to skip Casts
-                in_out_reg = in_out_reg.ops[0]
-
-            code = (
-                f"{hexagon_c_call_prefix + self.fcn_name.upper()}("
-                f"{in_out_reg.get_op_var()}, "  # input/output register
-                f'{", ".join([read_param(param) for param in self.ops])})'
-            )
-            return code
 
         code = f'{hexagon_c_call_prefix + self.fcn_name.upper()}({", ".join([read_param(param) for param in self.ops])})'
         return code
