@@ -11,8 +11,8 @@ class MemAccessType:
 
     def __init__(self, val_type: ValueType, reads_mem: bool):
         self.val_type = val_type  # Type of the value read or written
-        self.reads = reads_mem  # Flag: Memory is read
-        self.writes = not reads_mem  # Flag: Memory is written
+        self.reads_mem = reads_mem  # Flag: Memory is read
+        self.writes_mem = not reads_mem  # Flag: Memory is written
 
 
 class MemLoad(PureExec):
