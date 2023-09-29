@@ -18,7 +18,7 @@ class VTGroup(Flag):
 
     @staticmethod
     def get_external_types() -> list[str]:
-        return ["HexOp", "HexInsnPktBundle", "RzILOpEffect"]
+        return ["HexOp", "HexInsnPktBundle", "HexPkt", "RzILOpEffect"]
 
 
 class ValueType:
@@ -42,7 +42,7 @@ class ValueType:
 
     @property
     def signed(self) -> bool:
-        if self.group & VTGroup.EXTERNAL:
+        if self.group & VTGroup.EXTERNAL or self.group & VTGroup.VOID:
             raise ValueError(
                 f"ValueType {self} is of type {self.group}. "
                 f"The signed flag should not be used on those groups."
@@ -51,7 +51,7 @@ class ValueType:
 
     @signed.setter
     def signed(self, val):
-        if self.group & VTGroup.EXTERNAL:
+        if self.group & VTGroup.EXTERNAL or self.group & VTGroup.VOID:
             raise ValueError(
                 f"ValueType {self} is of type {self.group}. "
                 f"The signed flag should not be used on those groups."
@@ -60,7 +60,7 @@ class ValueType:
 
     @property
     def bit_width(self):
-        if self.group & VTGroup.EXTERNAL:
+        if self.group & VTGroup.EXTERNAL or self.group & VTGroup.VOID:
             raise ValueError(
                 f"ValueType {self} is of type {self.group}. "
                 f"bit_width should not be used on those groups."
@@ -69,7 +69,7 @@ class ValueType:
 
     @bit_width.setter
     def bit_width(self, val):
-        if self.group & VTGroup.EXTERNAL:
+        if self.group & VTGroup.EXTERNAL or self.group & VTGroup.VOID:
             raise ValueError(
                 f"ValueType {self} is of type {self.group}. "
                 f"The signed flag should not be used on those groups."
@@ -84,7 +84,7 @@ class ValueType:
 
     def get_param_decl_type(self) -> str:
         """Returns the type used for parameters."""
-        if self.group & VTGroup.EXTERNAL:
+        if self.group & VTGroup.EXTERNAL or self.group & VTGroup.VOID:
             return self.external_type
         elif self.group & VTGroup.PURE:
             return "RZ_BORROW RzILOpPure *"
@@ -136,12 +136,14 @@ def get_value_type_by_c_type(type_id: str) -> ValueType:
         return ValueType(False, 32)
     elif any([t in type_id for t in VTGroup.get_external_types()]):
         return ValueType(False, 64, VTGroup.EXTERNAL, type_id)
+    elif type_id == "void":
+        return ValueType(False, 32, VTGroup.VOID)
 
     if type_id.startswith("size"):
         type_match = re.search(r"size(?P<width>\d+)(?P<sign>[us])_t", type_id)
     else:
         type_match = re.search(r"(?P<sign>u?)int(?P<width>\d+)_t", type_id)
-    if len(type_match.groups()) != 2:
+    if not type_match or len(type_match.groups()) != 2:
         raise ValueError(f"Types of the form {type_id} can't be parsed yet.")
 
     is_signed = False if type_match["sign"] == "u" else True
