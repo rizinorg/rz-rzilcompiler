@@ -37,8 +37,8 @@
     },
     "set_c9_jump": {
       "return_type": "void",
-      "params": ["HexInsnPktBundle *bundle", "const HexOp *CdV", "uint32_t target_addr"],
-      "code": "{ RdV = target_addr; JUMP_NO_C9(target_addr); }"
+      "params": ["HexInsnPktBundle *bundle", "const HexOp *C9_op", "uint32_t target_addr"],
+      "code": "{ WRITE_REG(pkt, C9_op, target_addr); JUMP_NO_C9(target_addr); }"
     }
   }
 }

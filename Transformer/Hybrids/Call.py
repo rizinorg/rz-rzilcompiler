@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from rzil_compiler.Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
 from rzil_compiler.Transformer.PluginInfo import hexagon_c_call_prefix
-from rzil_compiler.Transformer.ValueType import ValueType
+from rzil_compiler.Transformer.ValueType import ValueType, VTGroup
 from rzil_compiler.Transformer.Pures.Register import Register
 from rzil_compiler.Transformer.Pures.LetVar import LetVar, resolve_lets
 
@@ -15,7 +15,10 @@ class Call(Hybrid):
     def __init__(self, name: str, val_type: ValueType, params: list):
         self.fcn_name = params[0]
         self.op_type = HybridType.CALL
-        self.seq_order = HybridSeqOrder.EXEC_THEN_SET_VAL
+        if val_type.group & VTGroup.VOID:
+            self.seq_order = HybridSeqOrder.EXEC_ONLY
+        else:
+            self.seq_order = HybridSeqOrder.EXEC_THEN_SET_VAL
 
         Hybrid.__init__(self, name, params[1:], val_type)
 
@@ -34,7 +37,10 @@ class Call(Hybrid):
         if self.fcn_name.upper() == "STORE_SLOT_CANCELLED":
             return f"{hexagon_c_call_prefix + self.fcn_name.upper()}(pkt, hi->slot)"
 
-        code = f'{hexagon_c_call_prefix + self.fcn_name.upper()}({", ".join([read_param(param) for param in self.ops])})'
+        prefix = hexagon_c_call_prefix
+        if self.fcn_name == "WRITE_REG":
+            prefix = ""
+        code = f'{prefix + self.fcn_name.upper()}({", ".join([read_param(param) for param in self.ops])})'
         return code
 
     def il_write(self):

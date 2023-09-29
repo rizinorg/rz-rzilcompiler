@@ -70,6 +70,24 @@ class TestHybrids(unittest.TestCase):
 
         return instruction_sequence;""".replace("  ", ""), result)
 
+    def test_set_c9_jump_def(self):
+        self.assertEqual("""RZ_OWN RzILOpEffect *hex_set_c9_jump(HexInsnPktBundle *bundle, const HexOp *C9_op, RZ_BORROW RzILOpPure *target_addr) {
+        HexPkt *pkt = bundle->pkt;
+
+        // READ
+
+        // EXEC
+
+        // WRITE
+        RzILOpEffect *c_call_0 = WRITE_REG(pkt, C9_op, target_addr);
+        RzILOpEffect *jump_target_addr_1 = JMP(target_addr);
+        RzILOpEffect *instruction_sequence = SEQN(3, c_call_0, jump_target_addr_1, EMPTY());
+
+        return instruction_sequence;
+        }""".replace("  ", ""),
+                         self.compiler.sub_routines["set_c9_jump"].il_init(SubRoutineInitType.DEF)
+                         )
+
 
 if __name__ == "__main__":
     TestHybrids().main()

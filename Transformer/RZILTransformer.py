@@ -849,8 +849,12 @@ class RZILTransformer(Transformer):
         the dependent effect is created.
         """
         tmp_x_name = f"h_tmp{self.hybrid_op_count}"
-        tmp_x = LocalVar(tmp_x_name, hybrid.value_type)
         self.hybrid_op_count += 1
+        if hybrid.seq_order == HybridSeqOrder.EXEC_ONLY:
+            # Doesn't return anything. So no LocalVar for the return value hasto be initialized.
+            self.hybrid_effect_dict[tmp_x_name] = self.chk_hybrid_dep(hybrid)
+            return Number("VOID_VALUE", 0xffffffff, ValueType(False, 32, VTGroup.VOID))
+        tmp_x = LocalVar(tmp_x_name, hybrid.value_type)
 
         # Assign the hybrid pure part to tmp_x.
         name = f"op_{AssignmentType.ASSIGN.name}_hybrid_tmp"
@@ -862,9 +866,6 @@ class RZILTransformer(Transformer):
             h_seq = [set_tmp, hybrid]
         elif hybrid.seq_order == HybridSeqOrder.EXEC_THEN_SET_VAL:
             h_seq = [hybrid, set_tmp]
-        elif hybrid.seq_order == HybridSeqOrder.EXEC_ONLY:
-            self.hybrid_effect_dict[tmp_x_name] = self.chk_hybrid_dep(hybrid)
-            return Number("VOID_VALUE", 0xffffffff, ValueType(False, 32, VTGroup.VOID))
         else:
             raise NotImplementedError(
                 f"Hybrid {hybrid} has no valid sequence order set."

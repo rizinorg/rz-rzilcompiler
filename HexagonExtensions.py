@@ -8,7 +8,7 @@ from rzil_compiler.Transformer.Pures.Immediate import Immediate
 from rzil_compiler.Transformer.ValueType import (
     ValueType,
     get_value_type_from_reg_type,
-    get_value_type_by_isa_imm,
+    get_value_type_by_isa_imm, VTGroup, get_value_type_by_c_type,
 )
 from rzil_compiler.Transformer.Pures.Register import RegisterAccessType, Register
 from rzil_compiler.Transformer.Pures.Variable import Variable
@@ -209,6 +209,8 @@ class HexagonTransformerExtension(TransformerExtension):
             # Marks the slot i as cancelled in a global variable for this case.
             # returns void.
             return ValueType(False, 32)
+        elif fcn_name == "WRITE_REG":
+            return ValueType(False, 32, VTGroup.VOID)
         else:
             raise NotImplementedError(f"No value type for function {fcn_name} defined.")
         # TODO
@@ -315,6 +317,11 @@ def get_fcn_param_types(fcn_name: str) -> [ValueType]:
     elif fcn_name == "STORE_SLOT_CANCELLED":
         # Marks the slot i as cancelled in a global variable for this case.
         return [ValueType(False, 8)]
+    elif fcn_name == "WRITE_REG":
+        return [get_value_type_by_c_type("HexPktInsnBundle"),
+                get_value_type_by_c_type("HexOp"),
+                get_value_type_by_c_type("uint32_t")
+                ]
     else:
         raise NotImplementedError(
             f"No value type for the function parameter of {fcn_name} defined."
