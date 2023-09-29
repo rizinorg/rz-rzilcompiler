@@ -120,7 +120,7 @@ class Compiler:
 
         self.set_lark_parser()
         self.set_extension()
-        self.set_transformer()
+        self.set_il_op_transformer()
         self.set_preprocessor()
         self.add_sub_routines()
 
@@ -135,8 +135,13 @@ class Compiler:
         else:
             raise NotImplementedError(f"No compiler extension for {self.arch} given.")
 
-    def set_transformer(self):
-        self.transformer = RZILTransformer(self.arch, sub_routines=self.sub_routines)
+    def set_il_op_transformer(self):
+        # Those are not actually passed to every function (they are passed via bundle).
+        # But for now we just ignore this, because they'd need the "->" operator implemented to access them.
+        params = [Parameter("pkt", get_value_type_by_c_type("HexPkt")),
+                  Parameter("hi", get_value_type_by_c_type("HexInsn"))]
+        ret_type = get_value_type_by_c_type("RzILOpEffect")
+        self.transformer = RZILTransformer(self.arch, sub_routines=self.sub_routines, parameters=params, return_type=ret_type)
 
     def set_preprocessor(self):
         log(f"Set up preprocessor for: {self.arch.name}")
