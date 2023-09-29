@@ -267,7 +267,7 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data("jump")
         c9 = self.add_op(Register("c9", RegisterAccessType.W, ValueType(False, 32), is_new=True, is_explicit=True))
         ta = items[1]
-        do_jump = self.chk_hybrid_dep(self.add_op(SubRoutineCall(self.sub_routines["set_c9_jump"], [self.parameters["pkt"], c9, ta])))
+        do_jump = self.chk_hybrid_dep(self.add_op(SubRoutineCall(self.sub_routines["set_c9_jump"], [self.parameters["bundle"], c9, ta])))
         return do_jump
 
     def jump_no_c9_set(self, items):
