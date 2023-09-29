@@ -103,9 +103,6 @@ class RZILTransformer(Transformer):
         self.hybrid_effect_dict.clear()
         self.imm_set_effect_list.clear()
         self.il_ops_holder.clear()
-        self.return_type = None
-        self.parameters.clear()
-        self.sub_routines.clear()
 
     def update_sub_routines(self, new_routines: dict[str:SubRoutine]) -> None:
         self.sub_routines.update(new_routines)

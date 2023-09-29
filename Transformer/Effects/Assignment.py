@@ -56,8 +56,6 @@ class Assignment(Effect):
         else:
             read = self.src.il_read()
         if self.type == EffectType.SETG and isinstance(self.dest, Register):
-            if self.dest.is_explicit or self.dest.is_reg_alias:
-                return f"WRITE_REG(pkt, &{self.dest.vm_id(True)}, {read})"
             return f"WRITE_REG(pkt, {self.dest.vm_id(True)}, {read})"
         elif self.type == EffectType.SETL:
             return f"SETL({self.dest.vm_id(True)}, {read})"

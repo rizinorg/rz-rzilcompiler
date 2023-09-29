@@ -882,20 +882,26 @@ class TestTransformerOutput(unittest.TestCase):
         behavior = "{ P1_NEW = P0; R11:10_NEW = C31:30; }"
         output = self.compile_behavior(behavior)
         expected = (
-            "// READ\n"
-            "const HexOp P1_new_op = EXPLICIT2OP(1, HEX_REG_CLASS_PRED_REGS, true);\n"
-            "const HexOp P0_op = EXPLICIT2OP(0, HEX_REG_CLASS_PRED_REGS, false);\n"
-            "RzILOpPure *P0 = READ_REG(pkt, &P0_op, false);\n"
-            "const HexOp R11_10_new_op = EXPLICIT2OP(10, HEX_REG_CLASS_DOUBLE_REGS, true);\n"
-            "const HexOp C31_30_op = EXPLICIT2OP(30, HEX_REG_CLASS_CTR_REGS64, false);\n"
-            "RzILOpPure *C31_30 = READ_REG(pkt, &C31_30_op, false);\n"
-            "\n"
-            "// EXEC\n\n// WRITE\n"
-            "RzILOpEffect *op_ASSIGN_2 = WRITE_REG(pkt, &P1_new_op, P0);\n"
-            "RzILOpEffect *op_ASSIGN_5 = WRITE_REG(pkt, &R11_10_new_op, C31_30);\n"
+            """
+            // READ
+            const HexOp P1_new_op = EXPLICIT2OP(1, HEX_REG_CLASS_PRED_REGS, true);
+            const HexOp P0_op = EXPLICIT2OP(0, HEX_REG_CLASS_PRED_REGS, false);
+            RzILOpPure *P0 = READ_REG(pkt, &P0_op, false);
+            const HexOp R11_10_new_op = EXPLICIT2OP(10, HEX_REG_CLASS_DOUBLE_REGS, true);
+            const HexOp C31_30_op = EXPLICIT2OP(30, HEX_REG_CLASS_CTR_REGS64, false);
+            RzILOpPure *C31_30 = READ_REG(pkt, &C31_30_op, false);
+
+            // EXEC
+
+            // WRITE
+            RzILOpEffect *op_ASSIGN_2 = WRITE_REG(pkt, &P1_new_op, P0);
+            RzILOpEffect *op_ASSIGN_5 = WRITE_REG(pkt, &R11_10_new_op, C31_30);
+            RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, op_ASSIGN_5);
+
+            return instruction_sequence;""".replace("  ", "")
         )
-        self.assertTrue(
-            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        self.assertEqual(
+            expected, output
         )
 
     def test_reg_nums(self):
@@ -934,7 +940,8 @@ class TestTransformerOutput(unittest.TestCase):
         expected = (
             "// READ\n"
             "const HexOp *Rd_op = ISA2REG(hi, 'd', true);\n"
-            "RzILOpPure *pc = U32(pkt->pkt_addr);\n\n"
+            "const HexOp pc_op = ALIAS2OP(HEX_REG_ALIAS_PC, false);\n"
+            "RzILOpPure *pc = READ_REG(pkt, &pc_op, false);\n\n"
             "// EXEC\n\n// WRITE\n"
             "RzILOpEffect *op_ASSIGN_3 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(pc), DUP(pc)));\n"
         )

@@ -51,9 +51,12 @@ class Register(GlobalVar):
         self.reg_number = self.get_reg_num_from_name(self.get_isa_name())
         self.reg_class = self.get_reg_class()
 
-    def get_op_var(self):
+    def get_op_var(self, deref=True):
         var = self.name + "_op"
         var = var.replace(":", "_")
+        if deref and (self.is_explicit or self.is_reg_alias):
+            # Operand variables of alias and explicit regs should be passed as pointer.
+            return f"&{var}"
         return var
 
     def pure_var(self):
@@ -66,10 +69,6 @@ class Register(GlobalVar):
         return self.get_op_var()
 
     def il_init_var(self):
-        if self.get_name().lower() == "pc":
-            # PC is never present as IL variable. Get it from the pkt.
-            return "RzILOpPure *pc = U32(pkt->pkt_addr);"
-
         # Registers which are only written do not need their own RzILOpPure.
         if self.access == RegisterAccessType.W or self.access == RegisterAccessType.PW:
             return self.il_isa_to_assoc_name(True)
@@ -81,11 +80,7 @@ class Register(GlobalVar):
         else:
             init = self.il_isa_to_assoc_name(False) + "\n"
 
-        reference = ""
-        if self.is_explicit or self.is_reg_alias:
-            # Explicits and alias HexOps are initialized as value not as pointers
-            reference = "&"
-        init += f"RzILOpPure *{self.pure_var()} = READ_REG(pkt, {reference}{self.get_op_var()}, false);"
+        init += f"RzILOpPure *{self.pure_var()} = READ_REG(pkt, {self.get_op_var()}, false);"
         return init
 
     def il_isa_to_assoc_name(self, write_usage: bool) -> str:
@@ -110,7 +105,7 @@ class Register(GlobalVar):
         So the plugin needs to translate these. Here we return the code for this translation.
         """
         return (
-            f"const HexOp {self.get_op_var()} = {isa_alias_to_op}("
+            f"const HexOp {self.get_op_var(deref=False)} = {isa_alias_to_op}("
             f'{", ".join(isa_alias_to_op_args)}'
             f'{", " if isa_alias_to_op_args else ""}{self.get_alias_enum(self.name)}'
             f", {str(self.is_new or write_usage).lower()});"
@@ -120,7 +115,7 @@ class Register(GlobalVar):
         """Some registers are explicitly named (P0 etc.). Here we resolve them."""
         assert self.reg_number is not None
         return (
-            f"const HexOp {self.get_op_var()} = {isa_explicit_to_op}("
+            f"const HexOp {self.get_op_var(deref=False)} = {isa_explicit_to_op}("
             f'{", ".join(isa_explicit_to_op_args)}'
             f'{", " if isa_explicit_to_op_args else ""}'
             f"{self.reg_number}, {self.reg_class}"
@@ -133,10 +128,7 @@ class Register(GlobalVar):
         # So if this method is called on a write-only register we return the value of the .new register.
         # Examples: a2_svaddh, a4_vcmpbgt
         if self.access is RegisterAccessType.W or self.access is RegisterAccessType.PW:
-            if self.is_explicit or self.is_reg_alias:
-                # HexOps for explicits and alias are initialized as values, not pointers.
-                return f"READ_REG(pkt, &{self.vm_id(True)}, true)"
-            return f"READ_REG(pkt, {self.vm_id(True)}, true)"
+            return f"READ_REG(pkt, {self.get_op_var()}, true)"
         if self.access == RegisterAccessType.UNKNOWN:
             self.access = RegisterAccessType.R
         return GlobalVar.il_read(self).replace(":", "_")

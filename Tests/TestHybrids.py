@@ -65,7 +65,7 @@ class TestHybrids(unittest.TestCase):
         // EXEC
 
         // WRITE
-        RzILOpEffect *set_c9_jump_call_2 = hex_set_c9_jump(pkt, c9_new_op, UN(32, 0));
+        RzILOpEffect *set_c9_jump_call_2 = hex_set_c9_jump(pkt, &c9_new_op, UN(32, 0));
         RzILOpEffect *instruction_sequence = SEQN(2, set_c9_jump_call_2, EMPTY());
 
         return instruction_sequence;""".replace("  ", ""), result)
