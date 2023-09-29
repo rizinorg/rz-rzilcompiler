@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 import argparse
+import json
 import re
 
 from lark import Lark
@@ -121,6 +122,7 @@ class Compiler:
         self.set_extension()
         self.set_transformer()
         self.set_preprocessor()
+        self.add_sub_routines()
 
     def set_lark_parser(self):
         with open(Conf.get_path(InputFile.GRAMMAR, "Hexagon")) as f:
@@ -150,6 +152,13 @@ class Compiler:
         log("Run preprocessor...")
         self.preprocessor.run_preprocess_steps()
 
+    def add_sub_routines(self):
+        log("Add sub-routines...")
+        with open(Conf.get_path(InputFile.HEXAGON_SUB_ROUTINES_JSON)) as f:
+            routines = json.load(f)
+        for name, routine in routines["sub_routines"].items():
+            self.add_sub_routine(name, routine["return_type"], routine["params"], routine["code"])
+
     def add_sub_routine(
         self, name: str, ret_type: str, params: list[str], body: str
     ) -> None:
@@ -160,7 +169,7 @@ class Compiler:
         :param params: A list of parameters of this sub-routine in the form of "<type> <id>"
         :param body: The code of the sub-routines body.
         """
-        log(f"Add sub-routine {name}")
+        log(f"Add sub-routine: {name}")
         sub_routine = self.compile_sub_routine(name, ret_type, params, body)
         self.sub_routines[name] = sub_routine
         self.transformer.update_sub_routines(self.sub_routines)
