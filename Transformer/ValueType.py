@@ -18,7 +18,7 @@ class VTGroup(Flag):
 
     @staticmethod
     def get_external_types() -> list[str]:
-        return ["HexOp", "HexInsnPktBundle", "HexPkt", "RzILOpEffect"]
+        return ["HexOp", "HexInsnPktBundle", "HexInsn", "HexPkt", "RzILOpEffect"]
 
 
 class ValueType:
