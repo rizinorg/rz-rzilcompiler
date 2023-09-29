@@ -48,13 +48,13 @@ class TestHybrids(unittest.TestCase):
             exc = e
         self.assertIsNone(exc)
 
-    def test_set_c9_jump(self):
+    def test_set_c9_jump_call(self):
         code = "{ JUMP(0x0); }"
         # Compile the body
         ast_body = self.compiler.parser.parse(code)
         result = RZILTransformer(
             ArchEnum.HEXAGON,
-            parameters=[Parameter("pkt", get_value_type_by_c_type("HexPkt *"))],
+            parameters=[Parameter("bundle", get_value_type_by_c_type("HexPktInsnBundle *"))],
             return_type=self.compiler.sub_routines["set_c9_jump"].value_type,
             sub_routines=self.compiler.sub_routines
         ).transform(ast_body)
@@ -65,7 +65,7 @@ class TestHybrids(unittest.TestCase):
         // EXEC
 
         // WRITE
-        RzILOpEffect *set_c9_jump_call_2 = hex_set_c9_jump(pkt, &c9_new_op, UN(32, 0));
+        RzILOpEffect *set_c9_jump_call_2 = hex_set_c9_jump(bundle, &c9_new_op, UN(32, 0));
         RzILOpEffect *instruction_sequence = SEQN(2, set_c9_jump_call_2, EMPTY());
 
         return instruction_sequence;""".replace("  ", ""), result)

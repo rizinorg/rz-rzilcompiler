@@ -135,7 +135,10 @@ class TestTransforming(unittest.TestCase):
                 transformer.transform(tree)
             else:
                 transformer = RZILTransformer(ArchEnum.HEXAGON, sub_routines=self.compiler.sub_routines,
-                        parameters=[Parameter("pkt", get_value_type_by_c_type("HexPkt *"))],
+                        parameters=[Parameter("pkt", get_value_type_by_c_type("HexPkt")),
+                                    Parameter("hi", get_value_type_by_c_type("HexInsn")),
+                                    Parameter("bundle", get_value_type_by_c_type("HexInsnPktBundle"))
+                                    ],
                         return_type=self.compiler.sub_routines["set_c9_jump"].value_type,
                         )
                 transformer.transform(tree)
@@ -427,7 +430,11 @@ class TestTransformerMeta(unittest.TestCase):
         try:
             tree = self.parser.parse(behavior)
             transformer = RZILTransformer(ArchEnum.HEXAGON, sub_routines=self.compiler.sub_routines,
-                        parameters=[Parameter("pkt", get_value_type_by_c_type("HexPkt *"))],
+                        parameters=[
+                            Parameter("pkt", get_value_type_by_c_type("HexPkt")),
+                            Parameter("hi", get_value_type_by_c_type("HexInsn")),
+                            Parameter("bundle", get_value_type_by_c_type("HexInsnPktBundle"))
+                        ],
                         return_type=self.compiler.sub_routines["set_c9_jump"].value_type,
                         )
             transformer.transform(tree)
