@@ -134,7 +134,10 @@ class TestTransforming(unittest.TestCase):
             if transformer:
                 transformer.transform(tree)
             else:
-                transformer = RZILTransformer(ArchEnum.HEXAGON)
+                transformer = RZILTransformer(ArchEnum.HEXAGON, sub_routines=self.compiler.sub_routines,
+                        parameters=[Parameter("pkt", get_value_type_by_c_type("HexPkt *"))],
+                        return_type=self.compiler.sub_routines["set_c9_jump"].value_type,
+                        )
                 transformer.transform(tree)
         except UnexpectedToken as e:
             # Parser got unexpected token
@@ -418,11 +421,15 @@ class TestTransformerMeta(unittest.TestCase):
     def setUpClass(cls):
         cls.insn_behavior = get_hexagon_insn_behavior()
         cls.parser = get_hexagon_parser()
+        cls.compiler = Compiler(ArchEnum.HEXAGON)
 
     def compile_behavior(self, behavior: str) -> list[str]:
         try:
             tree = self.parser.parse(behavior)
-            transformer = RZILTransformer(ArchEnum.HEXAGON)
+            transformer = RZILTransformer(ArchEnum.HEXAGON, sub_routines=self.compiler.sub_routines,
+                        parameters=[Parameter("pkt", get_value_type_by_c_type("HexPkt *"))],
+                        return_type=self.compiler.sub_routines["set_c9_jump"].value_type,
+                        )
             transformer.transform(tree)
             return transformer.ext.get_meta()
         except UnexpectedToken as e:

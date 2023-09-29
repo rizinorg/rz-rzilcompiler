@@ -19,31 +19,14 @@ from rzil_compiler.Compiler import Compiler
 class TestHybrids(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.maxDiff = 1000
         cls.compiler = Compiler(ArchEnum.HEXAGON)
 
     def test_sub_routines(self):
-        name = "sextract64"
-        return_type = "int64_t"
-        parameters = ["uint64_t value", "int start", "int length"]
-        code = (
-            "{ return ((int32_t)(value << (32 - length - start))) >> (32 - length); }"
-        )
-        params = list()
-        for param in parameters:
-            ptype, pname = split_var_decl(param)
-            params.append(Parameter(pname, get_value_type_by_c_type(ptype)))
-
-        ret_type = get_value_type_by_c_type(return_type)
-        # Compile the body
-        ast_body = self.compiler.parser.parse(code)
-        transformed_body = RZILTransformer(
-            ArchEnum.HEXAGON, parameters=params, return_type=ret_type
-        ).transform(ast_body)
-        sub_routine = SubRoutine(name, ret_type, params, transformed_body)
-        self.assertEqual(sub_routine.value_type, ValueType(True, 64))
-        self.assertEqual(sub_routine.routine_name, "sextract64")
+        self.assertEqual(self.compiler.sub_routines["sextract64"].value_type, ValueType(True, 64))
+        self.assertEqual(self.compiler.sub_routines["sextract64"].routine_name, "sextract64")
         self.assertEqual(
-            sub_routine.il_init(SubRoutineInitType.DECL),
+            self.compiler.sub_routines["sextract64"].il_init(SubRoutineInitType.DECL),
             "RZ_OWN RzILOpEffect *hex_sextract64("
             "RZ_BORROW RzILOpPure *value, "
             "RZ_BORROW RzILOpPure *start, "
@@ -51,7 +34,7 @@ class TestHybrids(unittest.TestCase):
         )
         self.assertTrue(
             'RzILOpEffect *set_return_val_12 = SETL("ret_val", op_RSHIFT_10);'
-            in sub_routine.il_init(SubRoutineInitType.DEF)
+            in self.compiler.sub_routines["sextract64"].il_init(SubRoutineInitType.DEF)
         )
 
     def test_sub_routine_2(self):

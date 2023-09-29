@@ -16,7 +16,6 @@ class PureType(Enum):
 
 
 class Pure:
-    reads: int = 0
     name: str = ""  # Name of pure
     isa_name = None
     type: PureType = None
@@ -24,6 +23,7 @@ class Pure:
     num_id = -1
 
     def __init__(self, name: str, pure_type: PureType, value_type: ValueType):
+        self.reads: int = 0
         self.name = name
         self.type = pure_type
         self.value_type = value_type
