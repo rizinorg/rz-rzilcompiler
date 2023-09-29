@@ -110,7 +110,7 @@ class Compiler:
     transformer = None
     compiled_insns = dict()
     asts = dict()  # Abstract syntax trees
-    sub_routines = (
+    sub_routines: dict[str: SubRoutine] = (
         dict()
     )  # dict of sub-routines which can be used by other instructions.
     ext = None
@@ -169,10 +169,10 @@ class Compiler:
         :param params: A list of parameters of this sub-routine in the form of "<type> <id>"
         :param body: The code of the sub-routines body.
         """
-        log(f"Add sub-routine: {name}")
         sub_routine = self.compile_sub_routine(name, ret_type, params, body)
         self.sub_routines[name] = sub_routine
         self.transformer.update_sub_routines(self.sub_routines)
+        log(f"Added sub-routine: {name}")
 
     def get_sub_routine(self, name: str) -> SubRoutine:
         return self.sub_routines[name]

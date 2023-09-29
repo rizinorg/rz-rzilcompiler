@@ -29,7 +29,10 @@ class SubRoutine(Hybrid):
         # Precompiled subroutine's body.
         self.body = self.check_for_bundle_usage(body)
         self.op_type = HybridType.SUB_ROUTINE
-        self.seq_order = HybridSeqOrder.EXEC_THEN_SET_VAL
+        if ret_type.group & VTGroup.VOID:
+            self.seq_order = HybridSeqOrder.EXEC_ONLY
+        else:
+            self.seq_order = HybridSeqOrder.EXEC_THEN_SET_VAL
 
         Hybrid.__init__(self, name, params, ret_type)
 
@@ -106,6 +109,9 @@ class SubRoutineCall(Hybrid):
         return self.sub_routine.il_read()
 
     def il_write(self):
+        if len(self.args) != len(self.sub_routine.get_parameter_value_types()):
+            raise ValueError(f"The number of arguments ({len(self.args)}) does not match number of the parameters.\n"
+                             f"{self.sub_routine.name} needs: {[str(t) for t in self.sub_routine.get_parameter_value_types()]}")
         code = f"{hexagon_c_call_prefix.lower() + self.sub_routine.get_name()}("
         for i, (arg, ptype) in enumerate(zip(self.args, self.sub_routine.get_parameter_value_types())):
             if i > 0:
@@ -115,8 +121,7 @@ class SubRoutineCall(Hybrid):
                 if isinstance(arg, Parameter):
                     code += arg.get_name()
                     continue
-                # We pass the argument as external type. So the operand of the variable is passed.
-                # This operand should have the external type.
+                # The argument should be of an external type. So only the variable name is printed.
                 if "get_op_var" not in dir(arg):
                     raise ValueError(f"{arg} as no method to get it's operand holding variable name.")
                 code += arg.get_op_var()

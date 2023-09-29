@@ -40,7 +40,7 @@ from rzil_compiler.Transformer.ValueType import (
 )
 from rzil_compiler.Transformer.Effects.Assignment import Assignment, AssignmentType
 from rzil_compiler.Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
-from rzil_compiler.Transformer.Pures.Register import Register
+from rzil_compiler.Transformer.Pures.Register import Register, RegisterAccessType
 from rzil_compiler.Transformer.Pures.Sizeof import Sizeof
 from rzil_compiler.Transformer.Pures.Ternary import Ternary
 from rzil_compiler.Transformer.Pures.Variable import Variable
@@ -267,6 +267,13 @@ class RZILTransformer(Transformer):
         return self.add_op(imm)
 
     def jump(self, items):
+        self.ext.set_token_meta_data("jump")
+        c9 = self.add_op(Register("c9", RegisterAccessType.W, ValueType(False, 32), is_new=True, is_explicit=True))
+        ta = items[1]
+        do_jump = self.chk_hybrid_dep(self.add_op(SubRoutineCall(self.sub_routines["set_c9_jump"], [self.parameters["pkt"], c9, ta])))
+        return do_jump
+
+    def jump_no_c9_set(self, items):
         self.ext.set_token_meta_data("jump")
         ta: Pure = items[1]
         return self.chk_hybrid_dep(self.add_op(Jump(f"jump_{ta.pure_var()}", ta)))
@@ -858,6 +865,9 @@ class RZILTransformer(Transformer):
             h_seq = [set_tmp, hybrid]
         elif hybrid.seq_order == HybridSeqOrder.EXEC_THEN_SET_VAL:
             h_seq = [hybrid, set_tmp]
+        elif hybrid.seq_order == HybridSeqOrder.EXEC_ONLY:
+            self.hybrid_effect_dict[tmp_x_name] = self.chk_hybrid_dep(hybrid)
+            return Number("VOID_VALUE", 0xffffffff, ValueType(False, 32, VTGroup.VOID))
         else:
             raise NotImplementedError(
                 f"Hybrid {hybrid} has no valid sequence order set."

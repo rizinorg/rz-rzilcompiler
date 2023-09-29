@@ -1,13 +1,18 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
-
+from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutineCall
 from rzil_compiler.Transformer.Effects.Effect import Effect, EffectType
 from rzil_compiler.Transformer.Pures.Pure import Pure
 
 
 class Jump(Effect):
+    """
+    Direct jump without setting C9 to the target address.
+    If the C9 should be set before, use the set_c9_jump subroutine instead.
+    """
+
     def __init__(self, name: str, target: Pure):
-        self.target = target
+        self.target: Pure = target
         self.effect_ops = [self.target]
         Effect.__init__(self, name, EffectType.JUMP)
 
@@ -15,5 +20,4 @@ class Jump(Effect):
         """Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
         """
-
         return f"JMP({self.target.il_read()})"

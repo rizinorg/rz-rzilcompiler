@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from enum import StrEnum, Enum
+from enum import StrEnum, Enum, auto
 
 from rzil_compiler.Transformer.Effects.Effect import Effect, EffectType
 from rzil_compiler.Transformer.Pures.Pure import Pure
@@ -17,9 +17,10 @@ class HybridType(StrEnum):
 
 
 class HybridSeqOrder(Enum):
-    SET_VAL_THEN_EXEC = 0
-    EXEC_THEN_SET_VAL = 1
-    NOT_SET = 2
+    SET_VAL_THEN_EXEC = auto()  # Constructs like i++
+    EXEC_THEN_SET_VAL = auto()  # For normal sub_routines.
+    EXEC_ONLY = auto()  # For sub_routines which return void.
+    NOT_SET = auto()
 
 
 class Hybrid(PureExec, Effect):

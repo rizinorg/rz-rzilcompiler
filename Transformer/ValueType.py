@@ -108,6 +108,8 @@ class ValueType:
     def __str__(self):
         if self.group & VTGroup.EXTERNAL:
             return f"EXTERNAL::{self.external_type}"
+        elif self.group & VTGroup.VOID:
+            return "void"
         return f'{"st" if self.signed else "ut"}{self.bit_width}'
 
 

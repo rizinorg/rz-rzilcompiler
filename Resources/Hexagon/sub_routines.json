@@ -35,10 +35,10 @@
       "params": ["HexInsnPktBundle *bundle", "const HexOp *RxV", "int32_t offset", "int32_t M", "int32_t CS"],
       "code": "{ uint32_t K_const = extract32(M, 24, 4); uint32_t length = extract32(M, 0, 17); uint32_t new_ptr = RxV + offset; uint32_t start_addr; uint32_t end_addr; if (K_const == 0 && length >= 4) { start_addr = CS; end_addr = start_addr + length; } else { int32_t mask = (1 << (K_const + 2)) - 1; start_addr = RxV & (~mask); end_addr = start_addr | length; } if (new_ptr >= end_addr) { new_ptr -= length; } else if (new_ptr < start_addr) { new_ptr += length; } RxV = new_ptr; return new_ptr;}"
     },
-    "jump": {
-      "return_type": "RzILOpEffect *",
+    "set_c9_jump": {
+      "return_type": "void",
       "params": ["HexPkt *pkt", "const HexOp *CdV", "uint32_t target_addr"],
-      "code": "{ RdV = target_addr; JUMP(target_addr); }"
+      "code": "{ RdV = target_addr; JUMP_NO_C9(target_addr); }"
     }
   }
 }

@@ -9,8 +9,10 @@ MEM_LOAD.10: "mem_load_"
 MEM_STORE.10: "mem_store_"
 WRITE_PRED.10: "WRITE_PRED"
 JUMP.10: "JUMP"
+JUMP_NO_C9.10: "JUMP_NO_C9"
 
 jump: JUMP "(" expr ")"
+jump_no_c9_set: JUMP_NO_C9 "(" expr ")"
 
 mem_load: MEM_LOAD SIGN_TYPE BIT_WIDTH "(" _argument_expr_list ")"
 
@@ -355,6 +357,7 @@ iteration_stmt: WHILE "(" expr ")" stmt
 	| FOR "(" declaration expr_stmt expr ")" stmt
 
 jump_stmt: jump
+    | jump_no_c9_set
     | GOTO IDENTIFIER ";"
 	| CONTINUE ";"
 	| BREAK ";"
