@@ -744,8 +744,8 @@ class TestTransformerOutput(unittest.TestCase):
             "RzILOpPure *const_pos0_0 = UN(32, 0x0);\n"
             "// Declare: ut64 a;\n\n"
             "// EXEC\n"
-            'RzILOpPure *cast_st8_2 = LET("const_pos0_0", const_pos0_0, CAST(8, MSB(DUP(VARLP("const_pos0_0"))), VARLP("const_pos0_0")));\n'
-            "RzILOpPure *cast_st64_3 = CAST(64, MSB(DUP(cast_st8_2)), cast_st8_2);\n"
+            'RzILOpPure *cast_st8_2 = LET("const_pos0_0", const_pos0_0, CAST(8, MSB(VARLP("const_pos0_0")), VARLP("const_pos0_0")));\n'
+            "RzILOpPure *cast_st64_3 = CAST(64, MSB(cast_st8_2), DUP(cast_st8_2));\n"
             "RzILOpPure *cast_ut64_6 = CAST(64, IL_FALSE, cast_st64_3);"
         )
         self.assertTrue(
@@ -771,7 +771,7 @@ class TestTransformerOutput(unittest.TestCase):
             "RzILOpPure *const_pos0_0 = UN(32, 0x0);\n"
             "// Declare: st64 a;\n\n"
             "// EXEC\n"
-            'RzILOpPure *cast_st64_3 = LET("const_pos0_0", const_pos0_0, CAST(64, MSB(DUP(VARLP("const_pos0_0"))), VARLP("const_pos0_0")));\n\n'
+            'RzILOpPure *cast_st64_3 = LET("const_pos0_0", const_pos0_0, CAST(64, MSB(VARLP("const_pos0_0")), VARLP("const_pos0_0")));\n\n'
             "// WRITE\n"
             'RzILOpEffect *op_ASSIGN_2 = SETL("a", cast_st64_3);\n'
         )
@@ -806,7 +806,7 @@ class TestTransformerOutput(unittest.TestCase):
             "// Declare: st64 a;\n\n"
             "// EXEC\n\n"
             "// WRITE\n"
-            'RzILOpEffect *op_ASSIGN_2 = SETL("a", LET("const_pos0_0", const_pos0_0, CAST(64, MSB(DUP(VARLP("const_pos0_0"))), VARLP("const_pos0_0"))));\n'
+            'RzILOpEffect *op_ASSIGN_2 = SETL("a", LET("const_pos0_0", const_pos0_0, CAST(64, MSB(VARLP("const_pos0_0")), VARLP("const_pos0_0"))));\n'
         )
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
