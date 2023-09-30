@@ -26,7 +26,9 @@ class Parameter(Pure):
     def il_read(self):
         """Returns the code to read the let variable for the VM."""
         self.reads += 1
-        return self.get_rzil_val()
+        if self.reads <= 1:
+            return self.get_rzil_val()
+        return f"DUP({self.get_rzil_val()})"
 
     def vm_id(self, write_usage: bool):
         return self.get_rzil_val()

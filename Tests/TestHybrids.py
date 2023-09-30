@@ -80,7 +80,7 @@ class TestHybrids(unittest.TestCase):
 
         // WRITE
         RzILOpEffect *c_call_0 = WRITE_REG(pkt, C9_op, target_addr);
-        RzILOpEffect *jump_target_addr_1 = JMP(target_addr);
+        RzILOpEffect *jump_target_addr_1 = JMP(DUP(target_addr));
         RzILOpEffect *instruction_sequence = SEQN(3, c_call_0, jump_target_addr_1, EMPTY());
 
         return instruction_sequence;
