@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 from rzil_compiler.Transformer.Pures.Pure import Pure, PureType
-from rzil_compiler.Transformer.ValueType import ValueType, get_value_type_by_c_type, split_var_decl
+from rzil_compiler.Transformer.ValueType import ValueType, get_value_type_by_c_type, split_var_decl, VTGroup
 
 
 class Parameter(Pure):
@@ -26,7 +26,7 @@ class Parameter(Pure):
     def il_read(self):
         """Returns the code to read the let variable for the VM."""
         self.reads += 1
-        if self.reads <= 1:
+        if self.reads <= 1 or not self.value_type.group & VTGroup.PURE:
             return self.get_rzil_val()
         return f"DUP({self.get_rzil_val()})"
 

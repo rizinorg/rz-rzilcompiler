@@ -69,6 +69,8 @@ class Register(GlobalVar):
         return self.get_op_var()
 
     def il_init_var(self):
+        if self.get_name() == "pc":
+            return "RzILOpPure *pc = U32(pkt->pkt_addr);"
         # Registers which are only written do not need their own RzILOpPure.
         if self.access == RegisterAccessType.W or self.access == RegisterAccessType.PW:
             return self.il_isa_to_assoc_name(True)
