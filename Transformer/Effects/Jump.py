@@ -17,7 +17,4 @@ class Jump(Effect):
         Effect.__init__(self, name, EffectType.JUMP)
 
     def il_write(self):
-        """Returns the RZIL ops to write the variable value.
-        :return: RZIL ops to write the pure value.
-        """
-        return f"JMP({self.target.il_read()})"
+        return f'SEQ2(SETL("jump_flag", IL_TRUE), JMP({self.target.il_read()}))'

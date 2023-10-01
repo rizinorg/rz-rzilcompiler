@@ -1068,6 +1068,23 @@ class TestTransformerOutput(unittest.TestCase):
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
         )
 
+    def test_reg_jump_flag_setter(self):
+        behavior = "{ JUMP(0x0); }"
+        output = self.compile_behavior(behavior)
+        expected = """
+        // READ
+
+        // EXEC
+
+        // WRITE
+        RzILOpEffect *jump_const_pos0x0_0_1 = SEQ2(SETL("jump_flag", IL_TRUE), JMP(UN(32, 0)));
+        RzILOpEffect *instruction_sequence = SEQN(2, jump_const_pos0x0_0_1, EMPTY());
+
+        return instruction_sequence;""".replace("  ", "")
+        self.assertEqual(
+            expected, output
+        )
+
 
 class TestGrammar(unittest.TestCase):
     def test_early_compatibility(self):
