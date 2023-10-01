@@ -48,46 +48,6 @@ class TestHybrids(unittest.TestCase):
             exc = e
         self.assertIsNone(exc)
 
-    def test_set_c9_jump_call(self):
-        code = "{ JUMP(0x0); }"
-        # Compile the body
-        ast_body = self.compiler.parser.parse(code)
-        result = RZILTransformer(
-            ArchEnum.HEXAGON,
-            parameters=[Parameter("bundle", get_value_type_by_c_type("HexPktInsnBundle *"))],
-            return_type=self.compiler.sub_routines["set_c9_jump"].value_type,
-            sub_routines=self.compiler.sub_routines
-        ).transform(ast_body)
-        self.assertEqual("""
-        // READ
-        const HexOp c9_new_op = EXPLICIT2OP(9, HEX_REG_CLASS_CTR_REGS, true);
-
-        // EXEC
-
-        // WRITE
-        RzILOpEffect *set_c9_jump_call_2 = hex_set_c9_jump(bundle, &c9_new_op, UN(32, 0));
-        RzILOpEffect *instruction_sequence = SEQN(2, set_c9_jump_call_2, EMPTY());
-
-        return instruction_sequence;""".replace("  ", ""), result)
-
-    def test_set_c9_jump_def(self):
-        self.assertEqual("""RZ_OWN RzILOpEffect *hex_set_c9_jump(HexInsnPktBundle *bundle, const HexOp *C9_op, RZ_BORROW RzILOpPure *target_addr) {
-        HexPkt *pkt = bundle->pkt;
-
-        // READ
-
-        // EXEC
-
-        // WRITE
-        RzILOpEffect *c_call_0 = WRITE_REG(pkt, C9_op, target_addr);
-        RzILOpEffect *jump_target_addr_1 = JMP(DUP(target_addr));
-        RzILOpEffect *instruction_sequence = SEQN(3, c_call_0, jump_target_addr_1, EMPTY());
-
-        return instruction_sequence;
-        }""".replace("  ", ""),
-                         self.compiler.sub_routines["set_c9_jump"].il_init(SubRoutineInitType.DEF)
-                         )
-
 
 if __name__ == "__main__":
     TestHybrids().main()

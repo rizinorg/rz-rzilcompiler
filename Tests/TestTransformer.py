@@ -8,7 +8,7 @@ import unittest
 from Compiler import RZILInstruction, Compiler
 from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine, SubRoutineInitType
 from rzil_compiler.Transformer.Pures.Parameter import get_parameter_by_decl, Parameter
-from rzil_compiler.Transformer.ValueType import get_value_type_by_c_type
+from rzil_compiler.Transformer.ValueType import get_value_type_by_c_type, ValueType, VTGroup
 from rzil_compiler.Transformer.Pures.Register import Register
 from rzil_compiler.Transformer.Pures.Cast import Cast
 from rzil_compiler.Transformer.Pures.Number import Number
@@ -139,7 +139,7 @@ class TestTransforming(unittest.TestCase):
                                     Parameter("hi", get_value_type_by_c_type("HexInsn")),
                                     Parameter("bundle", get_value_type_by_c_type("HexInsnPktBundle"))
                                     ],
-                        return_type=self.compiler.sub_routines["set_c9_jump"].value_type,
+                        return_type=ValueType(False, 32, VTGroup.EXTERNAL, "RzILOpEffect"),
                         )
                 transformer.transform(tree)
         except UnexpectedToken as e:
@@ -435,7 +435,7 @@ class TestTransformerMeta(unittest.TestCase):
                             Parameter("hi", get_value_type_by_c_type("HexInsn")),
                             Parameter("bundle", get_value_type_by_c_type("HexInsnPktBundle"))
                         ],
-                        return_type=self.compiler.sub_routines["set_c9_jump"].value_type,
+                        return_type=ValueType(False, 32, VTGroup.EXTERNAL, "RzILOpEffect"),
                         )
             transformer.transform(tree)
             return transformer.ext.get_meta()
@@ -967,15 +967,21 @@ class TestTransformerOutput(unittest.TestCase):
         behavior = "{ RdV = HEX_REG_ALIAS_PC; }"
         output = self.compile_behavior(behavior)
         expected = (
-            "// READ\n"
-            "const HexOp *Rd_op = ISA2REG(hi, 'd', true);\n"
-            "const HexOp pc_op = ALIAS2OP(HEX_REG_ALIAS_PC, false);\n"
-            "RzILOpPure *pc = READ_REG(pkt, &pc_op, false);\n\n"
-            "// EXEC\n\n// WRITE\n"
-            "RzILOpEffect *op_ASSIGN_3 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(pc), DUP(pc)));\n"
+            """
+            // READ
+            const HexOp *Rd_op = ISA2REG(hi, 'd', true);
+            RzILOpPure *pc = U32(pkt->pkt_addr);
+
+            // EXEC
+
+            // WRITE
+            RzILOpEffect *op_ASSIGN_3 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(pc), DUP(pc)));
+            RzILOpEffect *instruction_sequence = op_ASSIGN_3;
+
+            return instruction_sequence;""".replace("  ", "")
         )
-        self.assertTrue(
-            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        self.assertEqual(
+            expected, output
         )
 
     def test_reg_alias(self):
