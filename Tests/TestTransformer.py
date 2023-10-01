@@ -714,9 +714,8 @@ class TestTransformerOutput(unittest.TestCase):
 
             // EXEC
             RzILOpPure *op_RSHIFT_0 = SHIFTR0(value, start);
-            RzILOpPure *op_NOT_2 = LOGNOT(UN(64, 0));
             RzILOpPure *op_SUB_5 = SUB(UN(32, 0x40), CAST(32, IL_FALSE, length));
-            RzILOpPure *op_RSHIFT_6 = SHIFTR0(op_NOT_2, op_SUB_5);
+            RzILOpPure *op_RSHIFT_6 = SHIFTR0(UN(64, -1), op_SUB_5);
             RzILOpPure *op_AND_7 = LOGAND(op_RSHIFT_0, op_RSHIFT_6);
 
             // WRITE
@@ -768,6 +767,75 @@ class TestTransformerOutput(unittest.TestCase):
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
         )
+
+    def test_simplify_unary_expr_neg(self):
+        # Simplify e.g. ~0x3
+        behavior = "{ uint32_t a = ~0x3;  }"
+        output = self.compile_behavior(behavior)
+        expected = """
+        // READ
+        // Declare: ut32 a;
+
+        // EXEC
+
+        // WRITE
+        RzILOpEffect *op_ASSIGN_3 = SETL("a", UN(32, -4));
+        RzILOpEffect *instruction_sequence = op_ASSIGN_3;
+        
+        return instruction_sequence;""".replace("  ", "")
+        self.assertEqual(
+            expected, output)
+
+    def test_simplify_unary_expr_pm(self):
+        behavior = "{ uint32_t a = +8 + - +5;  }"
+        output = self.compile_behavior(behavior)
+        expected = """
+        // READ
+        // Declare: ut32 a;
+
+        // EXEC
+
+        // WRITE
+        RzILOpEffect *op_ASSIGN_5 = SETL("a", UN(32, 3));
+        RzILOpEffect *instruction_sequence = op_ASSIGN_5;
+
+        return instruction_sequence;""".replace("  ", "")
+        self.assertEqual(
+            expected, output)
+
+    def test_simplify_unary_expr_minus(self):
+        behavior = "{ int32_t a = -(+0x3);  }"
+        output = self.compile_behavior(behavior)
+        expected = """
+        // READ
+        // Declare: st32 a;
+
+        // EXEC
+
+        // WRITE
+        RzILOpEffect *op_ASSIGN_3 = SETL("a", SN(32, -3));
+        RzILOpEffect *instruction_sequence = op_ASSIGN_3;
+
+        return instruction_sequence;""".replace("  ", "")
+        self.assertEqual(
+            expected, output)
+
+    def test_simplify_unary_expr_minus(self):
+        behavior = "{ uint32_t a = +10 - -2;  }"
+        output = self.compile_behavior(behavior)
+        expected = """
+        // READ
+        // Declare: ut32 a;
+
+        // EXEC
+
+        // WRITE
+        RzILOpEffect *op_ASSIGN_4 = SETL("a", UN(32, 12));
+        RzILOpEffect *instruction_sequence = op_ASSIGN_4;
+
+        return instruction_sequence;""".replace("  ", "")
+        self.assertEqual(
+            expected, output)
 
     def test_inlining_nothing(self):
         behavior = "{ int64_t a = 0; }"
@@ -978,25 +1046,6 @@ class TestTransformerOutput(unittest.TestCase):
             // WRITE
             RzILOpEffect *op_ASSIGN_3 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(pc), DUP(pc)));
             RzILOpEffect *instruction_sequence = op_ASSIGN_3;
-
-            return instruction_sequence;""".replace("  ", "")
-        )
-        self.assertEqual(
-            expected, output
-        )
-
-    def test_neg(self):
-        behavior = "{ ~(0x3); }"
-        output = self.compile_behavior(behavior)
-        expected = (
-            """
-            // READ
-
-            // EXEC
-            RzILOpPure *op_NOT_1 = LOGNOT(UN(32, 3));
-
-            // WRITE
-            RzILOpEffect *instruction_sequence = EMPTY();
 
             return instruction_sequence;""".replace("  ", "")
         )

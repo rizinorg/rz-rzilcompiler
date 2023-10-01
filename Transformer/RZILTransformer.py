@@ -617,7 +617,9 @@ class RZILTransformer(Transformer):
 
     def unary_expr(self, items):
         self.ext.set_token_meta_data("unary_expr")
-
+        result: Number = self.simplify_unary_expr(items)
+        if result:
+            return self.add_op(result)
         if items[0] == "~":
             v = self.bit_operations(items, BitOperationType.NOT)
         elif items[0] == "-":
@@ -871,11 +873,44 @@ class RZILTransformer(Transformer):
         # Return local tX
         return tmp_x
 
+    def simplify_unary_expr(self, items) -> Number | None:
+        """
+        Checks if the given unary expression can be simplified.
+        Unary expressions on Numbers can be resolved to the resulting number,
+        so we do not have to do it during IL runtime.
+        """
+        operation: str = items[0]
+        a = items[1]
+        if not isinstance(a, LetVar):
+            return None
+
+        if not isinstance(a.get_val(), int):
+            return None
+
+        val_a = a.get_val()
+        match operation:
+            case "~":
+                result = ~val_a
+                a_type = a.value_type
+            case "-":
+                result = -val_a
+                a_type = a.value_type
+                a_type.signed = True
+            case "+":
+                result = +val_a
+                a_type = a.value_type
+            case _:
+                return None
+
+        self.il_ops_holder.rm_op_by_name(a.get_name())
+        name = f'const_{"neg" if result < 0 else "pos"}_{result}'
+        return Number(name, result, a_type)
+
     def simplify_arithmetic_expr(self, items) -> Pure:
         """
         Checks if the given arithmetic expression can be simplified.
         Simple arithmetic expressions can be resolved to a single number,
-        so we do not have to do it during runtime.
+        so we do not have to do it during IL runtime.
         """
         a = items[0]
         operation: str = items[1]
