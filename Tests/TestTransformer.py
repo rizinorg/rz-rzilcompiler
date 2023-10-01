@@ -714,13 +714,14 @@ class TestTransformerOutput(unittest.TestCase):
 
             // EXEC
             RzILOpPure *op_RSHIFT_0 = SHIFTR0(value, start);
-            RzILOpPure *op_SUB_4 = SUB(UN(32, 0x40), CAST(32, IL_FALSE, length));
-            RzILOpPure *op_RSHIFT_5 = SHIFTR0(UN(64, 0), op_SUB_4);
-            RzILOpPure *op_AND_6 = LOGAND(op_RSHIFT_0, op_RSHIFT_5);
+            RzILOpPure *op_NOT_2 = LOGNOT(UN(64, 0));
+            RzILOpPure *op_SUB_5 = SUB(UN(32, 0x40), CAST(32, IL_FALSE, length));
+            RzILOpPure *op_RSHIFT_6 = SHIFTR0(op_NOT_2, op_SUB_5);
+            RzILOpPure *op_AND_7 = LOGAND(op_RSHIFT_0, op_RSHIFT_6);
 
             // WRITE
-            RzILOpEffect *set_return_val_8 = SETL("ret_val", op_AND_6);
-            RzILOpEffect *instruction_sequence = set_return_val_8;
+            RzILOpEffect *set_return_val_9 = SETL("ret_val", op_AND_7);
+            RzILOpEffect *instruction_sequence = set_return_val_9;
 
             return instruction_sequence;""".replace(
                 "  ", ""
@@ -977,6 +978,25 @@ class TestTransformerOutput(unittest.TestCase):
             // WRITE
             RzILOpEffect *op_ASSIGN_3 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(pc), DUP(pc)));
             RzILOpEffect *instruction_sequence = op_ASSIGN_3;
+
+            return instruction_sequence;""".replace("  ", "")
+        )
+        self.assertEqual(
+            expected, output
+        )
+
+    def test_neg(self):
+        behavior = "{ ~(0x3); }"
+        output = self.compile_behavior(behavior)
+        expected = (
+            """
+            // READ
+
+            // EXEC
+            RzILOpPure *op_NOT_1 = LOGNOT(UN(32, 3));
+
+            // WRITE
+            RzILOpEffect *instruction_sequence = EMPTY();
 
             return instruction_sequence;""".replace("  ", "")
         )

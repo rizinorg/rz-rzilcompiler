@@ -46,15 +46,15 @@ _argument_expr_list: assignment_expr
 ?unary_expr: postfix_expr
 	| INC_OP unary_expr
 	| DEC_OP unary_expr
-	| _unary_op cast_expr
+	| UNARY_OP cast_expr
 	| SIZEOF unary_expr
 	| SIZEOF "(" type_name ")"
 	| ALIGNOF "(" type_name ")"
 
 // Circumvent ambiguity with "&&" and "&"
-_ptr: /[^&]&[^&]/
+PTR: /[^&]&[^&]/
 
-_unary_op: _ptr
+UNARY_OP: PTR
 	| "*"
 	| "+"
 	| "-"
