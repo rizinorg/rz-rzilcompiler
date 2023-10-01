@@ -49,5 +49,5 @@ class PureExec(Pure):
             return f"DUP({self.pure_var()})"
         return self.pure_var()
 
-    def vm_id(self, write_usage):
+    def vm_id(self):
         return f'"{self.get_name()}"'

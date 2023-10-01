@@ -24,7 +24,7 @@ class Immediate(LocalVar):
             self.assign_usage = False
             self.assign_reads += 1
         else:
-            ret = f"VARL({self.vm_id(False)})"
+            ret = f"VARL({self.vm_id()})"
         self.reads += 1
         return ret
 

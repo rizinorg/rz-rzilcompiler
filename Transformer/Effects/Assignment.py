@@ -56,9 +56,9 @@ class Assignment(Effect):
         else:
             read = self.src.il_read()
         if self.type == EffectType.SETG and isinstance(self.dest, Register):
-            return f"WRITE_REG(pkt, {self.dest.vm_id(True)}, {read})"
+            return f"WRITE_REG(pkt, {self.dest.get_op_var()}, {read})"
         elif self.type == EffectType.SETL:
-            return f"SETL({self.dest.vm_id(True)}, {read})"
+            return f"SETL({self.dest.vm_id()}, {read})"
         else:
             raise NotImplementedError(
                 f"Effect type {self.type} and to {self.dest} not handled."

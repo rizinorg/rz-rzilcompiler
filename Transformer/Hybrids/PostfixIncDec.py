@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
-
+from Transformer.Pures.Register import Register
 from rzil_compiler.Transformer.Hybrids.Hybrid import HybridType, Hybrid, HybridSeqOrder
 from rzil_compiler.Transformer.Pures.GlobalVar import GlobalVar
 from rzil_compiler.Transformer.Pures.LocalVar import LocalVar
@@ -23,7 +23,9 @@ class PostfixIncDec(Hybrid):
         :return: RZIL ops to write the pure value.
         """
         if self.op_type == HybridType.INC or self.op_type == HybridType.DEC:
-            return f"SET{self.gl}({self.ops[0].vm_id(True)}, {self.il_exec()})"
+            if isinstance(self.ops[0], Register):
+                return f"WRITE_REG(pkt, {self.ops[0].get_op_var()}, {self.il_exec()})"
+            return f"SET{self.gl}({self.ops[0].vm_id()}, {self.il_exec()})"
         else:
             raise NotImplementedError(f"{self.op_type} not implemented.")
 

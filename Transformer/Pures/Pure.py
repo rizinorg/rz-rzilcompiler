@@ -49,7 +49,7 @@ class Pure:
         """Returns the C variable name which holds the IL Pure."""
         return self.get_name()
 
-    def vm_id(self, write_usage: bool) -> str:
+    def vm_id(self) -> str:
         """
         Returns the id this Pure is known to the VM as string or a variable name which holds it.
         """

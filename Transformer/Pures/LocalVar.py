@@ -25,7 +25,7 @@ class LocalVar(Pure):
     def il_read(self) -> str:
         """Returns the code to read the local variable for the VM."""
         self.reads += 1
-        return f"VARL({self.vm_id(False)})"
+        return f"VARL({self.vm_id()})"
 
-    def vm_id(self, write_usage: bool) -> str:
+    def vm_id(self) -> str:
         return f'"{self.get_name()}"'

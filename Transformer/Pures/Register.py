@@ -59,49 +59,38 @@ class Register(GlobalVar):
             return f"&{var}"
         return var
 
+    def vm_id(self):
+        return self.get_op_var()
+
     def pure_var(self):
         var = GlobalVar.pure_var(self)
         return var.replace(":", "_")
-
-    def vm_id(self, write_usage: bool):
-        if write_usage:
-            return self.get_op_var()
-        return self.get_op_var()
 
     def il_init_var(self):
         if self.get_name() == "pc":
             return "RzILOpPure *pc = U32(pkt->pkt_addr);"
         # Registers which are only written do not need their own RzILOpPure.
         if self.access == RegisterAccessType.W or self.access == RegisterAccessType.PW:
-            return self.il_isa_to_assoc_name(True)
-        elif (
-            self.access == RegisterAccessType.RW
-            or self.access == RegisterAccessType.PRW
-        ):
-            init = self.il_isa_to_assoc_name(True) + "\n"
+            return self.il_isa_to_assoc_name()
         else:
-            init = self.il_isa_to_assoc_name(False) + "\n"
+            init = self.il_isa_to_assoc_name() + "\n"
 
         init += f"RzILOpPure *{self.pure_var()} = READ_REG(pkt, {self.get_op_var()}, {str(self.is_new).lower()});"
         return init
 
-    def il_isa_to_assoc_name(self, write_usage: bool) -> str:
-        """Returns code to: Translate a placeholder ISA name of an register (like Rs)
-        to the real register name of the current instruction.
-        E.g. Rs -> "R3"
-        """
+    def il_isa_to_assoc_name(self) -> str:
         if self.is_reg_alias:
-            return self.il_reg_alias_to_op(write_usage)
+            return self.il_reg_alias_to_op()
         elif self.is_explicit:
-            return self.il_explicit_reg_to_op(write_usage)
+            return self.il_explicit_reg_to_op()
         return (
             f"const HexOp *{self.get_op_var()} = {isa_to_reg_fnc}("
             f'{", ".join(isa_to_reg_args)}'
             f", '{self.get_isa_name()[1]}'"
-            f", {str(self.is_new or write_usage).lower()});"
+            f", {str(self.is_new).lower()});"
         )
 
-    def il_reg_alias_to_op(self, write_usage: bool) -> str:
+    def il_reg_alias_to_op(self) -> str:
         """Some registers are an alias for another register (PC = C9, GP = C11, SP = R29 etc.)
         Unfortunately those alias can change from ISA version to ISA version.
         So the plugin needs to translate these. Here we return the code for this translation.
@@ -109,11 +98,11 @@ class Register(GlobalVar):
         return (
             f"const HexOp {self.get_op_var(deref=False)} = {isa_alias_to_op}("
             f'{", ".join(isa_alias_to_op_args)}'
-            f'{", " if isa_alias_to_op_args else ""}{self.get_alias_enum(self.name)}'
-            f", {str(self.is_new or write_usage).lower()});"
+            f'{", " if isa_alias_to_op_args else ""}{self.get_alias_enum()}'
+            f", {str(self.is_new).lower()});"
         )
 
-    def il_explicit_reg_to_op(self, write_usage: bool) -> str:
+    def il_explicit_reg_to_op(self) -> str:
         """Some registers are explicitly named (P0 etc.). Here we resolve them."""
         assert self.reg_number is not None
         return (
@@ -121,7 +110,7 @@ class Register(GlobalVar):
             f'{", ".join(isa_explicit_to_op_args)}'
             f'{", " if isa_explicit_to_op_args else ""}'
             f"{self.reg_number}, {self.reg_class}"
-            f", {str(self.is_new or write_usage).lower()});"
+            f", {str(self.is_new).lower()});"
         )
 
     def il_read(self) -> str:
@@ -130,7 +119,7 @@ class Register(GlobalVar):
         # So if this method is called on a write-only register we return the value of the .new register.
         # Examples: a2_svaddh, a4_vcmpbgt
         if self.access is RegisterAccessType.W or self.access is RegisterAccessType.PW:
-            return f"READ_REG(pkt, {self.get_op_var()}, true)"
+            return f"READ_REG(pkt, {self.get_op_var()}, false)"
         if self.access == RegisterAccessType.UNKNOWN:
             self.access = RegisterAccessType.R
         return GlobalVar.il_read(self).replace(":", "_")
@@ -157,9 +146,11 @@ class Register(GlobalVar):
             else:
                 self.access = RegisterAccessType.W
 
-    @staticmethod
-    def get_alias_enum(alias: str) -> str:
-        return f"HEX_REG_ALIAS_{alias.upper()}"
+    def get_alias_enum(self) -> str:
+        name = self.get_name().upper()
+        if self.is_new:
+            name = name.replace("_NEW", "")
+        return f"HEX_REG_ALIAS_{name}"
 
     def get_reg_class(self) -> str | None:
         """

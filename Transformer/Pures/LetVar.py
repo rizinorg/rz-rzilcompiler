@@ -34,9 +34,9 @@ class LetVar(Pure):
         self.reads += 1
         if self.inlined:
             return self.get_rzil_val()
-        return f"VARLP({self.vm_id(False)})"
+        return f"VARLP({self.vm_id()})"
 
-    def vm_id(self, write_usage: bool):
+    def vm_id(self):
         return f'"{self.get_name()}"'
 
 
@@ -85,7 +85,7 @@ def resolve_lets(operands: list[Pure], consumer) -> str:
     code = ""
     for let in [l for l in lets if not l.inlined]:
         let_read = let.pure_var() if let.reads < 1 else f"DUP({let.pure_var()})"
-        code += f"LET({let.vm_id(True)}, {let_read}, "
+        code += f"LET({let.vm_id()}, {let_read}, "
         let.reads += 1
     code += consumer.il_exec() if isinstance(consumer, PureExec) else consumer.il_read()
     code += ")" * num_lets

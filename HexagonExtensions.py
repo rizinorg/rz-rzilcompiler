@@ -94,10 +94,9 @@ class HexagonTransformerExtension(TransformerExtension):
             is_new = True
             self.set_token_meta_data("new_reg")
         holder = self.transformer.il_ops_holder
-        if alias in holder.read_ops:
-            return holder.read_ops[alias]
-        elif is_new and f"{alias}_tmp" in holder.read_ops:
-            return holder.read_ops[f"{alias}_tmp"]
+        given_name = f"{alias}{'_new' if is_new else ''}"
+        if given_name in holder.read_ops:
+            return holder.read_ops[given_name]
 
         if alias == "upcycle" or alias == "pktcount" or alias == "utimer":
             size = 64

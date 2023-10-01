@@ -30,7 +30,7 @@ class Parameter(Pure):
             return self.get_rzil_val()
         return f"DUP({self.get_rzil_val()})"
 
-    def vm_id(self, write_usage: bool):
+    def vm_id(self):
         return self.get_rzil_val()
 
     def get_rzi_decl(self):
