@@ -122,8 +122,6 @@ class HexagonTransformerExtension(TransformerExtension):
             name = items[-1]
         else:
             name = "".join(items)
-        if name in holder.read_ops:
-            return holder.read_ops[name]
 
         if is_explicit:
             access_t = RegisterAccessType.UNKNOWN

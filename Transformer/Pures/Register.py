@@ -47,7 +47,7 @@ class Register(GlobalVar):
             GlobalVar.__init__(self, name + "_new", v_type)
         else:
             GlobalVar.__init__(self, name, v_type)
-        self.set_isa_name(name)
+        self.set_isa_name(self.name)
         self.reg_number = self.get_reg_num_from_name(self.get_isa_name())
         self.reg_class = self.get_reg_class()
 
@@ -82,7 +82,7 @@ class Register(GlobalVar):
         else:
             init = self.il_isa_to_assoc_name(False) + "\n"
 
-        init += f"RzILOpPure *{self.pure_var()} = READ_REG(pkt, {self.get_op_var()}, false);"
+        init += f"RzILOpPure *{self.pure_var()} = READ_REG(pkt, {self.get_op_var()}, {str(self.is_new).lower()});"
         return init
 
     def il_isa_to_assoc_name(self, write_usage: bool) -> str:
@@ -136,7 +136,7 @@ class Register(GlobalVar):
         return GlobalVar.il_read(self).replace(":", "_")
 
     def get_pred_num(self) -> int:
-        num = self.get_name()[-1]
+        num = re.findall(r"\d", self.get_name())[0]
         if self.get_name()[0].upper() != "P" or num not in ["0", "1", "2", "3"]:
             raise NotImplementedError(
                 f"This function should only called for explicit predicate register. This is {self.get_name()}"

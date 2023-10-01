@@ -911,6 +911,28 @@ class TestTransformerOutput(unittest.TestCase):
             expected, output
         )
 
+    def test_reg_explicit_new(self):
+        behavior = "{ P0 = P0_NEW; }"
+        output = self.compile_behavior(behavior)
+        expected = (
+            """
+            // READ
+            const HexOp P0_op = EXPLICIT2OP(0, HEX_REG_CLASS_PRED_REGS, true);
+            const HexOp P0_new_op = EXPLICIT2OP(0, HEX_REG_CLASS_PRED_REGS, true);
+            RzILOpPure *P0_new = READ_REG(pkt, &P0_new_op, true);
+
+            // EXEC
+
+            // WRITE
+            RzILOpEffect *op_ASSIGN_2 = WRITE_REG(pkt, &P0_op, P0_new);
+            RzILOpEffect *instruction_sequence = op_ASSIGN_2;
+
+            return instruction_sequence;""".replace("  ", "")
+        )
+        self.assertEqual(
+            expected, output
+        )
+
     def test_reg_nums(self):
         self.assertEqual(Register.get_reg_num_from_name("V31:30"), 30)
         self.assertEqual(Register.get_reg_num_from_name("P0"), 0)
