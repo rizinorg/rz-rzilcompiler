@@ -316,18 +316,17 @@ class RZILTransformer(Transformer):
         return self.init_a_cast(val_type, cast_i)
 
     def number(self, items):
-        # Numbers of the form -10ULL
         self.ext.set_token_meta_data("number")
 
         v_type = get_value_type_by_c_number(items)
-        num_str = (str(items[0]) if items[0] else "") + str(items[1])
-        name = f'const_{"neg" if items[0] == "-" else "pos"}{items[1]}{items[2] if items[2] else ""}'
+        num_str = str(items[0])
+        name = f'const_{items[0]}{items[1] if items[1] else ""}'
 
         holder = self.il_ops_holder
         if name in holder.read_ops:
             return holder.read_ops[name]
         return self.add_op(
-            Number(name, int(num_str, get_num_base_by_token(items[1])), v_type)
+            Number(name, int(num_str, get_num_base_by_token(items[0])), v_type)
         )
 
     def declaration_specifiers(self, items):

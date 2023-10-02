@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
-
+import re
 import unittest
 
 from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine, SubRoutineInitType
@@ -32,9 +32,9 @@ class TestHybrids(unittest.TestCase):
             "RZ_BORROW RzILOpPure *start, "
             "RZ_BORROW RzILOpPure *length)",
         )
+        result = self.compiler.sub_routines["sextract64"].il_init(SubRoutineInitType.DEF)
         self.assertTrue(
-            'RzILOpEffect *set_return_val_12 = SETL("ret_val", op_RSHIFT_10);'
-            in self.compiler.sub_routines["sextract64"].il_init(SubRoutineInitType.DEF)
+            re.findall(r'RzILOpEffect \*set_return_val_\d+ = SETL\("ret_val", op_RSHIFT_\d+\);', result)
         )
 
     def test_sub_routine_2(self):

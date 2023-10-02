@@ -245,15 +245,15 @@ def get_c_type_by_value_type(val_type: ValueType) -> str:
 def get_value_type_by_c_number(items: [Token]) -> ValueType:
     """Returns the value type for a list of parser tree tokens of a number."""
     try:
-        val = int(items[1], get_num_base_by_token(items[1]))
+        val = int(items[0], get_num_base_by_token(items[0]))
     except Exception as e:
-        raise NotImplementedError(f"Can not determine number format.\n\n{e}")
+        raise NotImplementedError(f"Can not determine number format:\n{e}")
 
-    prefix = items[0] if items[0] else ""
-    postfix = items[2] if items[2] else ""
+    postfix = items[1] if items[1] else ""
 
     c_signed_types_postfix = ["LL"]
     c_unsigned_types_postfix = ["ULL", "U"]
+    c_64bit_postfix = ["LL", "ULL"]
 
     if postfix != "" and (
         postfix not in c_signed_types_postfix
@@ -261,12 +261,12 @@ def get_value_type_by_c_number(items: [Token]) -> ValueType:
     ):
         raise NotImplementedError(f"Unsupported number postfix {postfix}")
 
-    size = 32
-    signed = False
-    if val < 0 or prefix == "-" or postfix in c_signed_types_postfix:
-        signed |= True
+    signed = True
+    if postfix in c_unsigned_types_postfix:
+        signed = False
 
-    if postfix == "ULL" or postfix == "LL":
+    size = 32
+    if postfix in c_64bit_postfix:
         size = 64
     return ValueType(signed, size)
 

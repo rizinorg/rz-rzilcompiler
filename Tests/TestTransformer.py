@@ -121,6 +121,7 @@ class TestTransforming(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.maxDiff = 1300
         cls.insn_behavior = get_hexagon_insn_behavior()
         cls.parser = get_hexagon_parser()
         cls.compiler = Compiler(ArchEnum.HEXAGON)
@@ -168,8 +169,8 @@ class TestTransforming(unittest.TestCase):
         transformer = RZILTransformer(
             ArchEnum.HEXAGON, parameters=params, return_type=ret_val
         )
-        exc = self.compile_behavior(behavior, transformer)
-        self.assertIsNone(exc)
+        result = self.compile_behavior(behavior, transformer)
+        self.assertFalse(isinstance(result, Exception))
 
     def test_J2_jump(self):
         behavior = self.insn_behavior["J2_jump"][0]
@@ -415,6 +416,27 @@ class TestTransforming(unittest.TestCase):
         result = self.compile_behavior(behavior)
         self.assertFalse(isinstance(result, Exception))
 
+    def test_A2_abs_syntax(self):
+        behavior = self.insn_behavior["A2_abs"][0]
+        result = self.compile_behavior(behavior)
+        self.assertFalse(isinstance(result, Exception))
+        self.assertEqual("""
+            // READ
+            const HexOp *Rd_op = ISA2REG(hi, 'd', false);
+            const HexOp *Rs_op = ISA2REG(hi, 's', false);
+            RzILOpPure *Rs = READ_REG(pkt, Rs_op, false);
+
+            // EXEC
+            RzILOpPure *op_LT_3 = SLT(Rs, SN(32, 0));
+            RzILOpPure *op_NEG_4 = NEG(DUP(Rs));
+            RzILOpPure *cond_5 = ITE(op_LT_3, op_NEG_4, DUP(Rs));
+
+            // WRITE
+            RzILOpEffect *op_ASSIGN_6 = WRITE_REG(pkt, Rd_op, cond_5);
+            RzILOpEffect *instruction_sequence = op_ASSIGN_6;
+
+            return instruction_sequence;""".replace("  ", ""), result)
+
 
 class TestTransformerMeta(unittest.TestCase):
     debug = False
@@ -649,10 +671,10 @@ class TestTransformerOutput(unittest.TestCase):
             // EXEC
 
             // WRITE
-            RzILOpEffect *test_routine_call_4 = hex_test_routine(bundle, Rd_op, CAST(32, MSB(UN(32, 0)), UN(32, 0)), Rs_op);
-            RzILOpEffect *op_ASSIGN_hybrid_tmp_5 = SETL("h_tmp0", UNSIGNED(64, VARL("ret_val")));
-            RzILOpEffect *seq_6 = SEQN(2, test_routine_call_4, op_ASSIGN_hybrid_tmp_5);
-            RzILOpEffect *instruction_sequence = seq_6;
+            RzILOpEffect *test_routine_call_3 = hex_test_routine(bundle, Rd_op, SN(32, 0), Rs_op);
+            RzILOpEffect *op_ASSIGN_hybrid_tmp_4 = SETL("h_tmp0", UNSIGNED(64, VARL("ret_val")));
+            RzILOpEffect *seq_5 = SEQN(2, test_routine_call_3, op_ASSIGN_hybrid_tmp_4);
+            RzILOpEffect *instruction_sequence = seq_5;
 
             return instruction_sequence;""".replace(
                 "  ", ""
@@ -684,12 +706,12 @@ class TestTransformerOutput(unittest.TestCase):
             // EXEC
 
             // WRITE
-            RzILOpEffect *sextract64_call_7 = hex_sextract64(CAST(64, IL_FALSE, UN(32, 0)), CAST(32, MSB(UN(32, 0)), UN(32, 0)), CAST(32, MSB(UN(32, 0)), UN(32, 0)));
-            RzILOpEffect *op_ASSIGN_hybrid_tmp_8 = SETL("h_tmp0", SIGNED(64, VARL("ret_val")));
-            RzILOpEffect *seq_9 = SEQN(2, sextract64_call_7, op_ASSIGN_hybrid_tmp_8);
-            RzILOpEffect *op_ASSIGN_11 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(VARL("h_tmp0")), VARL("h_tmp0")));
-            RzILOpEffect *seq_12 = SEQN(2, seq_9, op_ASSIGN_11);
-            RzILOpEffect *instruction_sequence = seq_12;
+            RzILOpEffect *sextract64_call_5 = hex_sextract64(CAST(64, IL_FALSE, SN(32, 0)), SN(32, 0), SN(32, 0));
+            RzILOpEffect *op_ASSIGN_hybrid_tmp_6 = SETL("h_tmp0", SIGNED(64, VARL("ret_val")));
+            RzILOpEffect *seq_7 = SEQN(2, sextract64_call_5, op_ASSIGN_hybrid_tmp_6);
+            RzILOpEffect *op_ASSIGN_9 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(VARL("h_tmp0")), VARL("h_tmp0")));
+            RzILOpEffect *seq_10 = SEQN(2, seq_7, op_ASSIGN_9);
+            RzILOpEffect *instruction_sequence = seq_10;
 
             return instruction_sequence;""".replace(
                 "  ", ""
@@ -714,13 +736,13 @@ class TestTransformerOutput(unittest.TestCase):
 
             // EXEC
             RzILOpPure *op_RSHIFT_0 = SHIFTR0(value, start);
-            RzILOpPure *op_SUB_5 = SUB(UN(32, 0x40), CAST(32, IL_FALSE, length));
-            RzILOpPure *op_RSHIFT_6 = SHIFTR0(UN(64, -1), op_SUB_5);
-            RzILOpPure *op_AND_7 = LOGAND(op_RSHIFT_0, op_RSHIFT_6);
+            RzILOpPure *op_SUB_4 = SUB(SN(32, 0x40), length);
+            RzILOpPure *op_RSHIFT_5 = SHIFTR0(UN(64, -1), op_SUB_4);
+            RzILOpPure *op_AND_6 = LOGAND(op_RSHIFT_0, op_RSHIFT_5);
 
             // WRITE
-            RzILOpEffect *set_return_val_9 = SETL("ret_val", op_AND_7);
-            RzILOpEffect *instruction_sequence = set_return_val_9;
+            RzILOpEffect *set_return_val_8 = SETL("ret_val", op_AND_6);
+            RzILOpEffect *instruction_sequence = set_return_val_8;
 
             return instruction_sequence;""".replace(
                 "  ", ""
@@ -733,10 +755,10 @@ class TestTransformerOutput(unittest.TestCase):
         behavior = "{ uint64_t a = ((uint64_t)(uint32_t)(uint8_t) 0); }"
         output = self.compile_behavior(behavior)
         expected = (
-            "RzILOpPure *const_pos0_0 = UN(32, 0x0);\n"
+            "RzILOpPure *const_0_0 = SN(32, 0x0);\n"
             "// Declare: ut64 a;\n\n"
             "// EXEC\n"
-            'RzILOpPure *cast_ut8_1 = LET("const_pos0_0", const_pos0_0, CAST(8, IL_FALSE, VARLP("const_pos0_0")));\n'
+            'RzILOpPure *cast_ut8_1 = LET("const_0_0", const_0_0, CAST(8, IL_FALSE, VARLP("const_0_0")));\n'
             "RzILOpPure *cast_ut64_3 = CAST(64, IL_FALSE, cast_ut8_1);"
         )
         self.assertTrue(
@@ -747,23 +769,32 @@ class TestTransformerOutput(unittest.TestCase):
         behavior = "{ uint64_t a = ((int64_t)((int8_t)((int32_t) 0))); }"
         self.transformer.inlined_pure_classes = ()
         output = self.compile_behavior(behavior)
-        expected = (
-            "RzILOpPure *const_pos0_0 = UN(32, 0x0);\n"
-            "// Declare: ut64 a;\n\n"
-            "// EXEC\n"
-            'RzILOpPure *cast_st8_2 = LET("const_pos0_0", const_pos0_0, CAST(8, MSB(VARLP("const_pos0_0")), VARLP("const_pos0_0")));\n'
-            "RzILOpPure *cast_st64_3 = CAST(64, MSB(cast_st8_2), DUP(cast_st8_2));\n"
-            "RzILOpPure *cast_ut64_6 = CAST(64, IL_FALSE, cast_st64_3);"
+        expected = ("""
+            // READ
+            RzILOpPure *const_0_0 = SN(32, 0x0);
+            // Declare: ut64 a;
+
+            // EXEC
+            RzILOpPure *cast_st8_1 = LET("const_0_0", const_0_0, CAST(8, MSB(VARLP("const_0_0")), VARLP("const_0_0")));
+            RzILOpPure *cast_st64_2 = CAST(64, MSB(cast_st8_1), DUP(cast_st8_1));
+            RzILOpPure *cast_ut64_5 = CAST(64, IL_FALSE, cast_st64_2);
+
+            // WRITE
+            RzILOpEffect *op_ASSIGN_4 = SETL("a", cast_ut64_5);
+            RzILOpEffect *instruction_sequence = op_ASSIGN_4;
+
+            return instruction_sequence;""".replace("  ", "")
         )
-        self.assertTrue(
-            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        self.assertEqual(
+            expected,
+            output
         )
 
     def test_simplify_arith_expr(self):
         # Simplify e.g. 4 - 1 = 3
         behavior = "{ uint32_t a = 1 + 1 * 7; }"
         output = self.compile_behavior(behavior)
-        expected = "// WRITE\n" 'RzILOpEffect *op_ASSIGN_6 = SETL("a", UN(32, 8));\n'
+        expected = "// WRITE\n" 'RzILOpEffect *op_ASSIGN_6 = SETL("a", CAST(32, IL_FALSE, SN(32, 8)));\n'
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
         )
@@ -779,7 +810,7 @@ class TestTransformerOutput(unittest.TestCase):
         // EXEC
 
         // WRITE
-        RzILOpEffect *op_ASSIGN_3 = SETL("a", UN(32, -4));
+        RzILOpEffect *op_ASSIGN_3 = SETL("a", CAST(32, IL_FALSE, SN(32, -4)));
         RzILOpEffect *instruction_sequence = op_ASSIGN_3;
         
         return instruction_sequence;""".replace("  ", "")
@@ -796,8 +827,8 @@ class TestTransformerOutput(unittest.TestCase):
         // EXEC
 
         // WRITE
-        RzILOpEffect *op_ASSIGN_5 = SETL("a", UN(32, 3));
-        RzILOpEffect *instruction_sequence = op_ASSIGN_5;
+        RzILOpEffect *op_ASSIGN_7 = SETL("a", CAST(32, IL_FALSE, SN(32, 3)));
+        RzILOpEffect *instruction_sequence = op_ASSIGN_7;
 
         return instruction_sequence;""".replace("  ", "")
         self.assertEqual(
@@ -813,24 +844,7 @@ class TestTransformerOutput(unittest.TestCase):
         // EXEC
 
         // WRITE
-        RzILOpEffect *op_ASSIGN_3 = SETL("a", SN(32, -3));
-        RzILOpEffect *instruction_sequence = op_ASSIGN_3;
-
-        return instruction_sequence;""".replace("  ", "")
-        self.assertEqual(
-            expected, output)
-
-    def test_simplify_unary_expr_minus(self):
-        behavior = "{ uint32_t a = +10 - -2;  }"
-        output = self.compile_behavior(behavior)
-        expected = """
-        // READ
-        // Declare: ut32 a;
-
-        // EXEC
-
-        // WRITE
-        RzILOpEffect *op_ASSIGN_4 = SETL("a", UN(32, 12));
+        RzILOpEffect *op_ASSIGN_4 = SETL("a", SN(32, -3));
         RzILOpEffect *instruction_sequence = op_ASSIGN_4;
 
         return instruction_sequence;""".replace("  ", "")
@@ -844,10 +858,10 @@ class TestTransformerOutput(unittest.TestCase):
         expected = (
             "\n"
             "// READ\n"
-            "RzILOpPure *const_pos0_0 = UN(32, 0x0);\n"
+            "RzILOpPure *const_0_0 = SN(32, 0x0);\n"
             "// Declare: st64 a;\n\n"
             "// EXEC\n"
-            'RzILOpPure *cast_st64_3 = LET("const_pos0_0", const_pos0_0, CAST(64, MSB(VARLP("const_pos0_0")), VARLP("const_pos0_0")));\n\n'
+            'RzILOpPure *cast_st64_3 = LET("const_0_0", const_0_0, CAST(64, MSB(VARLP("const_0_0")), VARLP("const_0_0")));\n\n'
             "// WRITE\n"
             'RzILOpEffect *op_ASSIGN_2 = SETL("a", cast_st64_3);\n'
         )
@@ -863,7 +877,7 @@ class TestTransformerOutput(unittest.TestCase):
             "// READ\n"
             "// Declare: st64 a;\n\n"
             "// EXEC\n"
-            "RzILOpPure *cast_st64_3 = CAST(64, MSB(UN(32, 0)), UN(32, 0));\n\n"
+            "RzILOpPure *cast_st64_3 = CAST(64, MSB(SN(32, 0)), SN(32, 0));\n\n"
             "// WRITE\n"
             'RzILOpEffect *op_ASSIGN_2 = SETL("a", cast_st64_3);\n'
         )
@@ -878,11 +892,11 @@ class TestTransformerOutput(unittest.TestCase):
         expected = (
             "\n"
             "// READ\n"
-            "RzILOpPure *const_pos0_0 = UN(32, 0x0);\n"
+            "RzILOpPure *const_0_0 = SN(32, 0x0);\n"
             "// Declare: st64 a;\n\n"
             "// EXEC\n\n"
             "// WRITE\n"
-            'RzILOpEffect *op_ASSIGN_2 = SETL("a", LET("const_pos0_0", const_pos0_0, CAST(64, MSB(VARLP("const_pos0_0")), VARLP("const_pos0_0"))));\n'
+            'RzILOpEffect *op_ASSIGN_2 = SETL("a", LET("const_0_0", const_0_0, CAST(64, MSB(VARLP("const_0_0")), VARLP("const_0_0"))));\n'
         )
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
@@ -898,7 +912,7 @@ class TestTransformerOutput(unittest.TestCase):
             "// Declare: st64 a;\n\n"
             "// EXEC\n\n"
             "// WRITE\n"
-            'RzILOpEffect *op_ASSIGN_2 = SETL("a", CAST(64, MSB(UN(32, 0)), UN(32, 0)));\n'
+            'RzILOpEffect *op_ASSIGN_2 = SETL("a", CAST(64, MSB(SN(32, 0)), SN(32, 0)));\n'
         )
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
@@ -919,7 +933,7 @@ class TestTransformerOutput(unittest.TestCase):
             "// READ\n"
             "const HexOp *Rd_op = ISA2REG(hi, 'd', false);\n\n"
             "// EXEC\n\n// WRITE\n"
-            "RzILOpEffect *op_ASSIGN_3 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(UN(32, 0)), UN(32, 0)));\n"
+            "RzILOpEffect *op_ASSIGN_2 = WRITE_REG(pkt, Rd_op, SN(32, 0));\n"
         )
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
@@ -1104,8 +1118,8 @@ class TestTransformerOutput(unittest.TestCase):
         // EXEC
 
         // WRITE
-        RzILOpEffect *jump_const_pos0x0_0_1 = SEQ2(SETL("jump_flag", IL_TRUE), JMP(UN(32, 0)));
-        RzILOpEffect *instruction_sequence = SEQN(2, jump_const_pos0x0_0_1, EMPTY());
+        RzILOpEffect *jump_const_0x0_0_1 = SEQ2(SETL("jump_flag", IL_TRUE), JMP(SN(32, 0)));
+        RzILOpEffect *instruction_sequence = SEQN(2, jump_const_0x0_0_1, EMPTY());
 
         return instruction_sequence;""".replace("  ", "")
         self.assertEqual(

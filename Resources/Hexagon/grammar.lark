@@ -396,7 +396,7 @@ _reg: REG_TYPE (SRC_REG | DEST_REG | SRC_DEST_REG)
 reg_alias: /[A-Z0-9]+/ [reg_alias_new_postfix]
 reg_alias_new_postfix: "_NEW"
 
-?number: [NUM_SIGN] (HEX_NUMBER | DEC_NUMBER) [INT_POST_TYPE]
+?number: (HEX_NUMBER | DEC_NUMBER) [INT_POST_TYPE]
         | float_number
 
 float_number: COMMON_FLOAT
@@ -426,7 +426,6 @@ SRC_DEST_REG_PAIR: "xx" | "yy"
 INT_POST_TYPE: "LL" | "ULL" | "U"
 HEX_NUMBER: /0x[\da-f]*/i
 DEC_NUMBER: /0|[1-9][\d_]*/i
-NUM_SIGN: /[-+]/i
 
 SIGN_TYPE: /[su]/
 BIT_WIDTH: "1" | "2" | "4" | "8" | "16" | "32" | "64"
