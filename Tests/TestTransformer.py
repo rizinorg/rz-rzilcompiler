@@ -172,6 +172,11 @@ class TestTransforming(unittest.TestCase):
         result = self.compile_behavior(behavior, transformer)
         self.assertFalse(isinstance(result, Exception))
 
+    def test_S2_storerinew_io(self):
+        behavior = self.insn_behavior["S2_storerinew_io"][0]
+        result = self.compile_behavior(behavior)
+        self.assertFalse(isinstance(result, Exception))
+
     def test_J2_jump(self):
         behavior = self.insn_behavior["J2_jump"][0]
         result = self.compile_behavior(behavior)
@@ -1087,6 +1092,34 @@ class TestTransformerOutput(unittest.TestCase):
             // WRITE
             RzILOpEffect *op_ASSIGN_3 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(pc), DUP(pc)));
             RzILOpEffect *instruction_sequence = op_ASSIGN_3;
+
+            return instruction_sequence;""".replace("  ", "")
+        )
+        self.assertEqual(
+            expected, output
+        )
+
+    def test_n_reg(self):
+        behavior = "{(siV); EA = RsV + siV; mem_store_u32(EA, (NtN)); }"
+        output = self.compile_behavior(behavior)
+        expected = (
+            """
+            // READ
+            RzILOpPure *s = SN(32, (st32) ISA2IMM(hi, 's'));
+            // Declare: ut32 EA;
+            const HexOp *Rs_op = ISA2REG(hi, 's', false);
+            RzILOpPure *Rs = READ_REG(pkt, Rs_op, false);
+            const HexOp *Nt_new_op = ISA2REG(hi, 't', true);
+            RzILOpPure *Nt_new = READ_REG(pkt, Nt_new_op, true);
+
+            // EXEC
+            RzILOpPure *op_ADD_4 = ADD(Rs, VARL("s"));
+
+            // WRITE
+            RzILOpEffect *imm_assign_0 = SETL("s", s);
+            RzILOpEffect *op_ASSIGN_6 = SETL("EA", CAST(32, IL_FALSE, op_ADD_4));
+            RzILOpEffect *ms_cast_ut32_8_9 = STOREW(VARL("EA"), CAST(32, IL_FALSE, Nt_new));
+            RzILOpEffect *instruction_sequence = SEQN(3, imm_assign_0, op_ASSIGN_6, ms_cast_ut32_8_9);
 
             return instruction_sequence;""".replace("  ", "")
         )

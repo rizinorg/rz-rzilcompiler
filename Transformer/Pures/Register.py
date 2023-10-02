@@ -164,7 +164,7 @@ class Register(GlobalVar):
         reg_name = self.get_isa_name()
         reg_class = "HEX_REG_CLASS_"
         match reg_name[0].upper():
-            case "R":
+            case "R" | "N":
                 reg_class += "INT_REGS"
             case "P":
                 reg_class += "PRED_REGS"
