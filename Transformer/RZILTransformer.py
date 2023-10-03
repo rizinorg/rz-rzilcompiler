@@ -268,6 +268,9 @@ class RZILTransformer(Transformer):
         ta: Pure = items[1]
         return self.chk_hybrid_dep(self.add_op(Jump(f"jump_{ta.pure_var()}", ta)))
 
+    def nop(self, items):
+        return self.add_op(NOP("nop"))
+
     def type_specifier(self, items):
         self.ext.set_token_meta_data("data_type")
         return self.ext.get_value_type_by_resource_type(items)
@@ -836,12 +839,17 @@ class RZILTransformer(Transformer):
             return effect
         return self.add_op(Sequence(f"seq", hybrid_deps + [effect]))
 
-    def resolve_hybrid(self, hybrid: Hybrid) -> Pure:
+    def resolve_hybrid(self, hybrid: Hybrid) -> Pure | Hybrid:
         """Splits a hybrid in a Pure and Effect part.
         The Pure is assigned to a LocalVar. The LocalVar gets returned.
         The hybrids effect and the assignment of the LocalVar are saved to a list and used later when
         the dependent effect is created.
+
+        If the hybrid is a sub-routine with a return type of void, this returns the hybrid.
         """
+        if hybrid.value_type.group & VTGroup.VOID:
+            return hybrid
+
         tmp_x_name = f"h_tmp{self.hybrid_op_count}"
         self.hybrid_op_count += 1
         if hybrid.seq_order == HybridSeqOrder.EXEC_ONLY:

@@ -1127,6 +1127,28 @@ class TestTransformerOutput(unittest.TestCase):
             expected, output
         )
 
+    def test_trap(self):
+        behavior = "{ trap(0, 0); }"
+        self.assertEqual(self.compiler.sub_routines["trap"].body,
+                         """{\nreturn NOP();\n}""".replace("  ", ""))
+        tree = self.compiler.parser.parse(behavior)
+        output = self.compiler.transformer.transform(tree)
+        expected = (
+            """
+            // READ
+
+            // EXEC
+
+            // WRITE
+            RzILOpEffect *trap_call_2 = hex_trap(SN(32, 0), SN(32, 0));
+            RzILOpEffect *instruction_sequence = trap_call_2;
+
+            return instruction_sequence;""".replace("  ", "")
+        )
+        self.assertEqual(
+            expected, output
+        )
+
     def test_reg_alias(self):
         behavior = "{ RdV = HEX_REG_ALIAS_USR; }"
         output = self.compile_behavior(behavior)

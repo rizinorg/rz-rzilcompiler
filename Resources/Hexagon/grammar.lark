@@ -9,8 +9,11 @@ MEM_LOAD.10: "mem_load_"
 MEM_STORE.10: "mem_store_"
 WRITE_PRED.10: "WRITE_PRED"
 JUMP.10: "JUMP"
+NOP: "__NOP"
 
 jump: JUMP "(" expr ")"
+    | nop
+nop: NOP
 
 mem_load: MEM_LOAD SIGN_TYPE BIT_WIDTH "(" _argument_expr_list ")"
 

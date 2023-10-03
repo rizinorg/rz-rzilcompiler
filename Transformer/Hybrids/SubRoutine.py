@@ -41,7 +41,7 @@ class SubRoutine(Hybrid):
             code = "HexPkt *pkt = bundle->pkt;\n" + code
         if re.search(r"\Whi\W", code):
             code = "const HexInsn *hi = bundle->insn;\n" + code
-        return " {\n" + code + "\n}"
+        return "{\n" + code + "\n}"
 
     def get_parameter_value_types(self) -> list[ValueType]:
         """Returns the parameter value types as ordered list (left to right)."""

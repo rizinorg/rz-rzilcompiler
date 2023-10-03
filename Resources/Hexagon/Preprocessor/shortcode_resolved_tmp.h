@@ -1,4 +1,4 @@
-#line 403 "Resources/Hexagon/Preprocessor/combined.h"
+#line 403 "rzil_compiler/Resources/Hexagon/Preprocessor/combined.h"
 insn(J2_jump, {(riV); riV = (riV & ~(4 - 1)); JUMP((HEX_REG_ALIAS_PC)+riV);})
 insn(J2_jumpr, {JUMP(RsV);})
 insn(J2_jumprh, {JUMP(RsV);})
@@ -1585,7 +1585,7 @@ insn(S2_ct0p, {RdV = clo64(~revbit64(RssV));})
 insn(S2_ct1p, {RdV = clo64(revbit64(RssV));})
 insn(S2_interleave, {RddV = interleave(((int64_t)((int32_t)((RssV >> ((1) * 32)) & 0x0ffffffffLL))), ((int64_t)((int32_t)((RssV >> ((0) * 32)) & 0x0ffffffffLL))));})
 insn(S2_deinterleave, {RddV = deinterleave(RssV);})
-insn(J2_trap0, helper_raise_exception(env, HEX_EXCP_TRAP0);)
+insn(J2_trap0, trap(0, uiV);)
 insn(J2_pause, {;})
 insn(Y2_icinva, {do { EA = (RsV); } while (0); fICINVA(EA);})
 insn(Y2_isync, {fISYNC();})

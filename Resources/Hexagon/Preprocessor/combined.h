@@ -292,7 +292,7 @@
 #define fHIDE(A) A
 #define fCONSTLL(A) A##LL
 #define fECHO(A) (A)
-#define fTRAP(TRAPTYPE, IMM) helper_raise_exception(env, HEX_EXCP_TRAP0)
+#define fTRAP(TRAPTYPE, IMM) trap(TRAPTYPE, IMM)
 #define fPAUSE(IMM)
 #define fALIGN_REG_FIELD_VALUE(FIELD, VAL)     ((VAL) << REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
 #define fGET_REG_FIELD_MASK(FIELD)     (((1 << REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD)) - 1) << REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
