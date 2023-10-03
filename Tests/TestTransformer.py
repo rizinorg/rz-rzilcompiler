@@ -631,7 +631,7 @@ class TestTransformerOutput(unittest.TestCase):
         sub_routine = SubRoutine(name, ret_type, params, body)
 
         self.assertEqual(
-            """RZ_OWN RzILOpEffect *hex_test_routine(HexInsnPktBundle *bundle, const HexOp *RdV, RZ_BORROW RzILOpPure *start, const HexOp *RsV) {
+            """RZ_OWN RzILOpEffect *hex_test_routine(HexInsnPktBundle *bundle, const HexOp *RdV, RZ_BORROW RzILOpPure *start, const HexOp *RsV){
             const HexInsn *hi = bundle->insn;
             HexPkt *pkt = bundle->pkt;
 
@@ -1145,8 +1145,8 @@ class TestTransformerOutput(unittest.TestCase):
             // EXEC
 
             // WRITE
-            RzILOpEffect *trap_call_2 = hex_trap(SN(32, 0), SN(32, 0));
-            RzILOpEffect *instruction_sequence = trap_call_2;
+            RzILOpEffect *trap_call_3 = hex_trap(SN(32, 0),  CAST(32, IL_FALSE, SN(32, 0)));
+            RzILOpEffect *instruction_sequence = trap_call_3;
 
             return instruction_sequence;""".replace("  ", "")
         )
