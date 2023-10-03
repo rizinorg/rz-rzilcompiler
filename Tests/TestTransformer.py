@@ -1109,8 +1109,8 @@ class TestTransformerOutput(unittest.TestCase):
             // Declare: ut32 EA;
             const HexOp *Rs_op = ISA2REG(hi, 's', false);
             RzILOpPure *Rs = READ_REG(pkt, Rs_op, false);
-            const HexOp *Nt_new_op = ISA2REG(hi, 't', true);
-            RzILOpPure *Nt_new = READ_REG(pkt, Nt_new_op, true);
+            const HexOp Nt_new_op = NREG2OP(bundle, 't');
+            RzILOpPure *Nt_new = READ_REG(pkt, &Nt_new_op, true);
 
             // EXEC
             RzILOpPure *op_ADD_4 = ADD(Rs, VARL("s"));

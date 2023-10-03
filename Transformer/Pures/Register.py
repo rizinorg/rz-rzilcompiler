@@ -8,7 +8,7 @@ from rzil_compiler.Transformer.PluginInfo import (
     isa_explicit_to_op_args,
     isa_alias_to_op_args,
     isa_alias_to_op,
-    isa_explicit_to_op,
+    isa_explicit_to_op, hexagon_isa_n_reg_to_op_args, hexagon_isa_n_reg_to_op,
 )
 from rzil_compiler.Transformer.Pures.GlobalVar import GlobalVar
 from enum import StrEnum
@@ -42,6 +42,7 @@ class Register(GlobalVar):
         self.is_explicit = (
             is_explicit or is_reg_alias
         )  # Register number is predefined by instruction.
+        self.is_n_reg = name[0] == "N"
 
         if self.is_new:
             GlobalVar.__init__(self, name + "_new", v_type)
@@ -50,11 +51,12 @@ class Register(GlobalVar):
         self.set_isa_name(self.name)
         self.reg_number = self.get_reg_num_from_name(self.get_isa_name())
         self.reg_class = self.get_reg_class()
+        self.isa_id = self.get_isa_name()[1]
 
     def get_op_var(self, deref=True):
         var = self.name + "_op"
         var = var.replace(":", "_")
-        if deref and (self.is_explicit or self.is_reg_alias):
+        if deref and (self.is_explicit or self.is_reg_alias or self.is_n_reg):
             # Operand variables of alias and explicit regs should be passed as pointer.
             return f"&{var}"
         return var
@@ -83,10 +85,12 @@ class Register(GlobalVar):
             return self.il_reg_alias_to_op()
         elif self.is_explicit:
             return self.il_explicit_reg_to_op()
+        elif self.is_n_reg:
+            return self.il_n_reg_to_op()
         return (
             f"const HexOp *{self.get_op_var()} = {isa_to_reg_fnc}("
             f'{", ".join(isa_to_reg_args)}'
-            f", '{self.get_isa_name()[1]}'"
+            f", '{self.isa_id}'"
             f", {str(self.is_new).lower()});"
         )
 
@@ -111,6 +115,15 @@ class Register(GlobalVar):
             f'{", " if isa_explicit_to_op_args else ""}'
             f"{self.reg_number}, {self.reg_class}"
             f", {str(self.is_new).lower()});"
+        )
+
+    def il_n_reg_to_op(self) -> str:
+        """Some registers are explicitly named (P0 etc.). Here we resolve them."""
+        return (
+            f"const HexOp {self.get_op_var(deref=False)} = {hexagon_isa_n_reg_to_op}("
+            f'{", ".join(hexagon_isa_n_reg_to_op_args)}'
+            f'{", " if hexagon_isa_n_reg_to_op_args else ""}'
+            f"'{self.isa_id}');"
         )
 
     def il_read(self) -> str:

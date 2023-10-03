@@ -10,6 +10,8 @@ hexagon_isa_alias_to_op = "ALIAS2OP"
 hexagon_isa_alias_to_op_args = []
 hexagon_isa_explicit_to_op = "EXPLICIT2OP"
 hexagon_isa_explicit_to_op_args = []
+hexagon_isa_n_reg_to_op = "NREG2OP"
+hexagon_isa_n_reg_to_op_args = ["bundle"]
 # This function gets a register placeholder name from the ISA manual (e.g. "Rs")
 # and returns the actual register name as string (e.g. "R3")
 isa_to_reg_fnc = hexagon_isa_to_reg
