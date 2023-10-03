@@ -180,28 +180,6 @@ class HexagonTransformerExtension(TransformerExtension):
             # Register field macros. Calls a function which returns the width or
             # offset into the register of the field.
             return ValueType(False, 32)
-        elif fcn_name == "clo32":
-            # QEMU function -- int32_t clo32(uint32_t val)
-            # Count leading ones in 32 bit value.
-            return ValueType(True, 32)
-        elif fcn_name == "deposit64":
-            # QEMU function
-            # uint64_t deposit64(uint64_t value, int start, int length, uint64_t fieldval)
-            # Sets the bits from 'start' to 'start+length' in 'value' with 'fieldvar'
-            return ValueType(False, 64)
-        elif fcn_name == "sextract64":
-            # QEMU function
-            # "Extract from the 64 bit input @value the bit field specified by the
-            # @start and @length parameters, and return it, sign extended to
-            # an int64_t".
-            return ValueType(True, 64)
-        elif fcn_name == "extract64":
-            # QEMU function
-            # Extract from the 64 bit input @value the bit field specified by the
-            # @start and @length parameters, and return it. The bit field must
-            # lie entirely within the 64 bit word. It is valid to request that
-            # all 64 bits are returned (ie @length 64 and @start 0).
-            return ValueType(False, 64)
         elif fcn_name == "STORE_SLOT_CANCELLED":
             # Marks the slot i as cancelled in a global variable for this case.
             # returns void.
@@ -210,29 +188,6 @@ class HexagonTransformerExtension(TransformerExtension):
             return ValueType(False, 32, VTGroup.VOID)
         else:
             raise NotImplementedError(f"No value type for function {fcn_name} defined.")
-        # TODO
-        # // sizeof -> Main priority.
-        # int128_exts64
-        # revbit32
-        # gen_store_conditional4
-        # gen_store_conditional8
-        # conv_round
-        # // gen_vreg_load -> 57
-        # // conv_4u_to_sf
-        # // conv_4u_to_df
-        # // conv_4s_to_sf
-        # // conv_4s_to_df
-        # // conv_8u_to_sf
-        # // conv_8u_to_df
-        # // conv_8s_to_sf
-        # // conv_8s_to_df
-        # // ctpop64
-        # // ctpop32
-        # // clo64
-        # // revbit64
-        # // interleave
-        # // deinterleave
-        # // helper_raise_exception
 
     def is_special_id(self, ident: str) -> bool:
         if ident == self.spec_ids["EffectiveAddress"]:
@@ -280,35 +235,6 @@ def get_fcn_param_types(fcn_name: str) -> [ValueType]:
         return [None]
     elif fcn_name == "REGFIELD":
         return [None, None]
-    elif fcn_name == "clo32":
-        # QEMU function -- int32_t clo32(uint32_t val)
-        # Count leading ones in 32 bit value.
-        return [ValueType(False, 32)]
-    elif fcn_name == "deposit64":
-        # QEMU function
-        # uint64_t deposit64(uint64_t value, int start, int length, uint64_t fieldval)
-        # Sets the bits from 'start' to 'start+length' in 'value' with 'fieldvar'
-        return [
-            ValueType(False, 64),
-            ValueType(True, 64),
-            ValueType(True, 64),
-            ValueType(False, 64),
-        ]
-    elif fcn_name == "sextract64":
-        # QEMU function
-        # int64_t sextract64(uint64_t value, int start, int length)
-        # "Extract from the 64 bit input @value the bit field specified by the
-        # @start and @length parameters, and return it, sign extended to
-        # an int64_t".
-        return [ValueType(False, 64), ValueType(True, 64), ValueType(True, 64)]
-    elif fcn_name == "extract64":
-        # QEMU function
-        # uint64_t extract64(uint64_t value, int start, int length)
-        # Extract from the 64 bit input @value the bit field specified by the
-        # @start and @length parameters, and return it. The bit field must
-        # lie entirely within the 64 bit word. It is valid to request that
-        # all 64 bits are returned (ie @length 64 and @start 0).
-        return [ValueType(False, 64), ValueType(True, 64), ValueType(True, 64)]
     elif fcn_name == "WRITE_PRED":
         return [ValueType(False, 8), ValueType(False, 8)]
     elif fcn_name == "STORE_SLOT_CANCELLED":

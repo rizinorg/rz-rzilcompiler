@@ -39,6 +39,26 @@
       "return_type": "void",
       "params": ["int32_t trap_type", "uint32_t imm"],
       "code": "{ __NOP ;}"
+    },
+    "clz32": {
+      "return_type": "uint32_t",
+      "params": ["uint32_t t"],
+      "code": "{ uint32_t x = t; if (x == 0) { return 32; } uint32_t n = 0; if (x <= 0x0000ffff) { n += 16; x <<= 16; } if (x <= 0x00ffffff) { n += 8; x <<= 8; } if (x <= 0x0fffffff) { n += 4; x <<= 4; } if (x <= 0x3fffffff) { n += 2; x <<= 2; } if (x <= 0x7fffffff) { n++; } return n; }"
+    },
+    "clz64": {
+      "return_type": "uint64_t",
+      "params": ["uint64_t t"],
+      "code": "{ uint64_t x = t; if (x == 0) { return 64; } uint64_t n = 0; if (x <= 0x00000000ffffffff) { n += 32; x <<= 32; } if (x <= 0x0000ffffffffffff) { n += 16; x <<= 16; } if (x <= 0x00ffffffffffffff) { n += 8; x <<= 8; } if (x <= 0x0fffffffffffffff) { n += 4; x <<= 4; } if (x <= 0x3fffffffffffffff) { n += 2; x <<= 2; } if (x <= 0x7fffffffffffffff) { n++; } return n; }"
+    },
+    "clo32": {
+      "return_type": "uint32_t",
+      "params": ["uint32_t x"],
+      "code": "{ return clz32(~x); }"
+    },
+    "clo64": {
+      "return_type": "uint64_t",
+      "params": ["uint64_t x"],
+      "code": "{ return clz64(~x); }"
     }
   }
 }

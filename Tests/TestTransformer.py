@@ -421,6 +421,11 @@ class TestTransforming(unittest.TestCase):
         result = self.compile_behavior(behavior)
         self.assertFalse(isinstance(result, Exception))
 
+    def test_S2_cl0p(self):
+        behavior = self.insn_behavior["S2_cl0p"][0]
+        result = self.compile_behavior(behavior)
+        self.assertFalse(isinstance(result, Exception))
+
     def test_A2_abs_syntax(self):
         behavior = self.insn_behavior["A2_abs"][0]
         result = self.compile_behavior(behavior)
