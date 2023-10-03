@@ -255,6 +255,7 @@ def get_value_type_by_c_number(items: [Token]) -> ValueType:
     c_unsigned_types_postfix = ["ULL", "U"]
     c_64bit_postfix = ["LL", "ULL"]
 
+    postfix = postfix.upper()
     if postfix != "" and (
         postfix not in c_signed_types_postfix
         and postfix not in c_unsigned_types_postfix
