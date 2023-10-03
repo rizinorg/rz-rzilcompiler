@@ -1145,7 +1145,7 @@ class TestTransformerOutput(unittest.TestCase):
             // EXEC
 
             // WRITE
-            RzILOpEffect *trap_call_3 = hex_trap(SN(32, 0),  CAST(32, IL_FALSE, SN(32, 0)));
+            RzILOpEffect *trap_call_3 = hex_trap(SN(32, 0), CAST(32, IL_FALSE, SN(32, 0)));
             RzILOpEffect *instruction_sequence = trap_call_3;
 
             return instruction_sequence;""".replace("  ", "")
@@ -1182,6 +1182,26 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *instruction_sequence = SEQN(2, jump_const_0x0_0_1, EMPTY());
 
         return instruction_sequence;""".replace("  ", "")
+        self.assertEqual(
+            expected, output
+        )
+
+    def test_assign_op(self):
+        behavior = "{ int32_t a = 1; a <<= 8; }"
+        output = self.compile_behavior(behavior)
+        expected = """
+            // READ
+            // Declare: st32 a;
+
+            // EXEC
+            RzILOpPure *op_SHIFTL_4 = SHIFTL0(VARL("a"), SN(32, 8));
+
+            // WRITE
+            RzILOpEffect *op_ASSIGN_2 = SETL("a", SN(32, 1));
+            RzILOpEffect *op_ASSIGN_LEFT_5 = SETL("a", op_SHIFTL_4);
+            RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, op_ASSIGN_LEFT_5);
+
+            return instruction_sequence;""".replace("  ", "")
         self.assertEqual(
             expected, output
         )

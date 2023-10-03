@@ -446,71 +446,71 @@ class RZILTransformer(Transformer):
         elif assign.assign_type == AssignmentType.ASSIGN_ADD:
             assign.src = ArithmeticOp(
                 f"op_ADD",
-                assign.src,
                 assign.dest,
+                assign.src,
                 ArithmeticType.ADD,
             )
         elif assign.assign_type == AssignmentType.ASSIGN_SUB:
             assign.src = ArithmeticOp(
                 f"op_SUB",
-                assign.src,
                 assign.dest,
+                assign.src,
                 ArithmeticType.SUB,
             )
         elif assign.assign_type == AssignmentType.ASSIGN_MUL:
             assign.src = ArithmeticOp(
                 f"op_MUL",
-                assign.src,
                 assign.dest,
+                assign.src,
                 ArithmeticType.MUL,
             )
         elif assign.assign_type == AssignmentType.ASSIGN_MOD:
             assign.src = ArithmeticOp(
                 f"op_MOD",
-                assign.src,
                 assign.dest,
+                assign.src,
                 ArithmeticType.MOD,
             )
         elif assign.assign_type == AssignmentType.ASSIGN_DIV:
             assign.src = ArithmeticOp(
                 f"op_DIV",
-                assign.src,
                 assign.dest,
+                assign.src,
                 ArithmeticType.DIV,
             )
         elif assign.assign_type == AssignmentType.ASSIGN_RIGHT:
             assign.src = BitOp(
                 f"op_SHIFTR",
-                assign.src,
                 assign.dest,
+                assign.src,
                 BitOperationType.RSHIFT,
             )
         elif assign.assign_type == AssignmentType.ASSIGN_LEFT:
             assign.src = BitOp(
                 f"op_SHIFTL",
-                assign.src,
                 assign.dest,
+                assign.src,
                 BitOperationType.LSHIFT,
             )
         elif assign.assign_type == AssignmentType.ASSIGN_AND:
             assign.src = BitOp(
                 f"op_AND",
-                assign.src,
                 assign.dest,
+                assign.src,
                 BitOperationType.AND,
             )
         elif assign.assign_type == AssignmentType.ASSIGN_OR:
             assign.src = BitOp(
                 f"op_OR",
-                assign.src,
                 assign.dest,
+                assign.src,
                 BitOperationType.OR,
             )
         elif assign.assign_type == AssignmentType.ASSIGN_XOR:
             assign.src = BitOp(
                 f"op_XOR",
-                assign.src,
                 assign.dest,
+                assign.src,
                 BitOperationType.XOR,
             )
         else:
