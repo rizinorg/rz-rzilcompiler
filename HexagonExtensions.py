@@ -3,6 +3,7 @@
 
 import re
 
+from Helper import log
 from rzil_compiler.CompilerExtension import CompilerExtension
 from rzil_compiler.Transformer.Pures.Immediate import Immediate
 from rzil_compiler.Transformer.ValueType import (
@@ -29,6 +30,13 @@ class HexagonTransformerExtension(TransformerExtension):
         # Variables names used in the shortcode with special meaning.
         self.spec_ids = {"EffectiveAddress": "EA", "iterator_vars": ["i", "k", "j"]}
         self.transformer = transformer
+        self.missing_fcns = dict()
+
+    def report_missing_fcns(self):
+        log("Missing functions:")
+        for k, v in self.missing_fcns.items():
+            print(f"\t{k} = {v}")
+        print(f"\tsum = {sum(self.missing_fcns.values())}")
 
     def set_uses_new(self):
         if not self.uses_new:
@@ -187,6 +195,10 @@ class HexagonTransformerExtension(TransformerExtension):
         elif fcn_name == "WRITE_REG":
             return ValueType(False, 32, VTGroup.VOID)
         else:
+            if fcn_name not in self.missing_fcns:
+                self.missing_fcns[fcn_name] = 1
+            else:
+                self.missing_fcns[fcn_name] += 1
             raise NotImplementedError(f"No value type for function {fcn_name} defined.")
 
     def is_special_id(self, ident: str) -> bool:
