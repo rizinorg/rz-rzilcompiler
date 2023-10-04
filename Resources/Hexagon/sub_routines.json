@@ -65,25 +65,35 @@
       "params": ["uint16_t t"],
       "code": "{ return ((t & 0xff00) >> 8) | ((t & 0x00ff) << 8); }"
     },
-    "revbit16": {
-      "return_type": "uint16_t",
-      "params": ["uint16_t t"],
-      "code": "{ uint16_t x = bswap16(t); x = ((x & 0xf0f0) >> 4) | ((x & 0x0f0f) << 4); x = ((x & 0x8888) >> 3) | ((x & 0x4444) >> 1) | ((x & 0x2222) << 1) | ((x & 0x1111) << 3); return x; }"
-    },
-    "fbrev": {
+    "bswap32": {
       "return_type": "uint32_t",
-      "params": ["uint32_t addr"],
-      "code": "{ return deposit32(addr, 0, 16, revbit16(addr)); }"
+      "params": ["uint32_t t"],
+      "code": "{ return (((t & 0x000000ff) << 24) | ((t & 0x0000ff00) << 8) | ((t & 0x00ff0000) >> 8) | ((t & 0xff000000) >> 24)); }"
     },
     "bswap64": {
       "return_type": "uint64_t",
       "params": ["uint64_t t"],
       "code": "{ return ( ((t & 0x00000000000000ffull) << 56) | ((t & 0x000000000000ff00ull) << 40) | ((t & 0x0000000000ff0000ull) << 24) | ((t & 0x00000000ff000000ull) << 8) | ((t & 0x000000ff00000000ull) >> 8) | ((t & 0x0000ff0000000000ull) >> 24) | ((t & 0x00ff000000000000ull) >> 40) | ((t & 0xff00000000000000ull) >> 56) ); }"
     },
+    "revbit16": {
+      "return_type": "uint16_t",
+      "params": ["uint16_t t"],
+      "code": "{ uint16_t x = bswap16(t); x = ((x & 0xf0f0) >> 4) | ((x & 0x0f0f) << 4); x = ((x & 0x8888) >> 3) | ((x & 0x4444) >> 1) | ((x & 0x2222) << 1) | ((x & 0x1111) << 3); return x; }"
+    },
+    "revbit32": {
+      "return_type": "uint32_t",
+      "params": ["uint32_t t"],
+      "code": "{ uint32_t x = bswap32(t); x = ((x & 0xf0f0f0f0u) >> 4) | ((x & 0x0f0f0f0fu) << 4); x = ((x & 0x88888888u) >> 3) | ((x & 0x44444444u) >> 1) | ((x & 0x22222222u) << 1) | ((x & 0x11111111u) << 3); return x; }"
+    },
     "revbit64": {
       "return_type": "uint64_t",
       "params": ["uint64_t t"],
       "code": "{ uint64_t x = bswap64(t); x = ((x & 0xf0f0f0f0f0f0f0f0ull) >> 4) | ((x & 0x0f0f0f0f0f0f0f0full) << 4); x = ((x & 0x8888888888888888ull) >> 3) | ((x & 0x4444444444444444ull) >> 1) | ((x & 0x2222222222222222ull) << 1) | ((x & 0x1111111111111111ull) << 3); return x; }"
+    },
+    "fbrev": {
+      "return_type": "uint32_t",
+      "params": ["uint32_t addr"],
+      "code": "{ return deposit32(addr, 0, 16, revbit16(addr)); }"
     }
   }
 }
