@@ -132,7 +132,7 @@ class Register(GlobalVar):
         # So if this method is called on a write-only register we return the value of the .new register.
         # Examples: a2_svaddh, a4_vcmpbgt
         if self.access is RegisterAccessType.W or self.access is RegisterAccessType.PW:
-            return f"READ_REG(pkt, {self.get_op_var()}, false)"
+            return f"READ_REG(pkt, {self.get_op_var()}, true)"
         if self.access == RegisterAccessType.UNKNOWN:
             self.access = RegisterAccessType.R
         return GlobalVar.il_read(self).replace(":", "_")
