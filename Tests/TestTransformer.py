@@ -447,6 +447,24 @@ class TestTransforming(unittest.TestCase):
 
             return instruction_sequence;""".replace("  ", ""), result)
 
+    def test_size_t(self):
+        behavior = "{ size8u_t a = 0x0; uint64_t b = (size8u_t) 0x1; }"
+        result = self.compile_behavior(behavior)
+        self.assertFalse(isinstance(result, Exception))
+        self.assertEqual("""
+            // READ
+            // Declare: ut64 a;
+            // Declare: ut64 b;
+
+            // EXEC
+
+            // WRITE
+            RzILOpEffect *op_ASSIGN_2 = SETL("a", CAST(64, IL_FALSE, SN(32, 0)));
+            RzILOpEffect *op_ASSIGN_7 = SETL("b", CAST(64, IL_FALSE, SN(32, 1)));
+            RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, op_ASSIGN_7);
+
+            return instruction_sequence;""".replace("  ", ""), result)
+
 
 class TestTransformerMeta(unittest.TestCase):
     debug = False

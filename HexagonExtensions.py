@@ -154,7 +154,7 @@ class HexagonTransformerExtension(TransformerExtension):
         rule = items.data
         tokens = items.children
         if rule == "c_size_type":
-            return ValueType(tokens[1] == "s", int(tokens[0]))
+            return ValueType(tokens[1] == "s", int(tokens[0]) * 8)
         elif rule == "c_int_type":
             return ValueType(tokens[0] == "int", int(tokens[1]))
         else:

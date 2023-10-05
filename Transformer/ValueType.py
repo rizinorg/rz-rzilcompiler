@@ -150,6 +150,9 @@ def get_value_type_by_c_type(type_id: str) -> ValueType:
 
     is_signed = False if type_match["sign"] == "u" else True
     width = int(type_match["width"])
+    if type_id.startswith("size"):
+        # Size has width in bytes
+        width *= 8
     return ValueType(is_signed, width)
 
 
