@@ -22,7 +22,11 @@ class CompareOp(PureExec):
         PureExec.__init__(self, name, [a, b], a.value_type)
 
     def il_exec(self):
-        sl = "S" if (self.ops[0].value_type.signed or self.ops[1].value_type.signed) else "U"
+        sl = (
+            "S"
+            if (self.ops[0].value_type.signed or self.ops[1].value_type.signed)
+            else "U"
+        )
         if self.op_type == CompareOpType.LT:
             return f"{sl}LT({self.ops[0].il_read()}, {self.ops[1].il_read()})"
         elif self.op_type == CompareOpType.GT:

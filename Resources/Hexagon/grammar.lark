@@ -319,7 +319,7 @@ type_specifier: VOID
 
 ?static_assert_declaration: STATIC_ASSERT "(" constant_expr "," STRING_LITERAL ")" ";"
 
-?stmt: labeled_stmt
+stmt: labeled_stmt
 	| jump_stmt
 	| compound_stmt
 	| expr_stmt

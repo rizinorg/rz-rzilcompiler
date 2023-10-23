@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 
 from enum import Enum
+
+from rzil_compiler.Transformer.TextCoord import TextCoord
 from rzil_compiler.Exceptions import OverloadException
 from rzil_compiler.Transformer.Pures.PureExec import PureExec
 
@@ -27,8 +29,22 @@ class Effect:
     num_id = -1
 
     def __init__(self, name: str, effect_type: EffectType):
+        self.text_coord = TextCoord()
+        self.is_stmt = False  # Flag for fbody generation if this is a statement in C.
+
         self.name = name
         self.type = effect_type
+
+    def __getattr__(self, name):
+        match name:
+            case "start_pos":
+                return self.text_coord.start_pos
+            case "end_pos":
+                return self.text_coord.end_pos
+            case "len":
+                return self.text_coord.len
+            case _:
+                raise AttributeError(f"Attribute {name} does not exist.")
 
     def set_num_id(self, num_id: int):
         self.num_id = num_id

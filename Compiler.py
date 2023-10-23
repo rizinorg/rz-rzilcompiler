@@ -110,24 +110,27 @@ class Compiler:
     transformer = None
     compiled_insns = dict()
     asts = dict()  # Abstract syntax trees
-    sub_routines: dict[str: SubRoutine] = (
-        dict()
-    )  # dict of sub-routines which can be used by other instructions.
+    sub_routines: dict[
+        str:SubRoutine
+    ] = dict()  # dict of sub-routines which can be used by other instructions.
     ext = None
 
-    def __init__(self, arch: ArchEnum):
+    def __init__(self, arch: ArchEnum, add_subroutines=True):
         self.arch: ArchEnum = arch
 
         self.set_lark_parser()
         self.set_extension()
         self.set_il_op_transformer()
         self.set_preprocessor()
-        self.add_sub_routines()
+        if add_subroutines:
+            self.add_sub_routines()
 
     def set_lark_parser(self):
         with open(Conf.get_path(InputFile.GRAMMAR, "Hexagon")) as f:
             grammar = "".join(f.readlines())
-        self.parser = Lark(grammar, start="fbody", parser="earley")
+        self.parser = Lark(
+            grammar, start="fbody", parser="earley", propagate_positions=True
+        )
 
     def set_extension(self):
         if self.arch == ArchEnum.HEXAGON:
@@ -138,12 +141,18 @@ class Compiler:
     def set_il_op_transformer(self):
         # pkt and hi are not actually passed to every function (they are passed via bundle).
         # But for now we just ignore this, because they'd need the "->" operator implemented to access them.
-        params = [Parameter("pkt", get_value_type_by_c_type("HexPkt")),
-                  Parameter("hi", get_value_type_by_c_type("HexInsn")),
-                  Parameter("bundle", get_value_type_by_c_type("HexInsnPktBundle"))
-                  ]
+        params = [
+            Parameter("pkt", get_value_type_by_c_type("HexPkt")),
+            Parameter("hi", get_value_type_by_c_type("HexInsn")),
+            Parameter("bundle", get_value_type_by_c_type("HexInsnPktBundle")),
+        ]
         ret_type = get_value_type_by_c_type("RzILOpEffect")
-        self.transformer = RZILTransformer(self.arch, sub_routines=self.sub_routines, parameters=params, return_type=ret_type)
+        self.transformer = RZILTransformer(
+            self.arch,
+            sub_routines=self.sub_routines,
+            parameters=params,
+            return_type=ret_type,
+        )
 
     def set_preprocessor(self):
         log(f"Set up preprocessor for: {self.arch.name}")
@@ -164,7 +173,9 @@ class Compiler:
         with open(Conf.get_path(InputFile.HEXAGON_SUB_ROUTINES_JSON)) as f:
             routines = json.load(f)
         for name, routine in routines["sub_routines"].items():
-            self.add_sub_routine(name, routine["return_type"], routine["params"], routine["code"])
+            self.add_sub_routine(
+                name, routine["return_type"], routine["params"], routine["code"]
+            )
 
     def add_sub_routine(
         self, name: str, ret_type: str, params: list[str], body: str
@@ -255,12 +266,14 @@ class Compiler:
         ret_type = get_value_type_by_c_type(return_type)
         # Compile the body
         ast_body = self.parser.parse(body)
-        transformed_body = RZILTransformer(
+        transformer = RZILTransformer(
             ArchEnum.HEXAGON,
             sub_routines=self.sub_routines,
             parameters=params,
             return_type=ret_type,
-        ).transform(ast_body)
+        )
+        transformer.set_text(body)
+        transformed_body = transformer.transform(ast_body)
         return SubRoutine(name, ret_type, params, transformed_body)
 
     def compile_c_stmt(self, code: str) -> str:
@@ -272,6 +285,7 @@ class Compiler:
         :return: The RzIL representation of it.
         """
         ast = self.parser.parse(code)
+        self.transformer.set_text(code)
         result = self.transformer.transform(ast)
         self.transformer.reset()
         return result
@@ -296,6 +310,7 @@ class Compiler:
             trees = list()
             for pt in parse_trees:
                 self.transformer.reset()
+                self.transformer.set_text(pt.text)
                 rzil.append(self.transformer.transform(pt))
                 meta.append(self.transformer.ext.get_meta())
                 trees.append(pt.pretty())

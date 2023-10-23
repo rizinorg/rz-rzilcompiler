@@ -33,7 +33,7 @@ def parse_single(bundle: InsnParsingBundle) -> dict[str, list]:
     grammar = bundle.grammar
     result = dict()
     result[name] = list()
-    parser = Lark(grammar, start="fbody", parser="earley")
+    parser = Lark(grammar, start="fbody", parser="earley", propagate_positions=True)
     try:
         for b in behavior:
             ast = parser.parse(b)
