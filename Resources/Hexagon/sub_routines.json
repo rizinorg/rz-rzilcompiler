@@ -13,12 +13,12 @@
     "sextract64": {
       "return_type": "int64_t",
       "params": ["uint64_t value", "int start", "int length"],
-      "code": "{ return ((int32_t)(value << (32 - length - start))) >> (32 - length); }"
+      "code": "{ return ((int64_t)(value << (64 - length - start))) >> (64 - length); }"
     },
     "deposit64": {
       "return_type": "uint64_t",
       "params": ["uint64_t value", "int start", "int length", "uint64_t fieldval"],
-      "code": "{ uint64_t mask; mask = (~0U >> (32 - length)) << start; return (value & ~mask) | ((fieldval << start) & mask); }"
+      "code": "{ uint64_t mask; mask = (~0ULL >> (64 - length)) << start; return (value & ~mask) | ((fieldval << start) & mask); }"
     },
     "deposit32": {
       "return_type": "uint32_t",
