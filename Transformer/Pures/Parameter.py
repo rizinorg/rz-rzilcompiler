@@ -1,7 +1,12 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 from rzil_compiler.Transformer.Pures.Pure import Pure, PureType
-from rzil_compiler.Transformer.ValueType import ValueType, get_value_type_by_c_type, split_var_decl, VTGroup
+from rzil_compiler.Transformer.ValueType import (
+    ValueType,
+    get_value_type_by_c_type,
+    split_var_decl,
+    VTGroup,
+)
 
 
 class Parameter(Pure):
@@ -37,6 +42,9 @@ class Parameter(Pure):
         param_type = self.value_type.get_param_decl_type()
         space = "" if param_type[-1] == "*" else " "  # No space after *
         return f"{param_type}{space}{self.get_name()}"
+
+    def __str__(self):
+        return f"{self.get_name()}"
 
 
 def get_parameter_by_decl(decl: str) -> Parameter:

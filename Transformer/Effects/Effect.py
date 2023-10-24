@@ -52,6 +52,21 @@ class Effect:
         """Returns the C variable name which holds the IL effect."""
         return self.get_name()
 
+    def get_exec_op_list(self):
+        """Returns all PureExec operands this effect depends on as list."""
+        from rzil_compiler.Transformer.Hybrids.Hybrid import Hybrid
+
+        def get_ops(x):
+            if isinstance(x, PureExec):
+                return [x] + [get_ops(y) for y in x.ops]
+            elif isinstance(x, (Hybrid, Effect)):
+                return x.get_exec_op_list()
+            return []
+
+        from rzil_compiler.Transformer.helper import flatten_list
+
+        return flatten_list([get_ops(o) for o in self.effect_ops])
+
     def get_op_list(self):
         """Returns all Global, Local and LetPure operands this effect depends on as list."""
         from rzil_compiler.Transformer.Hybrids.Hybrid import Hybrid
@@ -70,3 +85,6 @@ class Effect:
         from rzil_compiler.Transformer.helper import flatten_list
 
         return flatten_list([get_ops(o) for o in self.effect_ops])
+
+    def __str__(self):
+        raise OverloadException("Overload the __str__ method please.")

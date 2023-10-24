@@ -16,3 +16,6 @@ class Cast(PureExec):
         else:
             fill_bit = "IL_FALSE"
         return f"CAST({self.value_type.bit_width}, {fill_bit}, {self.ops[0].il_read()})"
+
+    def __str__(self):
+        return f"(({self.value_type}) {self.ops[0]})"

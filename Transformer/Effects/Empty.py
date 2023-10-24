@@ -24,3 +24,6 @@ class Empty(Effect):
         """
 
         return "EMPTY()"
+
+    def __str__(self):
+        return "{}"

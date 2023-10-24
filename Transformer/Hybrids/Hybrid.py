@@ -13,6 +13,7 @@ class HybridType(StrEnum):
     INC = "++"
     DEC = "--"
     CALL = "call"
+    SCALL = "sub_routine_call"
     SUB_ROUTINE = "sub_routine"
 
 
@@ -25,11 +26,35 @@ class HybridSeqOrder(Enum):
 
 class Hybrid(PureExec, Effect):
     seq_order: HybridSeqOrder = HybridSeqOrder.NOT_SET
+    op_type: HybridType = None
 
     def __init__(self, name: str, operands: [Pure], value_type: ValueType):
+        self.pure_init_count = 0
+        self.effect_init_count = 0
         self.effect_ops = operands
         PureExec.__init__(self, name, operands, value_type)
         Effect.__init__(self, name, EffectType.SET)
 
     def il_init_var(self):
+        if self.effect_init_count > 0:
+            return ""
+        self.effect_init_count += 1
         return Effect.il_init_var(self)
+
+    def il_init_pure_var(self):
+        if self.pure_init_count > 0:
+            return ""
+        self.pure_init_count += 1
+        return Pure.il_init_var(self)
+
+    def il_init_effect_var(self):
+        if self.effect_init_count > 0:
+            return ""
+        self.effect_init_count += 1
+        return Effect.il_init_var(self)
+
+    def __str__(self):
+        space = "_"
+        if self.op_type in [HybridType.INC, HybridType.DEC]:
+            space = ""
+        return f"HYB({self.op_type}{space}{', '.join([str(op) for op in self.ops])})"

@@ -19,7 +19,7 @@ from rzil_compiler.Configuration import Conf, InputFile
 from rzil_compiler.Helper import log
 from rzil_compiler.HexagonExtensions import HexagonCompilerExtension
 from rzil_compiler.Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
-from rzil_compiler.Transformer.RZILTransformer import RZILTransformer
+from rzil_compiler.Transformer.RZILTransformer import RZILTransformer, CodeFormat
 
 
 class RZILInstruction:
@@ -114,8 +114,11 @@ class Compiler:
     ] = dict()  # dict of sub-routines which can be used by other instructions.
     ext = None
 
-    def __init__(self, arch: ArchEnum):
+    def __init__(
+        self, arch: ArchEnum, code_format: CodeFormat = CodeFormat.READ_STATEMENTS
+    ):
         self.arch: ArchEnum = arch
+        self.code_format = code_format
 
         self.set_lark_parser()
         self.set_extension()
@@ -137,12 +140,19 @@ class Compiler:
     def set_il_op_transformer(self):
         # pkt and hi are not actually passed to every function (they are passed via bundle).
         # But for now we just ignore this, because they'd need the "->" operator implemented to access them.
-        params = [Parameter("pkt", get_value_type_by_c_type("HexPkt")),
-                  Parameter("hi", get_value_type_by_c_type("HexInsn")),
-                  Parameter("bundle", get_value_type_by_c_type("HexInsnPktBundle"))
-                  ]
+        params = [
+            Parameter("pkt", get_value_type_by_c_type("HexPkt")),
+            Parameter("hi", get_value_type_by_c_type("HexInsn")),
+            Parameter("bundle", get_value_type_by_c_type("HexInsnPktBundle")),
+        ]
         ret_type = get_value_type_by_c_type("RzILOpEffect")
-        self.transformer = RZILTransformer(self.arch, sub_routines=self.sub_routines, parameters=params, return_type=ret_type)
+        self.transformer = RZILTransformer(
+            self.arch,
+            sub_routines=self.sub_routines,
+            parameters=params,
+            return_type=ret_type,
+            code_format=self.code_format,
+        )
 
     def set_preprocessor(self):
         log(f"Set up preprocessor for: {self.arch.name}")
@@ -163,7 +173,9 @@ class Compiler:
         with open(Conf.get_path(InputFile.HEXAGON_SUB_ROUTINES_JSON)) as f:
             routines = json.load(f)
         for name, routine in routines["sub_routines"].items():
-            self.add_sub_routine(name, routine["return_type"], routine["params"], routine["code"])
+            self.add_sub_routine(
+                name, routine["return_type"], routine["params"], routine["code"]
+            )
 
     def add_sub_routine(
         self, name: str, ret_type: str, params: list[str], body: str
@@ -282,7 +294,9 @@ class Compiler:
         log("Parse shortcode...")
         self.parsed_insns = Parser().parse(self.preprocessor.behaviors)
 
-    def transform_insn(self, insn_name: str, parsed_insns: ParsedInsn) -> RZILInstruction:
+    def transform_insn(
+        self, insn_name: str, parsed_insns: ParsedInsn
+    ) -> RZILInstruction:
         """Compiles the instruction <insn_name> and returns the RZIL code.
         An instruction of certain architectures can have multiple behaviors,
         so this method returns a list of compiled behaviors.

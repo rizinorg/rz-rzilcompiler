@@ -18,3 +18,6 @@ class Jump(Effect):
 
     def il_write(self):
         return f'SEQ2(SETL("jump_flag", IL_TRUE), JMP({self.target.il_read()}))'
+
+    def __str__(self):
+        return f"jump({self.target})"

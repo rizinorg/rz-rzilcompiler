@@ -29,3 +29,6 @@ class LocalVar(Pure):
 
     def vm_id(self) -> str:
         return f'"{self.get_name()}"'
+
+    def __str__(self):
+        return f"{self.get_name()}"

@@ -15,3 +15,6 @@ class Variable(LocalVar):
         # Local vars are not initialized like global vars. They are initialized when an assignment to them happens.
         code = f"// Declare: {self.value_type} {self.get_name()};"
         return code
+
+    def __str__(self):
+        return f"{self.get_name()}"

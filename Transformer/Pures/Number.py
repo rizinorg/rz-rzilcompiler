@@ -10,3 +10,6 @@ class Number(LetVar):
         self.name = name
         self.v_type: ValueType = v_type
         LetVar.__init__(self, name, val, v_type)
+
+    def __str__(self):
+        return f"{self.get_val():#x}"

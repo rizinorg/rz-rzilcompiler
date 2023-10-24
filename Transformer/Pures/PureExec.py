@@ -20,6 +20,7 @@ class PureExec(Pure):
         # Add LETs to a list for use during initialization.
         self.lets = get_local_pures(operands)
         self.ops = operands
+        self.init_counter = 0
         Pure.__init__(self, name, PureType.EXEC, val_type)
 
     def get_ops(self) -> list[Pure]:
@@ -34,6 +35,13 @@ class PureExec(Pure):
     def il_init_var(self):
         if self.inlined:
             return ""
+        if self.init_counter > 0:
+            # Only one init should be printed.
+            # Calling this function multiple times is allowed though
+            # (if two or more effects use the same PureExec).
+            return ""
+        self.init_counter += 1
+
         if len(self.lets) == 0:
             init = f"RzILOpPure *{self.pure_var()} = {self.il_exec()};"
             return init

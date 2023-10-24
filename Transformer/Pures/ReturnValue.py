@@ -15,3 +15,6 @@ class ReturnValue(LocalVar):
         # Return values are not initialized.
         # They are initialized when an assignment to them happens via SETL.
         return ""
+
+    def __str__(self):
+        return f"{self.get_name()}_{self.value_type}"

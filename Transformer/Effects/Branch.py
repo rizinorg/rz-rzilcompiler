@@ -26,3 +26,6 @@ class Branch(Effect):
         return (
             f"BRANCH({cond}, {self.then.effect_var()}, {self.otherwise.effect_var()})"
         )
+
+    def __str__(self):
+        return f"if ({self.cond}) {{{self.then}}}{f' else {{{self.otherwise}}}' if self.otherwise else ''}"

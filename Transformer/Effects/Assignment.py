@@ -44,6 +44,16 @@ class Assignment(Effect):
         if isinstance(self.dest, Register):
             self.dest.add_write_property()
 
+    def set_src(self, src_op: Pure) -> None:
+        self.effect_ops.remove(self.src)
+        self.effect_ops.append(src_op)
+        self.src = src_op
+
+    def set_dest(self, dest_op: Pure) -> None:
+        self.effect_ops.remove(self.dest)
+        self.effect_ops.append(dest_op)
+        self.dest = dest_op
+
     def il_write(self):
         """Returns the RZIL ops to write the variable value.
         :return: RZIL ops to write the pure value.
@@ -63,3 +73,6 @@ class Assignment(Effect):
             raise NotImplementedError(
                 f"Effect type {self.type} and to {self.dest} not handled."
             )
+
+    def __str__(self):
+        return f"{self.dest} = {self.src}"

@@ -16,3 +16,6 @@ class Sizeof(LetVar):
         self.size = ceil(op.value_type.bit_width / 8)
 
         LetVar.__init__(self, name, self.size, ValueType(True, 32))
+
+    def __str__(self):
+        return f"sizeof({self.size})"

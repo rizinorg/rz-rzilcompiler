@@ -18,3 +18,6 @@ class MemStore(Effect):
         """
 
         return f"STOREW({self.va.il_read()}, {self.data_var.il_read()})"
+
+    def __str__(self):
+        return f"mem_store_{self.data_var.value_type}({self.va}, {self.data_var})"

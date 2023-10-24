@@ -32,3 +32,6 @@ class ArithmeticOp(PureExec):
             return f"MOD({self.ops[0].il_read()}, {self.ops[1].il_read()})"
         else:
             raise NotImplementedError(f"Arithmetic type {self.arith_type} not handled.")
+
+    def __str__(self):
+        return f"{self.ops[0]} {self.arith_type} {self.ops[1]}"

@@ -23,3 +23,6 @@ class MemLoad(PureExec):
 
     def il_exec(self):
         return f"LOADW({self.acc_type.val_type.bit_width}, {self.va.il_read()})"
+
+    def __str__(self):
+        return f"mem_load_{self.acc_type.val_type.bit_width}({self.va})"

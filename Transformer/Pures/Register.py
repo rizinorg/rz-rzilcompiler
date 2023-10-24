@@ -8,7 +8,9 @@ from rzil_compiler.Transformer.PluginInfo import (
     isa_explicit_to_op_args,
     isa_alias_to_op_args,
     isa_alias_to_op,
-    isa_explicit_to_op, hexagon_isa_n_reg_to_op_args, hexagon_isa_n_reg_to_op,
+    isa_explicit_to_op,
+    hexagon_isa_n_reg_to_op_args,
+    hexagon_isa_n_reg_to_op,
 )
 from rzil_compiler.Transformer.Pures.GlobalVar import GlobalVar
 from enum import StrEnum
@@ -221,3 +223,6 @@ class Register(GlobalVar):
             # For double registers, the smaller number is the number in the enums.
             num = min(num, int(n)) if num else int(n)
         return num
+
+    def __str__(self):
+        return f"{self.get_isa_name()}"

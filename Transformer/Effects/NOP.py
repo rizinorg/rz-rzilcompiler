@@ -16,3 +16,6 @@ class NOP(Effect):
         """
 
         return "NOP()"
+
+    def __str__(self):
+        return f"nop"

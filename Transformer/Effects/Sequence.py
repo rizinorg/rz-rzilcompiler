@@ -25,3 +25,9 @@ class Sequence(Effect):
         if len(self.effects) == 1:
             return self.effects[0].effect_var()
         return f'SEQN({len(self.effects)}, {", ".join([e.effect_var() for e in self.effects])})'
+
+    def __str__(self):
+        seq = "; ".join([str(stmt) for stmt in self.effect_ops])
+        if len(seq) > 60:
+            return f"seq({seq[:60]} ..."
+        return f"seq({seq})"

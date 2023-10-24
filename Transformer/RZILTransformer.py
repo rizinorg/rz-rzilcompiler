@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
+from enum import Enum, auto
 
 from lark import Transformer, Token
 
@@ -50,6 +51,11 @@ from rzil_compiler.Transformer.helper_hexagon import (
 )
 
 
+class CodeFormat(Enum):
+    EXEC_CLASSES = auto()  # Emits READ / EXEC / WRITE blocks
+    READ_STATEMENTS = auto()  # Emits READ / stmt, stmt, stmt... blocks
+
+
 class RZILTransformer(Transformer):
     """
     Transforms the tree into Pures and Effects.
@@ -62,7 +68,9 @@ class RZILTransformer(Transformer):
         sub_routines: dict[str:SubRoutine] = None,
         parameters: list[Parameter] = None,
         return_type: ValueType = None,
+        code_format: CodeFormat = CodeFormat.READ_STATEMENTS
     ):
+        self.code_format = code_format
         # Classes of Pures which should not be initialized in the C code.
         self.inlined_pure_classes = (Number, Sizeof, Cast)
         # Total count of hybrids seen during transformation
@@ -135,29 +143,82 @@ class RZILTransformer(Transformer):
 
     def fbody(self, items):
         self.ext.set_token_meta_data("fbody")
+        # We are at the top. Generate code.
 
         holder = self.il_ops_holder
         if holder.is_empty():
             return f"return NOP();"
 
         res = ""
-        # We are at the top. Generate code.
-        res += "\n// READ\n"
-        for op in holder.read_ops.values():
-            read_op = op.il_init_var()
-            if not read_op:
-                continue
-            res += read_op + "\n"
 
-        res += "\n// EXEC\n"
-        for op in holder.exec_ops.values():
-            if isinstance(op, Hybrid):
-                continue
-            exec_op = op.il_init_var()
-            if not exec_op:
-                continue
-            res += exec_op + "\n"
+        if self.code_format in [CodeFormat.EXEC_CLASSES, CodeFormat.READ_STATEMENTS]:
+            res = self.emit_read_block(holder, res)
 
+        if self.code_format in [CodeFormat.EXEC_CLASSES]:
+            res = self.emit_exec_block(holder, res)
+
+        if self.code_format in [CodeFormat.EXEC_CLASSES]:
+            res = self.emit_write_block(holder, res)
+
+        if self.code_format == CodeFormat.READ_STATEMENTS:
+            res = self.emit_stmt_blocks(holder, res)
+
+        res = self.emit_final_seq_return(items, res)
+        return res
+
+    def emit_final_seq_return(self, items, res):
+        # Hybrids which have no parent in the AST
+        left_hybrids = [
+            self.hybrid_effect_dict.pop(hid)
+            for hid in [k for k in self.hybrid_effect_dict.keys()]
+        ]
+        # Assign all effects without parent in the AST to the final instruction sequence.
+        instruction_sequence = Sequence(
+            f"instruction_sequence",
+            [
+                op
+                for op in self.imm_set_effect_list
+                          + left_hybrids
+                          + flatten_list(items)
+                          + self.gcc_ext_effects
+                if isinstance(op, Effect)
+            ],
+        )
+
+        if self.code_format == CodeFormat.READ_STATEMENTS:
+            # The instruction sequence belongs logically more to the
+            # return in this formatting.
+            res += "\n"
+            res += instruction_sequence.il_init_var() + "\n"
+        elif self.code_format == CodeFormat.EXEC_CLASSES:
+            res += instruction_sequence.il_init_var() + "\n\n"
+
+        res += f"return {instruction_sequence.effect_var()};"
+        return res
+
+    def emit_stmt_blocks(self, holder, res):
+        statements = list()
+        for effect in holder.write_ops.values():
+            statements.append(sorted(effect.get_exec_op_list(), key=lambda x: x.num_id))
+            statements[-1].append(effect)
+
+        for stmt in statements:
+            effect = stmt[-1]
+            effect_init = effect.il_init_var()
+            if not effect_init:
+                continue
+
+            res += f"\n// {stmt[-1]};\n"
+            # Emit each statement
+            for op in stmt[:-1]:
+                op_init = op.il_init_var()
+                if not op_init:
+                    continue
+                res += op_init + "\n"
+            res += effect_init + "\n"
+        return res
+
+    def emit_write_block(self, holder, res):
         res += "\n// WRITE\n"
         for op in holder.write_ops.values():
             if isinstance(op, Hybrid):
@@ -170,27 +231,26 @@ class RZILTransformer(Transformer):
             if not write_op:
                 continue
             res += write_op + "\n"
+        return res
 
-        # Hybrids which have no parent in the AST
-        left_hybrids = [
-            self.hybrid_effect_dict.pop(hid)
-            for hid in [k for k in self.hybrid_effect_dict.keys()]
-        ]
-        # Assign all effects without parent in the AST to the final instruction sequence.
-        instruction_sequence = Sequence(
-            f"instruction_sequence",
-            [
-                op
-                for op in self.imm_set_effect_list
-                + left_hybrids
-                + flatten_list(items)
-                + self.gcc_ext_effects
-                if isinstance(op, Effect)
-            ],
-        )
+    def emit_exec_block(self, holder, res):
+        res += "\n// EXEC\n"
+        for op in holder.exec_ops.values():
+            if isinstance(op, Hybrid):
+                continue
+            exec_op = op.il_init_var()
+            if not exec_op:
+                continue
+            res += exec_op + "\n"
+        return res
 
-        res += instruction_sequence.il_init_var() + "\n"
-        res += f"\nreturn {instruction_sequence.effect_var()};"
+    def emit_read_block(self, holder, res):
+        res += "\n// READ\n"
+        for op in holder.read_ops.values():
+            read_op = op.il_init_var()
+            if not read_op:
+                continue
+            res += read_op + "\n"
         return res
 
     def jump_stmt(self, items):
@@ -352,9 +412,11 @@ class RZILTransformer(Transformer):
                 f"Updating the type of a {assig.dest.type} is not allowed."
             )
         assig.dest.set_value_type(t)
-        assig.dest, assig.src = self.cast_operands(
+        dest_casted, src_casted = self.cast_operands(
             a=assig.dest, b=assig.src, immutable_a=True
         )
+        assig.set_src(src_casted)
+        assig.set_dest(dest_casted)
 
     def declaration(self, items):
         self.ext.set_token_meta_data("declaration")
@@ -444,74 +506,94 @@ class RZILTransformer(Transformer):
         if assign.assign_type == AssignmentType.ASSIGN:
             return
         elif assign.assign_type == AssignmentType.ASSIGN_ADD:
-            assign.src = ArithmeticOp(
-                f"op_ADD",
-                assign.dest,
-                assign.src,
-                ArithmeticType.ADD,
+            assign.set_src(
+                ArithmeticOp(
+                    f"op_ADD",
+                    assign.dest,
+                    assign.src,
+                    ArithmeticType.ADD,
+                )
             )
         elif assign.assign_type == AssignmentType.ASSIGN_SUB:
-            assign.src = ArithmeticOp(
-                f"op_SUB",
-                assign.dest,
-                assign.src,
-                ArithmeticType.SUB,
+            assign.set_src(
+                ArithmeticOp(
+                    f"op_SUB",
+                    assign.dest,
+                    assign.src,
+                    ArithmeticType.SUB,
+                )
             )
         elif assign.assign_type == AssignmentType.ASSIGN_MUL:
-            assign.src = ArithmeticOp(
-                f"op_MUL",
-                assign.dest,
-                assign.src,
-                ArithmeticType.MUL,
+            assign.set_src(
+                ArithmeticOp(
+                    f"op_MUL",
+                    assign.dest,
+                    assign.src,
+                    ArithmeticType.MUL,
+                )
             )
         elif assign.assign_type == AssignmentType.ASSIGN_MOD:
-            assign.src = ArithmeticOp(
-                f"op_MOD",
-                assign.dest,
-                assign.src,
-                ArithmeticType.MOD,
+            assign.set_src(
+                ArithmeticOp(
+                    f"op_MOD",
+                    assign.dest,
+                    assign.src,
+                    ArithmeticType.MOD,
+                )
             )
         elif assign.assign_type == AssignmentType.ASSIGN_DIV:
-            assign.src = ArithmeticOp(
-                f"op_DIV",
-                assign.dest,
-                assign.src,
-                ArithmeticType.DIV,
+            assign.set_src(
+                ArithmeticOp(
+                    f"op_DIV",
+                    assign.dest,
+                    assign.src,
+                    ArithmeticType.DIV,
+                )
             )
         elif assign.assign_type == AssignmentType.ASSIGN_RIGHT:
-            assign.src = BitOp(
-                f"op_SHIFTR",
-                assign.dest,
-                assign.src,
-                BitOperationType.RSHIFT,
+            assign.set_src(
+                BitOp(
+                    f"op_SHIFTR",
+                    assign.dest,
+                    assign.src,
+                    BitOperationType.RSHIFT,
+                )
             )
         elif assign.assign_type == AssignmentType.ASSIGN_LEFT:
-            assign.src = BitOp(
-                f"op_SHIFTL",
-                assign.dest,
-                assign.src,
-                BitOperationType.LSHIFT,
+            assign.set_src(
+                BitOp(
+                    f"op_SHIFTL",
+                    assign.dest,
+                    assign.src,
+                    BitOperationType.LSHIFT,
+                )
             )
         elif assign.assign_type == AssignmentType.ASSIGN_AND:
-            assign.src = BitOp(
-                f"op_AND",
-                assign.dest,
-                assign.src,
-                BitOperationType.AND,
+            assign.set_src(
+                BitOp(
+                    f"op_AND",
+                    assign.dest,
+                    assign.src,
+                    BitOperationType.AND,
+                )
             )
         elif assign.assign_type == AssignmentType.ASSIGN_OR:
-            assign.src = BitOp(
-                f"op_OR",
-                assign.dest,
-                assign.src,
-                BitOperationType.OR,
+            assign.set_src(
+                BitOp(
+                    f"op_OR",
+                    assign.dest,
+                    assign.src,
+                    BitOperationType.OR,
+                )
             )
         elif assign.assign_type == AssignmentType.ASSIGN_XOR:
-            assign.src = BitOp(
-                f"op_XOR",
-                assign.dest,
-                assign.src,
-                BitOperationType.XOR,
+            assign.set_src(
+                BitOp(
+                    f"op_XOR",
+                    assign.dest,
+                    assign.src,
+                    BitOperationType.XOR,
+                )
             )
         else:
             raise NotImplementedError(f"Assign type {assign.assign_type} not handled.")

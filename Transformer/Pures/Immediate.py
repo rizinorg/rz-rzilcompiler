@@ -39,3 +39,6 @@ class Immediate(LocalVar):
         return (
             f"RzILOpPure *{self.pure_var()} = {il_macro}({width}, {cast} {get_imm}));"
         )
+
+    def __str__(self):
+        return f"{self.get_isa_name()}"

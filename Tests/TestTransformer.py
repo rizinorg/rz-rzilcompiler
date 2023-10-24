@@ -8,13 +8,17 @@ import unittest
 from Compiler import RZILInstruction, Compiler
 from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine, SubRoutineInitType
 from rzil_compiler.Transformer.Pures.Parameter import get_parameter_by_decl, Parameter
-from rzil_compiler.Transformer.ValueType import get_value_type_by_c_type, ValueType, VTGroup
+from rzil_compiler.Transformer.ValueType import (
+    get_value_type_by_c_type,
+    ValueType,
+    VTGroup,
+)
 from rzil_compiler.Transformer.Pures.Register import Register
 from rzil_compiler.Transformer.Pures.Cast import Cast
 from rzil_compiler.Transformer.Pures.Number import Number
 from rzil_compiler.Configuration import Conf, InputFile
 from rzil_compiler.Preprocessor.Hexagon.PreprocessorHexagon import PreprocessorHexagon
-from rzil_compiler.Transformer.RZILTransformer import RZILTransformer
+from rzil_compiler.Transformer.RZILTransformer import RZILTransformer, CodeFormat
 from rzil_compiler.ArchEnum import ArchEnum
 
 from lark import Lark, logger
@@ -124,7 +128,7 @@ class TestTransforming(unittest.TestCase):
         cls.maxDiff = 1300
         cls.insn_behavior = get_hexagon_insn_behavior()
         cls.parser = get_hexagon_parser()
-        cls.compiler = Compiler(ArchEnum.HEXAGON)
+        cls.compiler = Compiler(ArchEnum.HEXAGON, code_format=CodeFormat.EXEC_CLASSES)
 
     def compile_behavior(
         self, behavior: str, transformer: RZILTransformer = None
@@ -135,13 +139,19 @@ class TestTransforming(unittest.TestCase):
             if transformer:
                 return transformer.transform(tree)
             else:
-                transformer = RZILTransformer(ArchEnum.HEXAGON, sub_routines=self.compiler.sub_routines,
-                        parameters=[Parameter("pkt", get_value_type_by_c_type("HexPkt")),
-                                    Parameter("hi", get_value_type_by_c_type("HexInsn")),
-                                    Parameter("bundle", get_value_type_by_c_type("HexInsnPktBundle"))
-                                    ],
-                        return_type=ValueType(False, 32, VTGroup.EXTERNAL, "RzILOpEffect"),
-                        )
+                transformer = RZILTransformer(
+                    ArchEnum.HEXAGON,
+                    sub_routines=self.compiler.sub_routines,
+                    parameters=[
+                        Parameter("pkt", get_value_type_by_c_type("HexPkt")),
+                        Parameter("hi", get_value_type_by_c_type("HexInsn")),
+                        Parameter(
+                            "bundle", get_value_type_by_c_type("HexInsnPktBundle")
+                        ),
+                    ],
+                    return_type=ValueType(False, 32, VTGroup.EXTERNAL, "RzILOpEffect"),
+                    code_format=CodeFormat.EXEC_CLASSES,
+                )
                 return transformer.transform(tree)
         except UnexpectedToken as e:
             # Parser got unexpected token
@@ -167,7 +177,10 @@ class TestTransforming(unittest.TestCase):
         ]
         behavior = "{ return (value >> start) & (~0ULL >> (64 - length)); }"
         transformer = RZILTransformer(
-            ArchEnum.HEXAGON, parameters=params, return_type=ret_val
+            ArchEnum.HEXAGON,
+            parameters=params,
+            return_type=ret_val,
+            code_format=CodeFormat.EXEC_CLASSES,
         )
         result = self.compile_behavior(behavior, transformer)
         self.assertFalse(isinstance(result, Exception))
@@ -430,7 +443,8 @@ class TestTransforming(unittest.TestCase):
         behavior = self.insn_behavior["A2_abs"][0]
         result = self.compile_behavior(behavior)
         self.assertFalse(isinstance(result, Exception))
-        self.assertEqual("""
+        self.assertEqual(
+            """
             // READ
             const HexOp *Rd_op = ISA2REG(hi, 'd', false);
             const HexOp *Rs_op = ISA2REG(hi, 's', false);
@@ -445,13 +459,18 @@ class TestTransforming(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_6 = WRITE_REG(pkt, Rd_op, cond_5);
             RzILOpEffect *instruction_sequence = op_ASSIGN_6;
 
-            return instruction_sequence;""".replace("  ", ""), result)
+            return instruction_sequence;""".replace(
+                "  ", ""
+            ),
+            result,
+        )
 
     def test_size_t(self):
         behavior = "{ size8u_t a = 0x0; uint64_t b = (size8u_t) 0x1; }"
         result = self.compile_behavior(behavior)
         self.assertFalse(isinstance(result, Exception))
-        self.assertEqual("""
+        self.assertEqual(
+            """
             // READ
             // Declare: ut64 a;
             // Declare: ut64 b;
@@ -463,7 +482,252 @@ class TestTransforming(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_7 = SETL("b", CAST(64, IL_FALSE, SN(32, 1)));
             RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, op_ASSIGN_7);
 
-            return instruction_sequence;""".replace("  ", ""), result)
+            return instruction_sequence;""".replace(
+                "  ", ""
+            ),
+            result,
+        )
+
+
+class TestStmtEmitting(unittest.TestCase):
+    insn_behavior: dict[str:tuple] = dict()
+
+    @classmethod
+    def setUpClass(cls):
+        cls.maxDiff = 2500
+        cls.insn_behavior = get_hexagon_insn_behavior()
+        cls.parser = get_hexagon_parser()
+        cls.compiler = Compiler(ArchEnum.HEXAGON)
+
+    def compile_behavior(
+        self, behavior: str, transformer: RZILTransformer = None
+    ) -> str:
+        tree = self.parser.parse(behavior)
+        if transformer:
+            return transformer.transform(tree)
+        else:
+            transformer = RZILTransformer(
+                ArchEnum.HEXAGON,
+                sub_routines=self.compiler.sub_routines,
+                parameters=[
+                    Parameter("pkt", get_value_type_by_c_type("HexPkt")),
+                    Parameter("hi", get_value_type_by_c_type("HexInsn")),
+                    Parameter("bundle", get_value_type_by_c_type("HexInsnPktBundle")),
+                ],
+                return_type=ValueType(False, 32, VTGroup.EXTERNAL, "RzILOpEffect"),
+            )
+            return transformer.transform(tree)
+
+    def test_C2_mask(self):
+        behavior = self.insn_behavior["C2_mask"][0]
+        result = self.compile_behavior(behavior)
+        self.assertFalse(isinstance(result, Exception))
+        self.assertEqual(
+            """
+        // READ
+        // Declare: st32 i;
+        const HexOp *Rdd_op = ISA2REG(hi, 'd', false);
+        const HexOp *Pt_op = ISA2REG(hi, 't', false);
+        RzILOpPure *Pt = READ_REG(pkt, Pt_op, false);
+
+        // i = 0x0;
+        RzILOpEffect *op_ASSIGN_2 = SETL("i", SN(32, 0));
+
+        // HYB(++i);
+        RzILOpEffect *op_INC_5 = SETL("i", INC(VARL("i"), 32));
+
+        // h_tmp0 = HYB(++i);
+        RzILOpEffect *op_ASSIGN_hybrid_tmp_6 = SETL("h_tmp0", VARL("i"));
+
+        // seq(h_tmp0 = HYB(++i); HYB(++i));
+        RzILOpEffect *seq_7 = SEQN(2, op_ASSIGN_hybrid_tmp_6, op_INC_5);
+
+        // Rdd = ((st64) ((ut64) Rdd & ~0xff << i * 0x8) | ((ut64) ((st64) (((st32) Pt >> i) & 0x1 ? 0xff : 0x0)) & 0xff) << i * 0x8);
+        RzILOpPure *op_MUL_11 = MUL(VARL("i"), SN(32, 8));
+        RzILOpPure *op_LSHIFT_12 = SHIFTL0(SN(64, 0xff), op_MUL_11);
+        RzILOpPure *op_NOT_13 = LOGNOT(op_LSHIFT_12);
+        RzILOpPure *op_AND_14 = LOGAND(READ_REG(pkt, Rdd_op, true), op_NOT_13);
+        RzILOpPure *op_RSHIFT_16 = SHIFTR0(Pt, VARL("i"));
+        RzILOpPure *op_AND_19 = LOGAND(CAST(32, MSB(op_RSHIFT_16), DUP(op_RSHIFT_16)), SN(32, 1));
+        RzILOpPure *cond_22 = ITE(NON_ZERO(op_AND_19), SN(32, 0xff), SN(32, 0));
+        RzILOpPure *op_AND_25 = LOGAND(CAST(64, MSB(cond_22), DUP(cond_22)), SN(64, 0xff));
+        RzILOpPure *op_MUL_28 = MUL(VARL("i"), SN(32, 8));
+        RzILOpPure *op_LSHIFT_29 = SHIFTL0(CAST(64, IL_FALSE, op_AND_25), op_MUL_28);
+        RzILOpPure *op_OR_31 = LOGOR(CAST(64, IL_FALSE, op_AND_14), op_LSHIFT_29);
+        RzILOpEffect *op_ASSIGN_33 = WRITE_REG(pkt, Rdd_op, CAST(64, MSB(op_OR_31), DUP(op_OR_31)));
+
+        // seq(h_tmp0; Rdd = ((st64) ((ut64) Rdd & ~0xff << i * 0x8) | ((ut ...;
+        RzILOpEffect *seq_35 = SEQN(2, op_ASSIGN_33, EMPTY());
+
+        // seq(seq(h_tmp0 = HYB(++i); HYB(++i)); seq(h_tmp0; Rdd = ((st64)  ...;
+        RzILOpEffect *seq_36 = SEQN(2, seq_7, seq_35);
+
+        // while (i < 0x8) { seq(seq(h_tmp0 = HYB(++i); HYB(++i)); seq(h_tmp0; Rdd = ((st64)  ... };
+        RzILOpPure *op_LT_4 = SLT(VARL("i"), SN(32, 8));
+        RzILOpEffect *for_37 = REPEAT(op_LT_4, seq_36);
+
+        // seq(i = 0x0; while (i < 0x8) { seq(seq(h_tmp0 = HYB(++i); HYB(++ ...;
+        RzILOpEffect *seq_38 = SEQN(2, op_ASSIGN_2, for_37);
+
+        RzILOpEffect *instruction_sequence = seq_38;
+        return instruction_sequence;""".replace(
+                "  ", ""
+            ),
+            result,
+        )
+
+    def test_A4_tlbmatch(self):
+        behavior = self.insn_behavior["A4_tlbmatch"][0]
+        result = self.compile_behavior(behavior)
+        self.assertFalse(isinstance(result, Exception))
+        self.assertEqual(
+            """
+            // READ
+            // Declare: ut32 TLBHI;
+            // Declare: ut32 TLBLO;
+            // Declare: ut32 MASK;
+            // Declare: ut32 SIZE;
+            const HexOp *Rss_op = ISA2REG(hi, 's', false);
+            RzILOpPure *Rss = READ_REG(pkt, Rss_op, false);
+            const HexOp *Pd_op = ISA2REG(hi, 'd', false);
+            const HexOp *Rt_op = ISA2REG(hi, 't', false);
+            RzILOpPure *Rt = READ_REG(pkt, Rt_op, false);
+
+            // MASK = ((ut32) 0x7ffffff);
+            RzILOpEffect *op_ASSIGN_6 = SETL("MASK", CAST(32, IL_FALSE, SN(32, 0x7ffffff)));
+
+            // TLBLO = ((ut32) ((ut64) ((ut32) Rss >> 0x0 & 0xffffffff)));
+            RzILOpPure *op_RSHIFT_11 = SHIFTR0(Rss, SN(32, 0));
+            RzILOpPure *op_AND_13 = LOGAND(op_RSHIFT_11, SN(64, 0xffffffff));
+            RzILOpEffect *op_ASSIGN_17 = SETL("TLBLO", CAST(32, IL_FALSE, CAST(64, IL_FALSE, CAST(32, IL_FALSE, op_AND_13))));
+
+            // TLBHI = ((ut32) ((ut64) ((ut32) Rss >> 0x20 & 0xffffffff)));
+            RzILOpPure *op_RSHIFT_21 = SHIFTR0(DUP(Rss), SN(32, 0x20));
+            RzILOpPure *op_AND_23 = LOGAND(op_RSHIFT_21, SN(64, 0xffffffff));
+            RzILOpEffect *op_ASSIGN_27 = SETL("TLBHI", CAST(32, IL_FALSE, CAST(64, IL_FALSE, CAST(32, IL_FALSE, op_AND_23))));
+
+            // HYB(None_TLBLO);
+            RzILOpEffect *revbit32_call_29 = hex_revbit32(VARL("TLBLO"));
+
+            // h_tmp0 = HYB(None_TLBLO);
+            RzILOpEffect *op_ASSIGN_hybrid_tmp_30 = SETL("h_tmp0", UNSIGNED(32, VARL("ret_val")));
+
+            // seq(HYB(None_TLBLO); h_tmp0 = HYB(None_TLBLO));
+            RzILOpEffect *seq_31 = SEQN(2, revbit32_call_29, op_ASSIGN_hybrid_tmp_30);
+
+            // HYB(None_~h_tmp0);
+            RzILOpPure *op_NOT_32 = LOGNOT(VARL("h_tmp0"));
+            RzILOpEffect *clo32_call_33 = hex_clo32(op_NOT_32);
+
+            // h_tmp1 = HYB(None_~h_tmp0);
+            RzILOpEffect *op_ASSIGN_hybrid_tmp_34 = SETL("h_tmp1", UNSIGNED(32, VARL("ret_val")));
+
+            // seq(HYB(None_~h_tmp0); h_tmp1 = HYB(None_~h_tmp0));
+            RzILOpEffect *seq_35 = SEQN(2, clo32_call_33, op_ASSIGN_hybrid_tmp_34);
+
+            // seq(seq(HYB(None_TLBLO); h_tmp0 = HYB(None_TLBLO)); seq(HYB(None ...;
+            RzILOpEffect *seq_36 = SEQN(2, seq_31, seq_35);
+
+            // HYB(None_TLBLO);
+            RzILOpEffect *revbit32_call_40 = hex_revbit32(VARL("TLBLO"));
+
+            // h_tmp2 = HYB(None_TLBLO);
+            RzILOpEffect *op_ASSIGN_hybrid_tmp_41 = SETL("h_tmp2", UNSIGNED(32, VARL("ret_val")));
+
+            // seq(HYB(None_TLBLO); h_tmp2 = HYB(None_TLBLO));
+            RzILOpEffect *seq_42 = SEQN(2, revbit32_call_40, op_ASSIGN_hybrid_tmp_41);
+
+            // HYB(None_~h_tmp2);
+            RzILOpPure *op_NOT_43 = LOGNOT(VARL("h_tmp2"));
+            RzILOpEffect *clo32_call_44 = hex_clo32(op_NOT_43);
+
+            // h_tmp3 = HYB(None_~h_tmp2);
+            RzILOpEffect *op_ASSIGN_hybrid_tmp_45 = SETL("h_tmp3", UNSIGNED(32, VARL("ret_val")));
+
+            // seq(HYB(None_~h_tmp2); h_tmp3 = HYB(None_~h_tmp2));
+            RzILOpEffect *seq_46 = SEQN(2, clo32_call_44, op_ASSIGN_hybrid_tmp_45);
+
+            // seq(seq(HYB(None_TLBLO); h_tmp2 = HYB(None_TLBLO)); seq(HYB(None ...;
+            RzILOpEffect *seq_47 = SEQN(2, seq_42, seq_46);
+
+            // SIZE = (((ut32) 0x6) < h_tmp1 ? ((ut32) 0x6) : h_tmp3);
+            RzILOpPure *op_LT_38 = ULT(CAST(32, IL_FALSE, SN(32, 6)), VARL("h_tmp1"));
+            RzILOpPure *cond_49 = ITE(op_LT_38, CAST(32, IL_FALSE, SN(32, 6)), VARL("h_tmp3"));
+            RzILOpEffect *op_ASSIGN_50 = SETL("SIZE", cond_49);
+
+            // seq(seq(seq(HYB(None_TLBLO); h_tmp0 = HYB(None_TLBLO)); seq(HYB( ...;
+            RzILOpEffect *seq_51 = SEQN(3, seq_36, seq_47, op_ASSIGN_50);
+
+            // MASK = MASK & ((ut32) 0xffffffff << ((ut32) 0x2) * SIZE);
+            RzILOpPure *op_MUL_55 = MUL(CAST(32, IL_FALSE, SN(32, 2)), VARL("SIZE"));
+            RzILOpPure *op_LSHIFT_56 = SHIFTL0(SN(32, 0xffffffff), op_MUL_55);
+            RzILOpPure *op_AND_58 = LOGAND(VARL("MASK"), CAST(32, IL_FALSE, op_LSHIFT_56));
+            RzILOpEffect *op_ASSIGN_AND_59 = SETL("MASK", op_AND_58);
+
+            // Pd = ((st8) (TLBHI >> 0x1f & ((ut32) 0x1) && TLBHI & MASK == ((ut32) Rt) & MASK ? 0xff : 0x0));
+            RzILOpPure *op_RSHIFT_62 = SHIFTR0(VARL("TLBHI"), SN(32, 31));
+            RzILOpPure *op_AND_65 = LOGAND(op_RSHIFT_62, CAST(32, IL_FALSE, SN(32, 1)));
+            RzILOpPure *op_AND_66 = LOGAND(VARL("TLBHI"), VARL("MASK"));
+            RzILOpPure *op_AND_69 = LOGAND(CAST(32, IL_FALSE, Rt), VARL("MASK"));
+            RzILOpPure *op_EQ_70 = EQ(op_AND_66, op_AND_69);
+            RzILOpPure *op_AND_71 = AND(NON_ZERO(op_AND_65), op_EQ_70);
+            RzILOpPure *cond_74 = ITE(op_AND_71, SN(32, 0xff), SN(32, 0));
+            RzILOpEffect *op_ASSIGN_76 = WRITE_REG(pkt, Pd_op, CAST(8, MSB(cond_74), DUP(cond_74)));
+
+            RzILOpEffect *instruction_sequence = SEQN(6, op_ASSIGN_6, op_ASSIGN_17, op_ASSIGN_27, seq_51, op_ASSIGN_AND_59, op_ASSIGN_76);
+            return instruction_sequence;""".replace(
+                "  ", ""
+            ),
+            result,
+        )
+
+    def test_S2_lsl_r_p(self):
+        behavior = self.insn_behavior["S2_lsl_r_p"][0]
+        result = self.compile_behavior(behavior)
+        self.assertFalse(isinstance(result, Exception))
+        self.assertEqual(
+            """
+            // READ
+            const HexOp *Rt_op = ISA2REG(hi, 't', false);
+            RzILOpPure *Rt = READ_REG(pkt, Rt_op, false);
+            // Declare: st32 shamt;
+            const HexOp *Rdd_op = ISA2REG(hi, 'd', false);
+            const HexOp *Rss_op = ISA2REG(hi, 's', false);
+            RzILOpPure *Rss = READ_REG(pkt, Rss_op, false);
+
+            // sextract64(((ut64) Rt), 0x0, 0x7);
+            RzILOpEffect *sextract64_call_7 = hex_sextract64(CAST(64, IL_FALSE, Rt), SN(32, 0), SN(32, 7));
+
+            // h_tmp0 = sextract64(((ut64) Rt), 0x0, 0x7);
+            RzILOpEffect *op_ASSIGN_hybrid_tmp_8 = SETL("h_tmp0", SIGNED(64, VARL("ret_val")));
+
+            // seq(sextract64(((ut64) Rt), 0x0, 0x7); h_tmp0 = sextract64(((ut6 ...;
+            RzILOpEffect *seq_9 = SEQN(2, sextract64_call_7, op_ASSIGN_hybrid_tmp_8);
+
+            // shamt = ((st32) (0x7 != 0x0 ? h_tmp0 : 0x0));
+            RzILOpPure *op_NE_2 = INV(EQ(SN(32, 7), SN(32, 0)));
+            RzILOpPure *cond_11 = ITE(op_NE_2, VARL("h_tmp0"), SN(64, 0));
+            RzILOpEffect *op_ASSIGN_13 = SETL("shamt", CAST(32, MSB(cond_11), DUP(cond_11)));
+
+            // seq(seq(sextract64(((ut64) Rt), 0x0, 0x7); h_tmp0 = sextract64(( ...;
+            RzILOpEffect *seq_14 = SEQN(2, seq_9, op_ASSIGN_13);
+
+            // Rdd = ((st64) (shamt < 0x0 ? ((ut64) Rss) >> -shamt - 0x1 >> 0x1 : ((ut64) Rss) << shamt));
+            RzILOpPure *op_LT_18 = SLT(VARL("shamt"), SN(32, 0));
+            RzILOpPure *op_NEG_21 = NEG(VARL("shamt"));
+            RzILOpPure *op_SUB_23 = SUB(op_NEG_21, SN(32, 1));
+            RzILOpPure *op_RSHIFT_24 = SHIFTR0(CAST(64, IL_FALSE, Rss), op_SUB_23);
+            RzILOpPure *op_RSHIFT_26 = SHIFTR0(op_RSHIFT_24, SN(32, 1));
+            RzILOpPure *op_LSHIFT_28 = SHIFTL0(CAST(64, IL_FALSE, DUP(Rss)), VARL("shamt"));
+            RzILOpPure *cond_29 = ITE(op_LT_18, op_RSHIFT_26, op_LSHIFT_28);
+            RzILOpEffect *op_ASSIGN_31 = WRITE_REG(pkt, Rdd_op, CAST(64, MSB(cond_29), DUP(cond_29)));
+
+            RzILOpEffect *instruction_sequence = SEQN(2, seq_14, op_ASSIGN_31);
+            return instruction_sequence;""".replace(
+                "  ", ""
+            ),
+            result,
+        )
 
 
 class TestTransformerMeta(unittest.TestCase):
@@ -479,14 +743,17 @@ class TestTransformerMeta(unittest.TestCase):
     def compile_behavior(self, behavior: str) -> list[str]:
         try:
             tree = self.parser.parse(behavior)
-            transformer = RZILTransformer(ArchEnum.HEXAGON, sub_routines=self.compiler.sub_routines,
-                        parameters=[
-                            Parameter("pkt", get_value_type_by_c_type("HexPkt")),
-                            Parameter("hi", get_value_type_by_c_type("HexInsn")),
-                            Parameter("bundle", get_value_type_by_c_type("HexInsnPktBundle"))
-                        ],
-                        return_type=ValueType(False, 32, VTGroup.EXTERNAL, "RzILOpEffect"),
-                        )
+            transformer = RZILTransformer(
+                ArchEnum.HEXAGON,
+                sub_routines=self.compiler.sub_routines,
+                parameters=[
+                    Parameter("pkt", get_value_type_by_c_type("HexPkt")),
+                    Parameter("hi", get_value_type_by_c_type("HexInsn")),
+                    Parameter("bundle", get_value_type_by_c_type("HexInsnPktBundle")),
+                ],
+                return_type=ValueType(False, 32, VTGroup.EXTERNAL, "RzILOpEffect"),
+                code_format=CodeFormat.EXEC_CLASSES,
+            )
             transformer.transform(tree)
             return transformer.ext.get_meta()
         except UnexpectedToken as e:
@@ -591,8 +858,10 @@ class TestTransformerOutput(unittest.TestCase):
     def setUpClass(cls):
         cls.insn_behavior = get_hexagon_insn_behavior()
         cls.parser = get_hexagon_parser()
-        cls.compiler = Compiler(ArchEnum.HEXAGON)
-        cls.transformer = RZILTransformer(ArchEnum.HEXAGON)
+        cls.compiler = Compiler(ArchEnum.HEXAGON, code_format=CodeFormat.EXEC_CLASSES)
+        cls.transformer = RZILTransformer(
+            ArchEnum.HEXAGON, code_format=CodeFormat.EXEC_CLASSES
+        )
 
     def compile_behavior(
         self, behavior: str, transformer: RZILTransformer = None
@@ -644,7 +913,10 @@ class TestTransformerOutput(unittest.TestCase):
         code = "{ RdV = RsV + start; }"
         ast_body = self.parser.parse(code)
         body = RZILTransformer(
-            ArchEnum.HEXAGON, parameters=params, return_type=ret_type
+            ArchEnum.HEXAGON,
+            parameters=params,
+            return_type=ret_type,
+            code_format=CodeFormat.EXEC_CLASSES,
         ).transform(ast_body)
         sub_routine = SubRoutine(name, ret_type, params, body)
 
@@ -687,6 +959,7 @@ class TestTransformerOutput(unittest.TestCase):
             parameters=params,
             return_type=ret_type,
             sub_routines={"hex_test_routine": sub_routine},
+            code_format=CodeFormat.EXEC_CLASSES,
         ).transform(ast_body)
 
         self.assertEqual(
@@ -723,7 +996,9 @@ class TestTransformerOutput(unittest.TestCase):
         # Use sub-routine
         ast_body = self.parser.parse("{ RdV = sextract64(0, 0, 0); }")
         transformer = RZILTransformer(
-            ArchEnum.HEXAGON, sub_routines={"sextract64": sub_routine}
+            ArchEnum.HEXAGON,
+            sub_routines={"sextract64": sub_routine},
+            code_format=CodeFormat.EXEC_CLASSES,
         )
         result = transformer.transform(ast_body)
         self.assertEqual(
@@ -755,7 +1030,10 @@ class TestTransformerOutput(unittest.TestCase):
         ]
         behavior = "{ return (value >> start) & (~0ULL >> (64 - length)); }"
         transformer = RZILTransformer(
-            ArchEnum.HEXAGON, parameters=params, return_type=ret_val
+            ArchEnum.HEXAGON,
+            parameters=params,
+            return_type=ret_val,
+            code_format=CodeFormat.EXEC_CLASSES,
         )
         output = self.compile_behavior(behavior, transformer)
         self.assertEqual(
@@ -797,7 +1075,7 @@ class TestTransformerOutput(unittest.TestCase):
         behavior = "{ uint64_t a = ((int64_t)((int8_t)((int32_t) 0))); }"
         self.transformer.inlined_pure_classes = ()
         output = self.compile_behavior(behavior)
-        expected = ("""
+        expected = """
             // READ
             RzILOpPure *const_0_0 = SN(32, 0x0);
             // Declare: ut64 a;
@@ -811,18 +1089,19 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_4 = SETL("a", cast_ut64_5);
             RzILOpEffect *instruction_sequence = op_ASSIGN_4;
 
-            return instruction_sequence;""".replace("  ", "")
+            return instruction_sequence;""".replace(
+            "  ", ""
         )
-        self.assertEqual(
-            expected,
-            output
-        )
+        self.assertEqual(expected, output)
 
     def test_simplify_arith_expr(self):
         # Simplify e.g. 4 - 1 = 3
         behavior = "{ uint32_t a = 1 + 1 * 7; }"
         output = self.compile_behavior(behavior)
-        expected = "// WRITE\n" 'RzILOpEffect *op_ASSIGN_6 = SETL("a", CAST(32, IL_FALSE, SN(32, 8)));\n'
+        expected = (
+            "// WRITE\n"
+            'RzILOpEffect *op_ASSIGN_6 = SETL("a", CAST(32, IL_FALSE, SN(32, 8)));\n'
+        )
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
         )
@@ -840,10 +1119,11 @@ class TestTransformerOutput(unittest.TestCase):
         // WRITE
         RzILOpEffect *op_ASSIGN_3 = SETL("a", CAST(32, IL_FALSE, SN(32, -4)));
         RzILOpEffect *instruction_sequence = op_ASSIGN_3;
-        
-        return instruction_sequence;""".replace("  ", "")
-        self.assertEqual(
-            expected, output)
+
+        return instruction_sequence;""".replace(
+            "  ", ""
+        )
+        self.assertEqual(expected, output)
 
     def test_simplify_unary_expr_pm(self):
         behavior = "{ uint32_t a = +8 + - +5;  }"
@@ -858,9 +1138,10 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *op_ASSIGN_7 = SETL("a", CAST(32, IL_FALSE, SN(32, 3)));
         RzILOpEffect *instruction_sequence = op_ASSIGN_7;
 
-        return instruction_sequence;""".replace("  ", "")
-        self.assertEqual(
-            expected, output)
+        return instruction_sequence;""".replace(
+            "  ", ""
+        )
+        self.assertEqual(expected, output)
 
     def test_simplify_unary_expr_minus(self):
         behavior = "{ int32_t a = -(+0x3);  }"
@@ -875,9 +1156,10 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *op_ASSIGN_4 = SETL("a", SN(32, -3));
         RzILOpEffect *instruction_sequence = op_ASSIGN_4;
 
-        return instruction_sequence;""".replace("  ", "")
-        self.assertEqual(
-            expected, output)
+        return instruction_sequence;""".replace(
+            "  ", ""
+        )
+        self.assertEqual(expected, output)
 
     def test_inlining_nothing(self):
         behavior = "{ int64_t a = 0; }"
@@ -996,16 +1278,15 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_1 = WRITE_REG(pkt, Rx_op, Rx);
             RzILOpEffect *instruction_sequence = op_ASSIGN_1;
 
-            return instruction_sequence;""".replace("  ", "")
-        self.assertEqual(
-            expected, output
+            return instruction_sequence;""".replace(
+            "  ", ""
         )
+        self.assertEqual(expected, output)
 
     def test_reg_explicit_assign(self):
         behavior = "{ P1_NEW = P0; R11:10_NEW = C31:30; }"
         output = self.compile_behavior(behavior)
-        expected = (
-            """
+        expected = """
             // READ
             const HexOp P1_new_op = EXPLICIT2OP(1, HEX_REG_CLASS_PRED_REGS, true);
             const HexOp P0_op = EXPLICIT2OP(0, HEX_REG_CLASS_PRED_REGS, false);
@@ -1021,17 +1302,15 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_5 = WRITE_REG(pkt, &R11_10_new_op, C31_30);
             RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, op_ASSIGN_5);
 
-            return instruction_sequence;""".replace("  ", "")
+            return instruction_sequence;""".replace(
+            "  ", ""
         )
-        self.assertEqual(
-            expected, output
-        )
+        self.assertEqual(expected, output)
 
     def test_reg_explicit_new(self):
         behavior = "{ P0 = P0_NEW; }"
         output = self.compile_behavior(behavior)
-        expected = (
-            """
+        expected = """
             // READ
             const HexOp P0_op = EXPLICIT2OP(0, HEX_REG_CLASS_PRED_REGS, false);
             const HexOp P0_new_op = EXPLICIT2OP(0, HEX_REG_CLASS_PRED_REGS, true);
@@ -1043,17 +1322,15 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_2 = WRITE_REG(pkt, &P0_op, P0_new);
             RzILOpEffect *instruction_sequence = op_ASSIGN_2;
 
-            return instruction_sequence;""".replace("  ", "")
+            return instruction_sequence;""".replace(
+            "  ", ""
         )
-        self.assertEqual(
-            expected, output
-        )
+        self.assertEqual(expected, output)
 
     def test_reg_alias_new(self):
         behavior = "{ HEX_REG_ALIAS_LR = HEX_REG_ALIAS_LR_NEW; }"
         output = self.compile_behavior(behavior)
-        expected = (
-            """
+        expected = """
             // READ
             const HexOp lr_op = ALIAS2OP(HEX_REG_ALIAS_LR, false);
             const HexOp lr_new_op = ALIAS2OP(HEX_REG_ALIAS_LR, true);
@@ -1065,11 +1342,10 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_2 = WRITE_REG(pkt, &lr_op, lr_new);
             RzILOpEffect *instruction_sequence = op_ASSIGN_2;
 
-            return instruction_sequence;""".replace("  ", "")
+            return instruction_sequence;""".replace(
+            "  ", ""
         )
-        self.assertEqual(
-            expected, output
-        )
+        self.assertEqual(expected, output)
 
     def test_reg_nums(self):
         self.assertEqual(Register.get_reg_num_from_name("V31:30"), 30)
@@ -1104,8 +1380,7 @@ class TestTransformerOutput(unittest.TestCase):
     def test_reg_alias_pc(self):
         behavior = "{ RdV = HEX_REG_ALIAS_PC; }"
         output = self.compile_behavior(behavior)
-        expected = (
-            """
+        expected = """
             // READ
             const HexOp *Rd_op = ISA2REG(hi, 'd', false);
             RzILOpPure *pc = U32(pkt->pkt_addr);
@@ -1116,17 +1391,15 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_3 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(pc), DUP(pc)));
             RzILOpEffect *instruction_sequence = op_ASSIGN_3;
 
-            return instruction_sequence;""".replace("  ", "")
+            return instruction_sequence;""".replace(
+            "  ", ""
         )
-        self.assertEqual(
-            expected, output
-        )
+        self.assertEqual(expected, output)
 
     def test_n_reg(self):
         behavior = "{(siV); EA = RsV + siV; mem_store_u32(EA, (NtN)); }"
         output = self.compile_behavior(behavior)
-        expected = (
-            """
+        expected = """
             // READ
             RzILOpPure *s = SN(32, (st32) ISA2IMM(hi, 's'));
             // Declare: ut32 EA;
@@ -1144,20 +1417,20 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *ms_cast_ut32_8_9 = STOREW(VARL("EA"), CAST(32, IL_FALSE, Nt_new));
             RzILOpEffect *instruction_sequence = SEQN(3, imm_assign_0, op_ASSIGN_6, ms_cast_ut32_8_9);
 
-            return instruction_sequence;""".replace("  ", "")
+            return instruction_sequence;""".replace(
+            "  ", ""
         )
-        self.assertEqual(
-            expected, output
-        )
+        self.assertEqual(expected, output)
 
     def test_trap(self):
         behavior = "{ trap(0, 0); }"
-        self.assertEqual(self.compiler.sub_routines["trap"].body,
-                         """{\nreturn NOP();\n}""".replace("  ", ""))
+        self.assertEqual(
+            self.compiler.sub_routines["trap"].body,
+            """{\nreturn NOP();\n}""".replace("  ", ""),
+        )
         tree = self.compiler.parser.parse(behavior)
         output = self.compiler.transformer.transform(tree)
-        expected = (
-            """
+        expected = """
             // READ
 
             // EXEC
@@ -1166,11 +1439,10 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *trap_call_3 = hex_trap(SN(32, 0), CAST(32, IL_FALSE, SN(32, 0)));
             RzILOpEffect *instruction_sequence = trap_call_3;
 
-            return instruction_sequence;""".replace("  ", "")
+            return instruction_sequence;""".replace(
+            "  ", ""
         )
-        self.assertEqual(
-            expected, output
-        )
+        self.assertEqual(expected, output)
 
     def test_reg_alias(self):
         behavior = "{ RdV = HEX_REG_ALIAS_USR; }"
@@ -1199,10 +1471,10 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *jump_const_0x0_0_1 = SEQ2(SETL("jump_flag", IL_TRUE), JMP(SN(32, 0)));
         RzILOpEffect *instruction_sequence = SEQN(2, jump_const_0x0_0_1, EMPTY());
 
-        return instruction_sequence;""".replace("  ", "")
-        self.assertEqual(
-            expected, output
+        return instruction_sequence;""".replace(
+            "  ", ""
         )
+        self.assertEqual(expected, output)
 
     def test_assign_op(self):
         behavior = "{ int32_t a = 1; a <<= 8; }"
@@ -1219,10 +1491,10 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_LEFT_5 = SETL("a", op_SHIFTL_4);
             RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, op_ASSIGN_LEFT_5);
 
-            return instruction_sequence;""".replace("  ", "")
-        self.assertEqual(
-            expected, output
+            return instruction_sequence;""".replace(
+            "  ", ""
         )
+        self.assertEqual(expected, output)
 
 
 class TestGrammar(unittest.TestCase):
@@ -1256,7 +1528,9 @@ class TestGrammar(unittest.TestCase):
             grammar = "".join(f.readlines())
         self.parser = Lark(grammar, start="fbody", parser="earley")
         ast = self.parser.parse(behavior)
-        result = RZILTransformer(ArchEnum.HEXAGON).transform(ast)
+        result = RZILTransformer(
+            ArchEnum.HEXAGON, code_format=CodeFormat.EXEC_CLASSES
+        ).transform(ast)
         self.assertNotIn("&", result)
 
 
@@ -1266,3 +1540,4 @@ if __name__ == "__main__":
     TestGrammar().main()
     TestTransformerOutput().main()
     TestTransformedInstr().main()
+    TestStmtEmitting().main()

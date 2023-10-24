@@ -31,3 +31,6 @@ class ForLoop(Effect):
             control = f"NON_ZERO({self.control.il_read()})"
 
         return f"REPEAT({control}, " f"{self.compound.effect_var()})"
+
+    def __str__(self):
+        return f"while ({self.control}) {{ {self.compound} }}"

@@ -42,3 +42,8 @@ class BitOp(PureExec):
             return f"SHIFTL0({self.ops[0].il_read()}, {self.ops[1].il_read()})"
         else:
             raise NotImplementedError("")
+
+    def __str__(self):
+        if self.op_type in [BitOperationType.NOT, BitOperationType.NEG]:
+            return f"{self.op_type}{self.ops[0]}"
+        return f"{self.ops[0]} {self.op_type} {self.ops[1]}"

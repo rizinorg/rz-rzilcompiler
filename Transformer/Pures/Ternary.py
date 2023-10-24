@@ -17,3 +17,6 @@ class Ternary(PureExec):
         else:
             cond = f"NON_ZERO({self.ops[0].il_read()})"
         return f"ITE({cond}, {self.ops[1].il_read()}, {self.ops[2].il_read()})"
+
+    def __str__(self):
+        return f"({self.ops[0]} ? {self.ops[1]} : {self.ops[2]})"
