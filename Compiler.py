@@ -6,15 +6,14 @@ import argparse
 import json
 import re
 
-from lark import Lark
+from lark import Lark, Tree
 from lark.exceptions import VisitError
 from tqdm import tqdm
 
-from helperFunctions import LogLevel
 from rzil_compiler.Transformer.ValueType import get_value_type_by_c_type, split_var_decl
 from rzil_compiler.Transformer.Pures.Parameter import Parameter
 from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine
-from rzil_compiler.Parser import Parser, ParserException
+from rzil_compiler.Parser import Parser, ParsedInsn
 from rzil_compiler.ArchEnum import ArchEnum
 from rzil_compiler.Configuration import Conf, InputFile
 from rzil_compiler.Helper import log
@@ -109,7 +108,7 @@ class Compiler:
     parser = None  # Parser only used for single statement compilations. Instructions are compiled in Parser.py
     transformer = None
     compiled_insns = dict()
-    asts = dict()  # Abstract syntax trees
+    parsed_insns = dict()  # Abstract syntax trees
     sub_routines: dict[
         str:SubRoutine
     ] = dict()  # dict of sub-routines which can be used by other instructions.
@@ -209,9 +208,9 @@ class Compiler:
         stats = {k: {"count": 0} for k in keys}
 
         log("Transform ASTs...")
-        for insn_name, trees in tqdm(self.asts.items()):
-            if isinstance(trees[0], ParserException):
-                match trees[0].name:
+        for insn_name, parsed_insn in tqdm(self.parsed_insns.items()):
+            if parsed_insn.exception:
+                match parsed_insn.exception.name:
                     case "UnexpectedToken":
                         # Parser got unexpected token
                         exc_name = "UnexpectedToken"
@@ -224,7 +223,7 @@ class Compiler:
                         exc_name = "Exception"
             else:
                 try:
-                    self.transform_insn(insn_name, trees)
+                    self.transform_insn(insn_name, parsed_insn)
                     exc_name = "Successful"
                 except VisitError:
                     # Something went wrong in the transformer
@@ -291,13 +290,13 @@ class Compiler:
         return result
 
     def compile_insn(self, insn_name: str) -> RZILInstruction:
-        return self.transform_insn(insn_name, self.asts[insn_name])
+        return self.transform_insn(insn_name, self.parsed_insns[insn_name])
 
     def parse_shortcode(self):
         log("Parse shortcode...")
-        self.asts = Parser().parse(self.preprocessor.behaviors)
+        self.parsed_insns = Parser().parse(self.preprocessor.behaviors)
 
-    def transform_insn(self, insn_name: str, parse_trees: list) -> RZILInstruction:
+    def transform_insn(self, insn_name: str, parsed_insns: ParsedInsn) -> RZILInstruction:
         """Compiles the instruction <insn_name> and returns the RZIL code.
         An instruction of certain architectures can have multiple behaviors,
         so this method returns a list of compiled behaviors.
@@ -308,9 +307,10 @@ class Compiler:
             rzil = list()
             meta = list()
             trees = list()
-            for pt in parse_trees:
+            pt: Tree
+            for pt, text in zip(parsed_insns.asts, parsed_insns.behaviors):
                 self.transformer.reset()
-                self.transformer.set_text(pt.text)
+                self.transformer.set_text(text)
                 rzil.append(self.transformer.transform(pt))
                 meta.append(self.transformer.ext.get_meta())
                 trees.append(pt.pretty())

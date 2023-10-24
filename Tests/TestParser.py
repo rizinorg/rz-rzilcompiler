@@ -52,7 +52,7 @@ class TestParser(unittest.TestCase):
         shortcodes["faulty_input"] = ["{"]
 
         exc = Parser.parse(shortcodes)
-        self.assertTrue(isinstance(exc["faulty_input"][0], ParserException))
+        self.assertTrue(isinstance(exc["faulty_input"].exception, ParserException))
 
 
 if __name__ == "__main__":

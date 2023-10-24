@@ -3,7 +3,7 @@
 
 from multiprocessing import Pool
 
-from lark import Lark
+from lark import Lark, Tree
 from tqdm import tqdm
 
 from Configuration import Conf, InputFile
@@ -27,20 +27,27 @@ class ParserException:
         self.name = str(type(exception).__name__)
 
 
-def parse_single(bundle: InsnParsingBundle) -> dict[str, list]:
+class ParsedInsn:
+    def __init__(self, name: str, asts: list[Tree], behaviors: list[str], exception: ParserException | None = None):
+        self.name = name
+        self.asts: list = asts
+        self.behaviors: list = behaviors
+        self.exception = exception
+
+
+def parse_single(bundle: InsnParsingBundle) -> dict[str: ParsedInsn]:
     name = bundle.name
-    behavior = bundle.behavior
+    behaviors = bundle.behavior
     grammar = bundle.grammar
-    result = dict()
-    result[name] = list()
     parser = Lark(grammar, start="fbody", parser="earley", propagate_positions=True)
     try:
-        for b in behavior:
-            ast = parser.parse(b)
-            result[name].append(ast)
+        asts = list()
+        for b in behaviors:
+            asts.append(parser.parse(b))
+        pinsn = ParsedInsn(name, asts, behaviors)
     except Exception as e:
-        result[name].append(ParserException(e))
-    return result
+        pinsn = ParsedInsn(name, [], behaviors, ParserException(e))
+    return {name: pinsn}
 
 
 class Parser:
@@ -48,7 +55,7 @@ class Parser:
         pass
 
     @staticmethod
-    def parse(insn_behavior: dict[str, list]):
+    def parse(insn_behavior: dict[str, list]) -> dict[str, ParsedInsn]:
         with open(Conf.get_path(InputFile.GRAMMAR, "Hexagon")) as f:
             grammar = "".join(f.readlines())
 
@@ -56,7 +63,7 @@ class Parser:
             InsnParsingBundle(grammar, insn_name, insn_beh)
             for insn_name, insn_beh in insn_behavior.items()
         ]
-        result = dict()
+        result: dict[str, ParsedInsn] = dict()
         with Pool() as pool:
             for res in tqdm(
                 pool.imap(parse_single, args), total=len(args), desc="Parse shortcode"
