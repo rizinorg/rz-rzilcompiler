@@ -3,7 +3,6 @@
 
 from enum import Enum
 
-from rzil_compiler.Transformer.TextCoord import TextCoord
 from rzil_compiler.Transformer.ValueType import ValueType
 from rzil_compiler.Exceptions import OverloadException
 
@@ -24,24 +23,10 @@ class Pure:
     num_id = -1
 
     def __init__(self, name: str, pure_type: PureType, value_type: ValueType):
-        self.text_coord = TextCoord()
-        self.is_stmt = False  # Flag for fbody generation if this is a statement in C.
-
         self.reads: int = 0
         self.name = name
         self.type = pure_type
         self.value_type = value_type
-
-    def __getattr__(self, name):
-        match name:
-            case "start_pos":
-                return self.text_coord.start_pos
-            case "end_pos":
-                return self.text_coord.end_pos
-            case "len":
-                return self.text_coord.len
-            case _:
-                raise AttributeError(f"Attribute {name} does not exist.")
 
     def set_num_id(self, num_id: int):
         self.num_id = num_id

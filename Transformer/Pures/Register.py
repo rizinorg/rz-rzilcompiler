@@ -8,9 +8,7 @@ from rzil_compiler.Transformer.PluginInfo import (
     isa_explicit_to_op_args,
     isa_alias_to_op_args,
     isa_alias_to_op,
-    isa_explicit_to_op,
-    hexagon_isa_n_reg_to_op_args,
-    hexagon_isa_n_reg_to_op,
+    isa_explicit_to_op, hexagon_isa_n_reg_to_op_args, hexagon_isa_n_reg_to_op,
 )
 from rzil_compiler.Transformer.Pures.GlobalVar import GlobalVar
 from enum import StrEnum

@@ -110,14 +110,10 @@ class SubRoutineCall(Hybrid):
 
     def il_write(self):
         if len(self.args) != len(self.sub_routine.get_parameter_value_types()):
-            raise ValueError(
-                f"The number of arguments ({len(self.args)}) does not match number of the parameters.\n"
-                f"{self.sub_routine.name} needs: {[str(t) for t in self.sub_routine.get_parameter_value_types()]}"
-            )
+            raise ValueError(f"The number of arguments ({len(self.args)}) does not match number of the parameters.\n"
+                             f"{self.sub_routine.name} needs: {[str(t) for t in self.sub_routine.get_parameter_value_types()]}")
         code = f"{hexagon_c_call_prefix.lower() + self.sub_routine.get_name()}("
-        for i, (arg, ptype) in enumerate(
-            zip(self.args, self.sub_routine.get_parameter_value_types())
-        ):
+        for i, (arg, ptype) in enumerate(zip(self.args, self.sub_routine.get_parameter_value_types())):
             if i > 0:
                 code += ", "
             if ptype.group & VTGroup.EXTERNAL:
@@ -127,16 +123,12 @@ class SubRoutineCall(Hybrid):
                     continue
                 # The argument should be of an external type. So only the variable name is printed.
                 if "get_op_var" not in dir(arg):
-                    raise ValueError(
-                        f"{arg} as no method to get it's operand holding variable name."
-                    )
+                    raise ValueError(f"{arg} as no method to get it's operand holding variable name.")
                 code += arg.get_op_var()
             elif ptype.group & VTGroup.PURE:
                 # Normal pure.
                 code += arg.il_read()
             else:
-                raise ValueError(
-                    f"{arg.group} not handled to initialize a sub-routine arguments."
-                )
+                raise ValueError(f"{arg.group} not handled to initialize a sub-routine arguments.")
         code += ")"
         return code

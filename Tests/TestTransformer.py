@@ -49,7 +49,7 @@ def get_hexagon_parser() -> Lark:
     # Setup parser
     with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
         grammar = "".join(f.readlines())
-    return Lark(grammar, start="fbody", parser="earley", propagate_positions=True)
+    return Lark(grammar, start="fbody", parser="earley")
 
 
 class TestTransformedInstr(unittest.TestCase):
@@ -124,7 +124,7 @@ class TestTransforming(unittest.TestCase):
         cls.maxDiff = 1300
         cls.insn_behavior = get_hexagon_insn_behavior()
         cls.parser = get_hexagon_parser()
-        cls.compiler = Compiler(ArchEnum.HEXAGON, False)
+        cls.compiler = Compiler(ArchEnum.HEXAGON)
 
     def compile_behavior(
         self, behavior: str, transformer: RZILTransformer = None
@@ -133,7 +133,6 @@ class TestTransforming(unittest.TestCase):
         try:
             tree = self.parser.parse(behavior)
             if transformer:
-                transformer.set_text(behavior)
                 return transformer.transform(tree)
             else:
                 transformer = RZILTransformer(ArchEnum.HEXAGON, sub_routines=self.compiler.sub_routines,
@@ -143,7 +142,6 @@ class TestTransforming(unittest.TestCase):
                                     ],
                         return_type=ValueType(False, 32, VTGroup.EXTERNAL, "RzILOpEffect"),
                         )
-                transformer.set_text(behavior)
                 return transformer.transform(tree)
         except UnexpectedToken as e:
             # Parser got unexpected token
@@ -489,7 +487,6 @@ class TestTransformerMeta(unittest.TestCase):
                         ],
                         return_type=ValueType(False, 32, VTGroup.EXTERNAL, "RzILOpEffect"),
                         )
-            transformer.set_text(behavior)
             transformer.transform(tree)
             return transformer.ext.get_meta()
         except UnexpectedToken as e:
@@ -603,11 +600,9 @@ class TestTransformerOutput(unittest.TestCase):
         try:
             tree = self.parser.parse(behavior)
             if transformer:
-                transformer.set_text(behavior)
                 return transformer.transform(tree)
             else:
                 self.transformer.reset()
-                self.transformer.set_text(behavior)
                 return self.transformer.transform(tree)
         except UnexpectedToken as e:
             # Parser got unexpected token
@@ -1237,7 +1232,7 @@ class TestGrammar(unittest.TestCase):
             grammar = "".join(f.readlines())
         exc = None
         try:
-            self.parser = Lark(grammar, start="fbody", parser="earley", propagate_positions=True)
+            self.parser = Lark(grammar, start="fbody", parser="earley")
         except Exception as e:
             exc = e
         self.assertIsNone(exc)
@@ -1250,7 +1245,7 @@ class TestGrammar(unittest.TestCase):
         exc = None
         logger.setLevel(logging.DEBUG)
         try:
-            self.parser = Lark(grammar, start="fbody", parser="lalr", debug=True, propagate_positions=True)
+            self.parser = Lark(grammar, start="fbody", parser="lalr", debug=True)
         except Exception as e:
             exc = e
         self.assertIsNone(exc)
@@ -1259,7 +1254,7 @@ class TestGrammar(unittest.TestCase):
         behavior = "{ 0x0 & 0xffffff; 0x0 && 0xffffff; }"
         with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
             grammar = "".join(f.readlines())
-        self.parser = Lark(grammar, start="fbody", parser="earley", propagate_positions=True)
+        self.parser = Lark(grammar, start="fbody", parser="earley")
         ast = self.parser.parse(behavior)
         result = RZILTransformer(ArchEnum.HEXAGON).transform(ast)
         self.assertNotIn("&", result)

@@ -4,7 +4,6 @@ from enum import Flag, auto
 
 from lark import Token
 
-from rzil_compiler.Transformer.TextCoord import TextCoord
 from rzil_compiler.Transformer.helper_hexagon import get_num_base_by_token
 
 
@@ -32,8 +31,6 @@ class ValueType:
         group: VTGroup = VTGroup.PURE,
         external_type: str = None,
     ):
-        self.text_coord = TextCoord()
-
         self._signed = signed
         self._bit_width = bit_width
         self.group: VTGroup = group
@@ -42,17 +39,6 @@ class ValueType:
             raise ValueError(
                 "If the ValueTypeGroup is EXTERNAL a type name must be given as well."
             )
-
-    def __getattr__(self, name):
-        match name:
-            case "start_pos":
-                return self.text_coord.start_pos
-            case "end_pos":
-                return self.text_coord.end_pos
-            case "len":
-                return self.text_coord.len
-            case _:
-                raise AttributeError(f"Attribute {name} does not exist.")
 
     @property
     def signed(self) -> bool:

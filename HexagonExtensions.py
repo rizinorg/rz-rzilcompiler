@@ -9,9 +9,7 @@ from rzil_compiler.Transformer.Pures.Immediate import Immediate
 from rzil_compiler.Transformer.ValueType import (
     ValueType,
     get_value_type_from_reg_type,
-    get_value_type_by_isa_imm,
-    VTGroup,
-    get_value_type_by_c_type,
+    get_value_type_by_isa_imm, VTGroup, get_value_type_by_c_type,
 )
 from rzil_compiler.Transformer.Pures.Register import RegisterAccessType, Register
 from rzil_compiler.Transformer.Pures.Variable import Variable
@@ -151,22 +149,16 @@ class HexagonTransformerExtension(TransformerExtension):
 
     def get_value_type_by_resource_type(self, items):
         if items[0] == "int":
-            t = ValueType(True, 32)
-            t.text_coord.start_pos = items[0].start_pos
-            t.text_coord.end_pos = items[0].end_pos
-            return t
-        tree: Tree = items[0]
-        rule = tree.data
-        tokens = tree.children
+            return ValueType(True, 32)
+        items: Tree = items[0]
+        rule = items.data
+        tokens = items.children
         if rule == "c_size_type":
-            t = ValueType(tokens[1] == "s", int(tokens[0]) * 8)
+            return ValueType(tokens[1] == "s", int(tokens[0]) * 8)
         elif rule == "c_int_type":
-            t = ValueType(tokens[0] == "int", int(tokens[1]))
+            return ValueType(tokens[0] == "int", int(tokens[1]))
         else:
             raise NotImplementedError(f"Data type {rule} is not handled.")
-        t.text_coord.start_pos = tree.meta.start_pos
-        t.text_coord.end_pos = tree.meta.end_pos
-        return t
 
     def get_meta(self) -> list[str]:
         flags = []
@@ -261,11 +253,10 @@ def get_fcn_param_types(fcn_name: str) -> [ValueType]:
         # Marks the slot i as cancelled in a global variable for this case.
         return [ValueType(False, 8)]
     elif fcn_name == "WRITE_REG":
-        return [
-            get_value_type_by_c_type("HexPktInsnBundle"),
-            get_value_type_by_c_type("HexOp"),
-            get_value_type_by_c_type("uint32_t"),
-        ]
+        return [get_value_type_by_c_type("HexPktInsnBundle"),
+                get_value_type_by_c_type("HexOp"),
+                get_value_type_by_c_type("uint32_t")
+                ]
     else:
         raise NotImplementedError(
             f"No value type for the function parameter of {fcn_name} defined."

@@ -36,7 +36,7 @@ def get_hexagon_parser() -> Lark:
     # Setup parser
     with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
         grammar = "".join(f.readlines())
-    return Lark(grammar, start="fbody", parser="earley", propagate_positions=True)
+    return Lark(grammar, start="fbody", parser="earley")
 
 
 class TestParser(unittest.TestCase):
