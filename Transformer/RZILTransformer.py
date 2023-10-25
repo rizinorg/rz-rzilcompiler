@@ -334,16 +334,23 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data("data_type")
         return self.ext.get_value_type_by_resource_type(items)
 
-    def init_a_cast(self, val_type: ValueType, pure: Pure, cast_name: str = "") -> Pure:
+    def init_a_cast(self, target_type: ValueType, pure: Pure, cast_name: str = "") -> Pure:
         """
         Initializes and returns a Cast if the val_types and the pure.val_type
         mismatch. Otherwise, it simply returns the pure.
         """
-        if val_type == pure.value_type:
+        if target_type == pure.value_type:
             return pure
         if not cast_name:
-            cast_name = f"cast_{val_type}"
-        return self.add_op(Cast(cast_name, val_type, pure))
+            cast_name = f"cast_{target_type}"
+        if pure.value_type.group & VTGroup.BOOL and not target_type.group & VTGroup.BOOL:
+            # Can't use a normal cast.
+            true = Number("true", 1, target_type)
+            true.inlined = True
+            false = Number("false", 0, target_type)
+            false.inlined = True
+            return self.add_op(Ternary(f"ite_cast_{target_type}", pure, true, false))
+        return self.add_op(Cast(cast_name, target_type, pure))
 
     def cast_expr(self, items):
         self.ext.set_token_meta_data("cast_expr")

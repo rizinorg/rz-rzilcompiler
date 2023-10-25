@@ -1567,6 +1567,27 @@ class TestTransformerOutput(unittest.TestCase):
         )
         self.assertEqual(expected, output)
 
+    def test_cast_bool(self):
+        behavior = "{ uint32_t a; uint32_t b = ((uint32_t)(a == 1)); }"
+        output = self.compile_behavior(behavior)
+        expected = """
+            // READ
+            // Declare: ut32 a;
+            // Declare: ut32 b;
+
+            // EXEC
+            RzILOpPure *op_EQ_3 = EQ(VARL("a"), CAST(32, IL_FALSE, SN(32, 1)));
+            RzILOpPure *ite_cast_ut32_4 = ITE(op_EQ_3, UN(32, 1), UN(32, 0));
+
+            // WRITE
+            RzILOpEffect *op_ASSIGN_6 = SETL("b", ite_cast_ut32_4);
+            RzILOpEffect *instruction_sequence = op_ASSIGN_6;
+
+            return instruction_sequence;""".replace(
+            "  ", ""
+        )
+        self.assertEqual(expected, output)
+
 
 class TestGrammar(unittest.TestCase):
     def test_early_compatibility(self):

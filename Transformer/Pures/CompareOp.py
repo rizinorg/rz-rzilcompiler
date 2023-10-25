@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from enum import StrEnum
 
+from rzil_compiler.Transformer.ValueType import ValueType, VTGroup
 from rzil_compiler.Transformer.Pures.Pure import Pure
 from rzil_compiler.Transformer.Pures.PureExec import PureExec
 
@@ -19,7 +20,7 @@ class CompareOp(PureExec):
     def __init__(self, name: str, a: Pure, b: Pure, op_type: CompareOpType):
         self.op_type = op_type
 
-        PureExec.__init__(self, name, [a, b], a.value_type)
+        PureExec.__init__(self, name, [a, b], ValueType(False, 1, VTGroup.PURE | VTGroup.BOOL))
 
     def il_exec(self):
         sl = (
