@@ -45,4 +45,4 @@ class CompareOp(PureExec):
             )
 
     def __str__(self):
-        return f"{self.ops[0]} {self.op_type} {self.ops[1]}"
+        return f"({self.ops[0]} {self.op_type} {self.ops[1]})"
