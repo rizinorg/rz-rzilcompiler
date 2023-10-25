@@ -978,9 +978,9 @@ class TestTransformerOutput(unittest.TestCase):
 
             // WRITE
             RzILOpEffect *test_routine_call_3 = hex_test_routine(bundle, Rd_op, SN(32, 0), Rs_op);
-            RzILOpEffect *op_ASSIGN_hybrid_tmp_4 = SETL("h_tmp0", UNSIGNED(64, VARL("ret_val")));
-            RzILOpEffect *seq_5 = SEQN(2, test_routine_call_3, op_ASSIGN_hybrid_tmp_4);
-            RzILOpEffect *instruction_sequence = seq_5;
+            RzILOpEffect *op_ASSIGN_hybrid_tmp_5 = SETL("h_tmp0", UNSIGNED(64, VARL("ret_val")));
+            RzILOpEffect *seq_6 = SEQN(2, test_routine_call_3, op_ASSIGN_hybrid_tmp_5);
+            RzILOpEffect *instruction_sequence = seq_6;
 
             return instruction_sequence;""".replace(
                 "  ", ""
@@ -1015,11 +1015,11 @@ class TestTransformerOutput(unittest.TestCase):
 
             // WRITE
             RzILOpEffect *sextract64_call_5 = hex_sextract64(CAST(64, IL_FALSE, SN(32, 0)), SN(32, 0), SN(32, 0));
-            RzILOpEffect *op_ASSIGN_hybrid_tmp_6 = SETL("h_tmp0", SIGNED(64, VARL("ret_val")));
-            RzILOpEffect *seq_7 = SEQN(2, sextract64_call_5, op_ASSIGN_hybrid_tmp_6);
-            RzILOpEffect *op_ASSIGN_9 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(VARL("h_tmp0")), VARL("h_tmp0")));
-            RzILOpEffect *seq_10 = SEQN(2, seq_7, op_ASSIGN_9);
-            RzILOpEffect *instruction_sequence = seq_10;
+            RzILOpEffect *op_ASSIGN_hybrid_tmp_7 = SETL("h_tmp0", SIGNED(64, VARL("ret_val")));
+            RzILOpEffect *seq_8 = SEQN(2, sextract64_call_5, op_ASSIGN_hybrid_tmp_7);
+            RzILOpEffect *op_ASSIGN_10 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(VARL("h_tmp0")), VARL("h_tmp0")));
+            RzILOpEffect *seq_11 = SEQN(2, seq_8, op_ASSIGN_10);
+            RzILOpEffect *instruction_sequence = seq_11;
 
             return instruction_sequence;""".replace(
                 "  ", ""
@@ -1095,6 +1095,45 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *instruction_sequence = op_ASSIGN_4;
 
             return instruction_sequence;""".replace(
+            "  ", ""
+        )
+        self.assertEqual(expected, output)
+
+    def test_cast_simplification_compares_conditionals_1(self):
+        behavior = "{ (1 == 0 ? 2 : clz32(8)); }"
+        self.compiler.transformer.code_format = CodeFormat.READ_STATEMENTS
+        output = self.compiler.compile_c_stmt(behavior)
+        expected = """
+        // READ
+
+        // clz32(((ut32) 0x8));
+        RzILOpEffect *clz32_call_6 = hex_clz32(CAST(32, IL_FALSE, SN(32, 8)));
+
+        // h_tmp0 = clz32(((ut32) 0x8));
+        RzILOpEffect *op_ASSIGN_hybrid_tmp_8 = SETL("h_tmp0", UNSIGNED(32, VARL("ret_val")));
+
+        // seq(clz32(((ut32) 0x8)); h_tmp0 = clz32(((ut32) 0x8)));
+        RzILOpEffect *seq_9 = SEQN(2, clz32_call_6, op_ASSIGN_hybrid_tmp_8);
+
+        RzILOpEffect *instruction_sequence = seq_9;
+        return instruction_sequence;""".replace(
+            "  ", ""
+        )
+        self.assertEqual(expected, output)
+
+    def test_cast_simplification_compares_conditionals_2(self):
+        behavior = "{ int a = (1 == 0 ? clz32(8) : 2); }"
+        self.compiler.transformer.code_format = CodeFormat.READ_STATEMENTS
+        output = self.compiler.compile_c_stmt(behavior)
+        expected = """
+        // READ
+        // Declare: st32 a;
+
+        // a = 0x2;
+        RzILOpEffect *op_ASSIGN_11 = SETL("a", SN(32, 2));
+
+        RzILOpEffect *instruction_sequence = op_ASSIGN_11;
+        return instruction_sequence;""".replace(
             "  ", ""
         )
         self.assertEqual(expected, output)
@@ -1434,6 +1473,7 @@ class TestTransformerOutput(unittest.TestCase):
             """{\nreturn NOP();\n}""".replace("  ", ""),
         )
         tree = self.compiler.parser.parse(behavior)
+        self.compiler.transformer.code_format = CodeFormat.EXEC_CLASSES
         output = self.compiler.transformer.transform(tree)
         expected = """
             // READ

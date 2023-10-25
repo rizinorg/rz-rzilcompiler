@@ -29,6 +29,9 @@ class Hybrid(PureExec, Effect):
     op_type: HybridType = None
 
     def __init__(self, name: str, operands: [Pure], value_type: ValueType):
+        # Tracks the LocaLVars which reference this Hybrid.
+        # If this set is empty the Hybrid is not used and can be removed.
+        self.references_set = set()
         self.pure_init_count = 0
         self.effect_init_count = 0
         self.effect_ops = operands

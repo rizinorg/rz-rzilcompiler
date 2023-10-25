@@ -3,7 +3,7 @@
 
 from rzil_compiler.Exceptions import OverloadException
 from rzil_compiler.Transformer.Pures.Pure import Pure, PureType
-from rzil_compiler.Transformer.ValueType import ValueType
+from rzil_compiler.Transformer.ValueType import ValueType, VTGroup
 
 
 class LocalVar(Pure):
@@ -19,6 +19,8 @@ class LocalVar(Pure):
         raise OverloadException("")
 
     def il_init_var(self) -> str:
+        if self.value_type.group & VTGroup.HYBRID_LVAR:
+            return ""  # Consumable return values of Hybrids don't get initialized. Only read.
         # Local vars are not initialized like global vars. They are initialized when an assignment to them happens.
         return f"// Declare: {self.value_type} {self.get_name()};"
 

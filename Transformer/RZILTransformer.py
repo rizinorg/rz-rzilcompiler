@@ -4,6 +4,7 @@ from enum import Enum, auto
 
 from lark import Transformer, Token
 
+from rzil_compiler.Transformer.Pures.Bool import Bool
 from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine, SubRoutineCall
 from rzil_compiler.Transformer.Pures.ReturnValue import ReturnValue
 from rzil_compiler.Transformer.Pures.Parameter import Parameter
@@ -72,10 +73,7 @@ class RZILTransformer(Transformer):
     ):
         self.code_format = code_format
         # Classes of Pures which should not be initialized in the C code.
-        self.inlined_pure_classes = (Number, Sizeof, Cast)
-        # Total count of hybrids seen during transformation
-        self.hybrid_op_count = 0
-        self.hybrid_effect_dict = dict()
+        self.inlined_pure_classes = (Number, Sizeof, Cast, Bool)
         self.imm_set_effect_list = list()
 
         self.arch = arch
@@ -108,7 +106,7 @@ class RZILTransformer(Transformer):
     def reset(self):
         self.ext.reset_flags()
         self.gcc_ext_effects.clear()
-        self.hybrid_effect_dict.clear()
+        self.il_ops_holder.hybrid_effect_dict.clear()
         self.imm_set_effect_list.clear()
         self.il_ops_holder.clear()
 
@@ -135,6 +133,7 @@ class RZILTransformer(Transformer):
             not isinstance(op, Variable)
             and not isinstance(op, Register)
             and not isinstance(op, ReturnValue)
+            and not (isinstance(op, LocalVar) and op.value_type.group & VTGroup.HYBRID_LVAR)
         ):
             # Those have already a unique name
             op.set_name(f"{op.get_name()}_{num_id}")
@@ -169,8 +168,8 @@ class RZILTransformer(Transformer):
     def emit_final_seq_return(self, items, res):
         # Hybrids which have no parent in the AST
         left_hybrids = [
-            self.hybrid_effect_dict.pop(hid)
-            for hid in [k for k in self.hybrid_effect_dict.keys()]
+            self.il_ops_holder.hybrid_effect_dict.pop(hid)
+            for hid in [k for k in self.il_ops_holder.hybrid_effect_dict.keys()]
         ]
         # Assign all effects without parent in the AST to the final instruction sequence.
         instruction_sequence = Sequence(
@@ -495,6 +494,9 @@ class RZILTransformer(Transformer):
 
     def conditional_expr(self, items):
         self.ext.set_token_meta_data("conditional_expr")
+        result = self.simplify_conditional_expr(items)
+        if result:
+            return result
         then_p, else_p = self.cast_operands(a=items[1], b=items[2], immutable_a=False)
         return self.add_op(Ternary(f"cond", items[0], then_p, else_p))
 
@@ -842,6 +844,9 @@ class RZILTransformer(Transformer):
 
     def compare_op(self, items):
         self.ext.set_token_meta_data("compare_op")
+        result = self.simplify_compare_expr(items)
+        if result:
+            return self.add_op(result)
         op_type = CompareOpType(items[1])
         a, b = self.cast_operands(a=items[0], b=items[2], immutable_a=False)
         return self.add_op(CompareOp(f"op_{op_type.name}", a, b, op_type))
@@ -910,12 +915,12 @@ class RZILTransformer(Transformer):
         """Check hybrid dependency. Checks if a hybrid effect must be executed before the given effect and returns
         a sequence of Sequence(hybrid, given effect) if so. Otherwise, the original effect.
         """
-        if len(self.hybrid_effect_dict) == 0:
+        if len(self.il_ops_holder.hybrid_effect_dict) == 0:
             return effect
         hybrid_deps = list()
         for o in effect.get_op_list():
-            if not isinstance(o, str) and o.get_name() in self.hybrid_effect_dict:
-                hybrid_deps.append(self.hybrid_effect_dict.pop(o.get_name()))
+            if not isinstance(o, str) and o.get_name() in self.il_ops_holder.hybrid_effect_dict:
+                hybrid_deps.append(self.il_ops_holder.hybrid_effect_dict.pop(o.get_name()))
 
         if len(hybrid_deps) == 0:
             return effect
@@ -932,13 +937,16 @@ class RZILTransformer(Transformer):
         if hybrid.value_type.group & VTGroup.VOID:
             return hybrid
 
-        tmp_x_name = f"h_tmp{self.hybrid_op_count}"
-        self.hybrid_op_count += 1
+        tmp_x_name = f"h_tmp{self.il_ops_holder.hybrid_op_count}"
+        self.il_ops_holder.hybrid_op_count += 1
         if hybrid.seq_order == HybridSeqOrder.EXEC_ONLY:
-            # Doesn't return anything. So no LocalVar for the return value hasto be initialized.
-            self.hybrid_effect_dict[tmp_x_name] = self.chk_hybrid_dep(hybrid)
+            # Doesn't return anything. So no LocalVar for the return value has to be initialized.
+            self.il_ops_holder.hybrid_effect_dict[tmp_x_name] = self.chk_hybrid_dep(hybrid)
             return Number("VOID_VALUE", 0xffffffff, ValueType(False, 32, VTGroup.VOID))
-        tmp_x = LocalVar(tmp_x_name, hybrid.value_type)
+        h_tmp_type = hybrid.value_type
+        h_tmp_type.group |= VTGroup.HYBRID_LVAR
+        tmp_x = self.add_op(LocalVar(tmp_x_name, hybrid.value_type))
+        hybrid.references_set.add(tmp_x)
 
         # Assign the hybrid pure part to tmp_x.
         name = f"op_{AssignmentType.ASSIGN.name}_hybrid_tmp"
@@ -957,8 +965,7 @@ class RZILTransformer(Transformer):
 
         seq = self.add_op(Sequence(f"seq", h_seq))
         seq = self.chk_hybrid_dep(seq)
-
-        self.hybrid_effect_dict[tmp_x_name] = seq
+        self.il_ops_holder.hybrid_effect_dict[tmp_x_name] = seq
         # Return local tX
         return tmp_x
 
@@ -1029,6 +1036,55 @@ class RZILTransformer(Transformer):
 
         name = f'const_{"neg" if items[0] == "-" else "pos"}{items[1]}{items[2] if items[2] else ""}'
         return Number(name, result, a_type)
+
+    def simplify_compare_expr(self, items) -> Pure:
+        """
+        Checks if the given compare expression can be simplified.
+        Simple compare expressions can be resolved to a truth value,
+        so we do not have to do it during IL runtime.
+        """
+        a = items[0]
+        operation: str = items[1]
+        b = items[2]
+        if not isinstance(a, LetVar) or not isinstance(b, LetVar):
+            return None
+
+        if not isinstance(a.get_val(), int) or not isinstance(b.get_val(), int):
+            return None
+
+        val_a = a.get_val()
+        val_b = b.get_val()
+        self.il_ops_holder.rm_op_by_name(a.get_name())
+        self.il_ops_holder.rm_op_by_name(b.get_name())
+        match operation:
+            case "<":
+                res = val_a < val_b
+            case ">":
+                res = val_a > val_b
+            case "<=":
+                res = val_a <= val_b
+            case ">=":
+                res = val_a >= val_b
+            case "==":
+                res = val_a == val_b
+            case "!=":
+                res = val_a != val_b
+            case _:
+                raise NotImplementedError(f"Can not simplify '{operation}' expression.")
+
+        name = f"{'True' if res else 'False'}"
+        return Bool(name, True if res else False)
+
+    def simplify_conditional_expr(self, items) -> Pure | None:
+        cond = items[0]
+        if not isinstance(cond, LetVar):
+            return None
+        self.il_ops_holder.rm_op_by_name(cond.get_name())
+        if cond.get_val():
+            self.il_ops_holder.rm_op_by_name(items[2].get_name())
+            return items[1]
+        self.il_ops_holder.rm_op_by_name(items[1].get_name())
+        return items[2]
 
     def cast_operands(self, immutable_a: bool, **ops) -> tuple[Pure, Pure]:
         """Casts two operands to a common type according to C11 standard.

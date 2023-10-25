@@ -143,4 +143,6 @@ class SubRoutineCall(Hybrid):
         return code
 
     def __str__(self):
-        return f"{self.sub_routine.get_name()}({', '.join([str(op) for op in self.ops])})"
+        return (
+            f"{self.sub_routine.get_name()}({', '.join([str(op) for op in self.ops])})"
+        )

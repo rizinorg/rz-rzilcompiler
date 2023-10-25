@@ -1,14 +1,17 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
-
+from rzil_compiler.Transformer.Effects.Sequence import Sequence
+from rzil_compiler.Transformer.ValueType import VTGroup
 from rzil_compiler.Transformer.Effects.Effect import Effect
 from rzil_compiler.Transformer.Hybrids.Hybrid import Hybrid
 from rzil_compiler.Transformer.Pures.Pure import Pure, PureType
-from rzil_compiler.Transformer.Pures.Variable import Variable
 
 
 class ILOpsHolder:
     def __init__(self):
+        # Total count of hybrids seen during transformation
+        self.hybrid_op_count = 0
+        self.hybrid_effect_dict: dict[str: Sequence] = dict()
         self.read_ops: dict = dict()
         self.exec_ops: dict = dict()
         self.write_ops: dict = dict()
@@ -77,13 +80,26 @@ class ILOpsHolder:
 
     def rm_op_by_name(self, name: str) -> None:
         if name in self.read_ops:
-            return self.read_ops.pop(name)
-        elif name in self.exec_ops:
-            return self.exec_ops.pop(name)
-        elif name in self.write_ops:
-            return self.write_ops.pop(name)
-        else:
-            raise ValueError(f'Did not find op: "{name}"!')
+            pure = self.read_ops.pop(name)
+            if pure.value_type.group & VTGroup.HYBRID_LVAR:
+                self.update_hybrid_ref(pure)
+        if name in self.exec_ops:
+            self.exec_ops.pop(name)
+        if name in self.write_ops:
+            self.write_ops.pop(name)
+
+    def update_hybrid_ref(self, pure):
+        # Remove the reference from the hybrid
+        h_tmp_name = pure.get_name()
+        h_seq: Sequence = self.hybrid_effect_dict[h_tmp_name]
+        hybrid = h_seq.effect_ops[0] if isinstance(h_seq.effect_ops[0], Hybrid) else h_seq.effect_ops[1]
+        hybrid.references_set.remove(pure)
+        if len(hybrid.references_set) == 0:
+            # Last reference removed, remove the hybrid
+            self.hybrid_effect_dict.pop(h_tmp_name)
+            self.rm_op_by_name(h_seq.get_name())
+            self.rm_op_by_name(h_seq.effect_ops[0].get_name())
+            self.rm_op_by_name(h_seq.effect_ops[1].get_name())
 
     def clear(self):
         """Removes all previously added ops."""
