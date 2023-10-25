@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
+from rzil_compiler.Transformer.ValueType import VTGroup
 from rzil_compiler.Transformer.Effects.Effect import Effect, EffectType
-from rzil_compiler.Transformer.Pures.LetVar import LetVar, resolve_lets
 from rzil_compiler.Transformer.Pures.Pure import Pure, PureType
 from enum import StrEnum
 
@@ -31,6 +31,8 @@ class Assignment(Effect):
 
     def __init__(self, name: str, assign_type: AssignmentType, dest: Pure, src: Pure):
         self.assign_type = assign_type
+        if dest.value_type.group & VTGroup.CONST:
+            raise ValueError(f"Can not write to the value {dest} declared as const.")
         self.dest = dest
         self.src = src
         self.effect_ops = [self.dest, self.src]
@@ -50,6 +52,8 @@ class Assignment(Effect):
         self.src = src_op
 
     def set_dest(self, dest_op: Pure) -> None:
+        if dest_op.value_type.group & VTGroup.CONST:
+            raise ValueError(f"Can not write to the value {dest_op} declared as const.")
         self.effect_ops.remove(self.dest)
         self.effect_ops.append(dest_op)
         self.dest = dest_op

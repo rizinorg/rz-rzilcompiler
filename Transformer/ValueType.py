@@ -10,13 +10,16 @@ from rzil_compiler.Transformer.helper_hexagon import get_num_base_by_token
 class VTGroup(Flag):
     PURE = auto()  # Normal Pure value
     BOOL = auto()  # PureBool type: bitWidth = 1; 1 == true 0 == false
-    HYBRID_LVAR = auto()  # A hybrid LocalVar consumed by operands which use the return value of a hybrid
+    HYBRID_LVAR = (
+        auto()
+    )  # A hybrid LocalVar consumed by operands which use the return value of a hybrid
     EXTERNAL = auto()  # ValueType not known and used by the VM.
     ARCH_LONG = (
         auto()
     )  # ValueType has the same bit-width as a long on the current architecture (used for varying bit
     # supporting architectures).
     VOID = auto()  # A void type.
+    CONST = auto()  # A constant type
 
     @staticmethod
     def get_external_types() -> list[str]:

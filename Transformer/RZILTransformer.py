@@ -69,7 +69,7 @@ class RZILTransformer(Transformer):
         sub_routines: dict[str:SubRoutine] = None,
         parameters: list[Parameter] = None,
         return_type: ValueType = None,
-        code_format: CodeFormat = CodeFormat.READ_STATEMENTS
+        code_format: CodeFormat = CodeFormat.READ_STATEMENTS,
     ):
         self.code_format = code_format
         # Classes of Pures which should not be initialized in the C code.
@@ -133,7 +133,9 @@ class RZILTransformer(Transformer):
             not isinstance(op, Variable)
             and not isinstance(op, Register)
             and not isinstance(op, ReturnValue)
-            and not (isinstance(op, LocalVar) and op.value_type.group & VTGroup.HYBRID_LVAR)
+            and not (
+                isinstance(op, LocalVar) and op.value_type.group & VTGroup.HYBRID_LVAR
+            )
         ):
             # Those have already a unique name
             op.set_name(f"{op.get_name()}_{num_id}")
@@ -177,9 +179,9 @@ class RZILTransformer(Transformer):
             [
                 op
                 for op in self.imm_set_effect_list
-                          + left_hybrids
-                          + flatten_list(items)
-                          + self.gcc_ext_effects
+                + left_hybrids
+                + flatten_list(items)
+                + self.gcc_ext_effects
                 if isinstance(op, Effect)
             ],
         )
@@ -334,7 +336,9 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data("data_type")
         return self.ext.get_value_type_by_resource_type(items)
 
-    def init_a_cast(self, target_type: ValueType, pure: Pure, cast_name: str = "") -> Pure:
+    def init_a_cast(
+        self, target_type: ValueType, pure: Pure, cast_name: str = ""
+    ) -> Pure:
         """
         Initializes and returns a Cast if the val_types and the pure.val_type
         mismatch. Otherwise, it simply returns the pure.
@@ -343,7 +347,10 @@ class RZILTransformer(Transformer):
             return pure
         if not cast_name:
             cast_name = f"cast_{target_type}"
-        if pure.value_type.group & VTGroup.BOOL and not target_type.group & VTGroup.BOOL:
+        if (
+            pure.value_type.group & VTGroup.BOOL
+            and not target_type.group & VTGroup.BOOL
+        ):
             # Can't use a normal cast.
             true = Number("true", 1, target_type)
             true.inlined = True
@@ -402,8 +409,16 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data("declaration_specifiers")
         specifier: str = items[0]
         t: ValueType = items[1]
-        if specifier == "const":
-            # Currently ignore that the variable should be constant.
+        if isinstance(specifier, ValueType):
+            # Allow only unsigned int for now
+            if not (specifier == ValueType(False, 32)) and (t == ValueType(True, 32)):
+                raise NotImplementedError(
+                    f"Type specifier {specifier} currently not supported."
+                )
+            t.signed = False
+            return t
+        if isinstance(specifier, str) and specifier == "const":
+            t.group |= VTGroup.CONST
             return t
         raise NotImplementedError(
             f"Type specifier {specifier} currently not supported."
@@ -866,7 +881,7 @@ class RZILTransformer(Transformer):
             )
         compound = self.chk_hybrid_dep(
             self.add_op(Sequence(f"seq", flatten_list(items[4]) + [items[3]])),
-            HybridSeqOrder.SEQ_THEN_HYB
+            HybridSeqOrder.SEQ_THEN_HYB,
         )
         return self.chk_hybrid_dep(
             self.add_op(
@@ -919,7 +934,9 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data("block_item")
         return items[0]
 
-    def chk_hybrid_dep(self, effect: Effect, order: HybridSeqOrder = HybridSeqOrder.HYB_THEN_SEQ) -> Effect:
+    def chk_hybrid_dep(
+        self, effect: Effect, order: HybridSeqOrder = HybridSeqOrder.HYB_THEN_SEQ
+    ) -> Effect:
         """Check hybrid dependency. Checks if a hybrid effect must be executed before the given effect and returns
         a sequence of Sequence(hybrid, given effect) if so. Otherwise, the original effect.
         """
@@ -927,8 +944,13 @@ class RZILTransformer(Transformer):
             return effect
         hybrid_deps = list()
         for o in effect.get_op_list():
-            if not isinstance(o, str) and o.get_name() in self.il_ops_holder.hybrid_effect_dict:
-                hybrid_deps.append(self.il_ops_holder.hybrid_effect_dict.pop(o.get_name()))
+            if (
+                not isinstance(o, str)
+                and o.get_name() in self.il_ops_holder.hybrid_effect_dict
+            ):
+                hybrid_deps.append(
+                    self.il_ops_holder.hybrid_effect_dict.pop(o.get_name())
+                )
 
         if len(hybrid_deps) == 0:
             return effect
@@ -953,8 +975,10 @@ class RZILTransformer(Transformer):
         self.il_ops_holder.hybrid_op_count += 1
         if hybrid.seq_order == HybridSeqOrder.EXEC_ONLY:
             # Doesn't return anything. So no LocalVar for the return value has to be initialized.
-            self.il_ops_holder.hybrid_effect_dict[tmp_x_name] = self.chk_hybrid_dep(hybrid)
-            return Number("VOID_VALUE", 0xffffffff, ValueType(False, 32, VTGroup.VOID))
+            self.il_ops_holder.hybrid_effect_dict[tmp_x_name] = self.chk_hybrid_dep(
+                hybrid
+            )
+            return Number("VOID_VALUE", 0xFFFFFFFF, ValueType(False, 32, VTGroup.VOID))
         h_tmp_type = hybrid.value_type
         h_tmp_type.group |= VTGroup.HYBRID_LVAR
         tmp_x = self.add_op(LocalVar(tmp_x_name, hybrid.value_type))

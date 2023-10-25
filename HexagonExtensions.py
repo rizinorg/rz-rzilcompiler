@@ -9,7 +9,9 @@ from rzil_compiler.Transformer.Pures.Immediate import Immediate
 from rzil_compiler.Transformer.ValueType import (
     ValueType,
     get_value_type_from_reg_type,
-    get_value_type_by_isa_imm, VTGroup, get_value_type_by_c_type,
+    get_value_type_by_isa_imm,
+    VTGroup,
+    get_value_type_by_c_type,
 )
 from rzil_compiler.Transformer.Pures.Register import RegisterAccessType, Register
 from rzil_compiler.Transformer.Pures.Variable import Variable
@@ -150,7 +152,13 @@ class HexagonTransformerExtension(TransformerExtension):
     def get_value_type_by_resource_type(self, items):
         if items[0] == "int":
             return ValueType(True, 32)
+        elif items[0] == "unsigned" or (
+            len(items) == 2 and items[0] == "unsigned" and items[1] == "int"
+        ):
+            return ValueType(False, 32)
         items: Tree = items[0]
+        if not hasattr(items, "data"):
+            raise NotImplementedError(f"Data type {items} is not handled.")
         rule = items.data
         tokens = items.children
         if rule == "c_size_type":
@@ -253,10 +261,11 @@ def get_fcn_param_types(fcn_name: str) -> [ValueType]:
         # Marks the slot i as cancelled in a global variable for this case.
         return [ValueType(False, 8)]
     elif fcn_name == "WRITE_REG":
-        return [get_value_type_by_c_type("HexPktInsnBundle"),
-                get_value_type_by_c_type("HexOp"),
-                get_value_type_by_c_type("uint32_t")
-                ]
+        return [
+            get_value_type_by_c_type("HexPktInsnBundle"),
+            get_value_type_by_c_type("HexOp"),
+            get_value_type_by_c_type("uint32_t"),
+        ]
     else:
         raise NotImplementedError(
             f"No value type for the function parameter of {fcn_name} defined."

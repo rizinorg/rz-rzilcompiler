@@ -205,6 +205,12 @@ class TestTransforming(unittest.TestCase):
         result = self.compile_behavior(behavior)
         self.assertFalse(isinstance(result, Exception))
 
+    def test_M4_vpmpyh(self):
+        behavior = self.insn_behavior["M4_vpmpyh"][0]
+        result = self.compile_behavior(behavior)
+        raise result
+        self.assertFalse(isinstance(result, Exception))
+
     def test_J2_jumpt(self):
         behavior = self.insn_behavior["J2_jumpt"][0]
         result = self.compile_behavior(behavior)
@@ -1587,6 +1593,27 @@ class TestTransformerOutput(unittest.TestCase):
             "  ", ""
         )
         self.assertEqual(expected, output)
+
+    def test_unsigned_int(self):
+        behavior = "{ unsigned int a; }"
+        output = self.compile_behavior(behavior)
+        expected = """
+            // READ
+            // Declare: ut32 a;
+
+            // EXEC
+
+            // WRITE
+            RzILOpEffect *instruction_sequence = EMPTY();
+
+            return instruction_sequence;""".replace(
+            "  ", ""
+        )
+        self.assertEqual(expected, output)
+
+    def test_const_assign(self):
+        behavior = "{ const uint32_t a; a = 1; }"
+        self.assertRaises((ValueError, VisitError), self.compile_behavior, behavior)
 
 
 class TestGrammar(unittest.TestCase):
