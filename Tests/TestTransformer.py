@@ -461,7 +461,7 @@ class TestTransforming(unittest.TestCase):
             RzILOpPure *cond_5 = ITE(op_LT_3, op_NEG_4, DUP(Rs));
 
             // WRITE
-            RzILOpEffect *op_ASSIGN_6 = WRITE_REG(pkt, Rd_op, cond_5);
+            RzILOpEffect *op_ASSIGN_6 = WRITE_REG(bundle, Rd_op, cond_5);
             RzILOpEffect *instruction_sequence = op_ASSIGN_6;
 
             return instruction_sequence;""".replace(
@@ -559,7 +559,7 @@ class TestStmtEmitting(unittest.TestCase):
         RzILOpPure *op_MUL_28 = MUL(VARL("i"), SN(32, 8));
         RzILOpPure *op_LSHIFT_29 = SHIFTL0(CAST(64, IL_FALSE, op_AND_25), op_MUL_28);
         RzILOpPure *op_OR_31 = LOGOR(CAST(64, IL_FALSE, op_AND_14), op_LSHIFT_29);
-        RzILOpEffect *op_ASSIGN_33 = WRITE_REG(pkt, Rdd_op, CAST(64, MSB(op_OR_31), DUP(op_OR_31)));
+        RzILOpEffect *op_ASSIGN_33 = WRITE_REG(bundle, Rdd_op, CAST(64, MSB(op_OR_31), DUP(op_OR_31)));
 
         // seq(h_tmp0; Rdd = ((st64) ((ut64) Rdd & ~0xff << i * 0x8) | ((ut ...;
         RzILOpEffect *seq_35 = SEQN(2, op_ASSIGN_33, EMPTY());
@@ -677,7 +677,7 @@ class TestStmtEmitting(unittest.TestCase):
             RzILOpPure *op_EQ_70 = EQ(op_AND_66, op_AND_69);
             RzILOpPure *op_AND_71 = AND(NON_ZERO(op_AND_65), op_EQ_70);
             RzILOpPure *cond_74 = ITE(op_AND_71, SN(32, 0xff), SN(32, 0));
-            RzILOpEffect *op_ASSIGN_76 = WRITE_REG(pkt, Pd_op, CAST(8, MSB(cond_74), DUP(cond_74)));
+            RzILOpEffect *op_ASSIGN_76 = WRITE_REG(bundle, Pd_op, CAST(8, MSB(cond_74), DUP(cond_74)));
 
             RzILOpEffect *instruction_sequence = SEQN(6, op_ASSIGN_6, op_ASSIGN_17, op_ASSIGN_27, seq_51, op_ASSIGN_AND_59, op_ASSIGN_76);
             return instruction_sequence;""".replace(
@@ -725,7 +725,7 @@ class TestStmtEmitting(unittest.TestCase):
             RzILOpPure *op_RSHIFT_26 = SHIFTR0(op_RSHIFT_24, SN(32, 1));
             RzILOpPure *op_LSHIFT_28 = SHIFTL0(CAST(64, IL_FALSE, DUP(Rss)), VARL("shamt"));
             RzILOpPure *cond_29 = ITE(op_LT_18, op_RSHIFT_26, op_LSHIFT_28);
-            RzILOpEffect *op_ASSIGN_31 = WRITE_REG(pkt, Rdd_op, CAST(64, MSB(cond_29), DUP(cond_29)));
+            RzILOpEffect *op_ASSIGN_31 = WRITE_REG(bundle, Rdd_op, CAST(64, MSB(cond_29), DUP(cond_29)));
 
             RzILOpEffect *instruction_sequence = SEQN(2, seq_14, op_ASSIGN_31);
             return instruction_sequence;""".replace(
@@ -939,7 +939,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpPure *op_ADD_2 = ADD(Rs, start);
 
             // WRITE
-            RzILOpEffect *op_ASSIGN_3 = WRITE_REG(pkt, Rd_op, op_ADD_2);
+            RzILOpEffect *op_ASSIGN_3 = WRITE_REG(bundle, Rd_op, op_ADD_2);
             RzILOpEffect *instruction_sequence = op_ASSIGN_3;
 
             return instruction_sequence;
@@ -1017,7 +1017,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *sextract64_call_5 = hex_sextract64(CAST(64, IL_FALSE, SN(32, 0)), SN(32, 0), SN(32, 0));
             RzILOpEffect *op_ASSIGN_hybrid_tmp_7 = SETL("h_tmp0", SIGNED(64, VARL("ret_val")));
             RzILOpEffect *seq_8 = SEQN(2, sextract64_call_5, op_ASSIGN_hybrid_tmp_7);
-            RzILOpEffect *op_ASSIGN_10 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(VARL("h_tmp0")), VARL("h_tmp0")));
+            RzILOpEffect *op_ASSIGN_10 = WRITE_REG(bundle, Rd_op, CAST(32, MSB(VARL("h_tmp0")), VARL("h_tmp0")));
             RzILOpEffect *seq_11 = SEQN(2, seq_8, op_ASSIGN_10);
             RzILOpEffect *instruction_sequence = seq_11;
 
@@ -1287,7 +1287,7 @@ class TestTransformerOutput(unittest.TestCase):
             "// READ\n"
             "const HexOp *Rd_op = ISA2REG(hi, 'd', false);\n\n"
             "// EXEC\n\n// WRITE\n"
-            "RzILOpEffect *op_ASSIGN_2 = WRITE_REG(pkt, Rd_op, SN(32, 0));\n"
+            "RzILOpEffect *op_ASSIGN_2 = WRITE_REG(bundle, Rd_op, SN(32, 0));\n"
         )
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
@@ -1302,7 +1302,7 @@ class TestTransformerOutput(unittest.TestCase):
             "const HexOp *Rs_op = ISA2REG(hi, 's', false);\n"
             "RzILOpPure *Rs = READ_REG(pkt, Rs_op, false);\n\n"
             "// EXEC\n\n// WRITE\n"
-            "RzILOpEffect *op_ASSIGN_2 = WRITE_REG(pkt, Rd_op, Rs);\n"
+            "RzILOpEffect *op_ASSIGN_2 = WRITE_REG(bundle, Rd_op, Rs);\n"
         )
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
@@ -1319,7 +1319,7 @@ class TestTransformerOutput(unittest.TestCase):
             // EXEC
 
             // WRITE
-            RzILOpEffect *op_ASSIGN_1 = WRITE_REG(pkt, Rx_op, Rx);
+            RzILOpEffect *op_ASSIGN_1 = WRITE_REG(bundle, Rx_op, Rx);
             RzILOpEffect *instruction_sequence = op_ASSIGN_1;
 
             return instruction_sequence;""".replace(
@@ -1342,8 +1342,8 @@ class TestTransformerOutput(unittest.TestCase):
             // EXEC
 
             // WRITE
-            RzILOpEffect *op_ASSIGN_2 = WRITE_REG(pkt, &P1_new_op, P0);
-            RzILOpEffect *op_ASSIGN_5 = WRITE_REG(pkt, &R11_10_new_op, C31_30);
+            RzILOpEffect *op_ASSIGN_2 = WRITE_REG(bundle, &P1_new_op, P0);
+            RzILOpEffect *op_ASSIGN_5 = WRITE_REG(bundle, &R11_10_new_op, C31_30);
             RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, op_ASSIGN_5);
 
             return instruction_sequence;""".replace(
@@ -1363,7 +1363,7 @@ class TestTransformerOutput(unittest.TestCase):
             // EXEC
 
             // WRITE
-            RzILOpEffect *op_ASSIGN_2 = WRITE_REG(pkt, &P0_op, P0_new);
+            RzILOpEffect *op_ASSIGN_2 = WRITE_REG(bundle, &P0_op, P0_new);
             RzILOpEffect *instruction_sequence = op_ASSIGN_2;
 
             return instruction_sequence;""".replace(
@@ -1383,7 +1383,7 @@ class TestTransformerOutput(unittest.TestCase):
             // EXEC
 
             // WRITE
-            RzILOpEffect *op_ASSIGN_2 = WRITE_REG(pkt, &lr_op, lr_new);
+            RzILOpEffect *op_ASSIGN_2 = WRITE_REG(bundle, &lr_op, lr_new);
             RzILOpEffect *instruction_sequence = op_ASSIGN_2;
 
             return instruction_sequence;""".replace(
@@ -1458,7 +1458,7 @@ class TestTransformerOutput(unittest.TestCase):
             // EXEC
 
             // WRITE
-            RzILOpEffect *op_ASSIGN_3 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(pc), DUP(pc)));
+            RzILOpEffect *op_ASSIGN_3 = WRITE_REG(bundle, Rd_op, CAST(32, MSB(pc), DUP(pc)));
             RzILOpEffect *instruction_sequence = op_ASSIGN_3;
 
             return instruction_sequence;""".replace(
@@ -1524,7 +1524,7 @@ class TestTransformerOutput(unittest.TestCase):
             "const HexOp usr_op = ALIAS2OP(HEX_REG_ALIAS_USR, false);\n"
             "RzILOpPure *usr = READ_REG(pkt, &usr_op, false);\n\n"
             "// EXEC\n\n// WRITE\n"
-            "RzILOpEffect *op_ASSIGN_3 = WRITE_REG(pkt, Rd_op, CAST(32, MSB(usr), DUP(usr)));\n"
+            "RzILOpEffect *op_ASSIGN_3 = WRITE_REG(bundle, Rd_op, CAST(32, MSB(usr), DUP(usr)));\n"
         )
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"

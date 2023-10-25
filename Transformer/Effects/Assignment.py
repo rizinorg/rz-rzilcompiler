@@ -66,7 +66,7 @@ class Assignment(Effect):
         else:
             read = self.src.il_read()
         if self.type == EffectType.SETG and isinstance(self.dest, Register):
-            return f"WRITE_REG(pkt, {self.dest.get_op_var()}, {read})"
+            return f"WRITE_REG(bundle, {self.dest.get_op_var()}, {read})"
         elif self.type == EffectType.SETL:
             return f"SETL({self.dest.vm_id()}, {read})"
         else:
