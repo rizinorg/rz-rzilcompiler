@@ -37,7 +37,11 @@ class BitOp(PureExec):
         elif self.op_type == BitOperationType.NEG:
             return f"NEG({self.ops[0].il_read()})"
         elif self.op_type == BitOperationType.RSHIFT:
-            return f"SHIFTR0({self.ops[0].il_read()}, {self.ops[1].il_read()})"
+            if self.ops[0].value_type.signed:
+                # QEMU relies on right shift of signed integers to be arithmetic.
+                return f"SHIFTRA({self.ops[0].il_read()}, {self.ops[1].il_read()})"
+            else:
+                return f"SHIFTR0({self.ops[0].il_read()}, {self.ops[1].il_read()})"
         elif self.op_type == BitOperationType.LSHIFT:
             return f"SHIFTL0({self.ops[0].il_read()}, {self.ops[1].il_read()})"
         else:
