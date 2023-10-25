@@ -49,5 +49,5 @@ class BitOp(PureExec):
 
     def __str__(self):
         if self.op_type in [BitOperationType.NOT, BitOperationType.NEG]:
-            return f"{self.op_type}{self.ops[0]}"
-        return f"{self.ops[0]} {self.op_type} {self.ops[1]}"
+            return f"({self.op_type}{self.ops[0]})"
+        return f"({self.ops[0]} {self.op_type} {self.ops[1]})"

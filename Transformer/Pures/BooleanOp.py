@@ -52,4 +52,4 @@ class BooleanOp(PureExec):
     def __str__(self):
         if self.op_type == BooleanOpType.INV:
             return f"{self.op_type} {self.ops[0]}"
-        return f"{self.ops[0]} {self.op_type} {self.ops[1]}"
+        return f"({self.ops[0]} {self.op_type} {self.ops[1]})"
