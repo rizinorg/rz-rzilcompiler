@@ -858,7 +858,8 @@ class RZILTransformer(Transformer):
                 f"For loops with {len(items)} elements is not supported yet."
             )
         compound = self.chk_hybrid_dep(
-            self.add_op(Sequence(f"seq", flatten_list(items[4]) + [items[3]]))
+            self.add_op(Sequence(f"seq", flatten_list(items[4]) + [items[3]])),
+            HybridSeqOrder.SEQ_THEN_HYB
         )
         return self.chk_hybrid_dep(
             self.add_op(
@@ -911,7 +912,7 @@ class RZILTransformer(Transformer):
         self.ext.set_token_meta_data("block_item")
         return items[0]
 
-    def chk_hybrid_dep(self, effect: Effect) -> Effect:
+    def chk_hybrid_dep(self, effect: Effect, order: HybridSeqOrder = HybridSeqOrder.HYB_THEN_SEQ) -> Effect:
         """Check hybrid dependency. Checks if a hybrid effect must be executed before the given effect and returns
         a sequence of Sequence(hybrid, given effect) if so. Otherwise, the original effect.
         """
@@ -924,7 +925,11 @@ class RZILTransformer(Transformer):
 
         if len(hybrid_deps) == 0:
             return effect
-        return self.add_op(Sequence(f"seq", hybrid_deps + [effect]))
+        if order == HybridSeqOrder.HYB_THEN_SEQ:
+            return self.add_op(Sequence(f"seq", hybrid_deps + [effect]))
+        elif order == HybridSeqOrder.SEQ_THEN_HYB:
+            return self.add_op(Sequence(f"seq", [effect] + hybrid_deps))
+        raise ValueError(f"Invalid HybridSeqOrder = {order}")
 
     def resolve_hybrid(self, hybrid: Hybrid) -> Pure | Hybrid:
         """Splits a hybrid in a Pure and Effect part.

@@ -1391,6 +1391,32 @@ class TestTransformerOutput(unittest.TestCase):
         )
         self.assertEqual(expected, output)
 
+    def test_for_loop(self):
+        behavior = "{ for (int i = 0; i < 2; i++) { __NOP; }; }"
+        output = self.compile_behavior(behavior)
+        expected = """
+        // READ
+        // Declare: st32 i;
+
+        // EXEC
+        RzILOpPure *op_LT_4 = SLT(VARL("i"), SN(32, 2));
+
+        // WRITE
+        RzILOpEffect *op_ASSIGN_2 = SETL("i", SN(32, 0));
+        RzILOpEffect *op_INC_5 = SETL("i", INC(VARL("i"), 32));
+        RzILOpEffect *op_ASSIGN_hybrid_tmp_7 = SETL("h_tmp0", VARL("i"));
+        RzILOpEffect *seq_8 = SEQN(2, op_ASSIGN_hybrid_tmp_7, op_INC_5);
+        RzILOpEffect *seq_9 = EMPTY();
+        RzILOpEffect *seq_10 = SEQN(2, seq_9, seq_8);
+        RzILOpEffect *for_11 = REPEAT(op_LT_4, seq_10);
+        RzILOpEffect *seq_12 = SEQN(2, op_ASSIGN_2, for_11);
+        RzILOpEffect *instruction_sequence = seq_12;
+
+        return instruction_sequence;""".replace(
+            "  ", ""
+        )
+        self.assertEqual(expected, output)
+
     def test_reg_nums(self):
         self.assertEqual(Register.get_reg_num_from_name("V31:30"), 30)
         self.assertEqual(Register.get_reg_num_from_name("P0"), 0)

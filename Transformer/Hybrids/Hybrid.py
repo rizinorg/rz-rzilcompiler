@@ -21,6 +21,8 @@ class HybridSeqOrder(Enum):
     SET_VAL_THEN_EXEC = auto()  # Constructs like i++
     EXEC_THEN_SET_VAL = auto()  # For normal sub_routines.
     EXEC_ONLY = auto()  # For sub_routines which return void.
+    HYB_THEN_SEQ = auto()  # Used in chk_hybrid_dep
+    SEQ_THEN_HYB = auto()  # Used in chk_hybrid_dep
     NOT_SET = auto()
 
 
