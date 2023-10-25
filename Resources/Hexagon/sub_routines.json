@@ -94,6 +94,11 @@
       "return_type": "uint32_t",
       "params": ["uint32_t addr"],
       "code": "{ return deposit32(addr, 0, 16, revbit16(addr)); }"
+    },
+    "conv_round": {
+      "return_type": "int32_t",
+      "params": ["int32_t a", "int n"],
+      "code": "{ int64_t val; if (n == 0) { val = a; } else if ((a & ((1 << (n - 1)) - 1)) == 0) { val = ((((int64_t)((int32_t)(a)))) + (int64_t)(((uint32_t)((1 << n) & a)) >> 1)); } else { val = ((((int64_t)((int32_t)(a)))) + (1 << (n - 1))); } val = val >> n; return (int32_t)val; }"
     }
   }
 }
