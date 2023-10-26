@@ -199,7 +199,7 @@ class HexagonTransformerExtension(TransformerExtension):
         elif fcn_name == "STORE_SLOT_CANCELLED":
             # Marks the slot i as cancelled in a global variable for this case.
             # returns void.
-            return ValueType(False, 32)
+            return ValueType(False, 32, group=VTGroup.VOID)
         elif fcn_name == "WRITE_REG":
             return ValueType(False, 32, VTGroup.VOID)
         else:
@@ -259,7 +259,7 @@ def get_fcn_param_types(fcn_name: str) -> [ValueType]:
         return [ValueType(False, 8), ValueType(False, 8)]
     elif fcn_name == "STORE_SLOT_CANCELLED":
         # Marks the slot i as cancelled in a global variable for this case.
-        return [ValueType(False, 8)]
+        return [ValueType(False, 32, VTGroup.EXTERNAL, "HexPkt *"), ValueType(False, 8)]
     elif fcn_name == "WRITE_REG":
         return [
             get_value_type_by_c_type("HexPktInsnBundle"),

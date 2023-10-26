@@ -210,6 +210,11 @@ class TestTransforming(unittest.TestCase):
         result = self.compile_behavior(behavior)
         self.assertFalse(isinstance(result, Exception))
 
+    def test_S2_pstorerbnewt_io(self):
+        behavior = self.insn_behavior["S2_pstorerbnewt_io"][0]
+        result = self.compile_behavior(behavior)
+        self.assertFalse(isinstance(result, Exception))
+
     def test_J2_jumpt(self):
         behavior = self.insn_behavior["J2_jumpt"][0]
         result = self.compile_behavior(behavior)
