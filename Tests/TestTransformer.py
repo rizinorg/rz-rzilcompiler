@@ -208,7 +208,6 @@ class TestTransforming(unittest.TestCase):
     def test_M4_vpmpyh(self):
         behavior = self.insn_behavior["M4_vpmpyh"][0]
         result = self.compile_behavior(behavior)
-        raise result
         self.assertFalse(isinstance(result, Exception))
 
     def test_J2_jumpt(self):

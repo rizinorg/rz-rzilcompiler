@@ -637,7 +637,11 @@ class RZILTransformer(Transformer):
                 else -1,
             )
         op_type = AssignmentType(items[1])
-        src: Pure = items[2]
+        if isinstance(items[2], Assignment):
+            # a = b = 0 case
+            src = items[2].src
+        else:
+            src: Pure = items[2]
         name = f"op_{op_type.name}"
         if op_type not in [
             AssignmentType.ASSIGN_MOD,
@@ -647,7 +651,10 @@ class RZILTransformer(Transformer):
             dest, src = self.cast_operands(a=dest, b=src, immutable_a=True)
         assignment = Assignment(name, op_type, dest, src)
         self.update_assign_src(assignment)
-        return self.chk_hybrid_dep(self.add_op(assignment))
+        assignment = self.chk_hybrid_dep(self.add_op(assignment))
+        if isinstance(items[2], Assignment):
+            return self.chk_hybrid_dep(self.add_op(Sequence("seq", [assignment, items[2]])))
+        return assignment
 
     def additive_expr(self, items):
         result = self.simplify_arithmetic_expr(items)
