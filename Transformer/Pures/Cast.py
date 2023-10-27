@@ -11,7 +11,7 @@ class Cast(PureExec):
         PureExec.__init__(self, name, [val], type_specifier)
 
     def il_exec(self) -> str:
-        if self.value_type.signed:
+        if self.value_type.signed and self.ops[0].value_type.signed:
             fill_bit = f"MSB({self.ops[0].il_read()})"
         else:
             fill_bit = "IL_FALSE"
