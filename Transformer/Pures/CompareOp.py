@@ -20,7 +20,9 @@ class CompareOp(PureExec):
     def __init__(self, name: str, a: Pure, b: Pure, op_type: CompareOpType):
         self.op_type = op_type
 
-        PureExec.__init__(self, name, [a, b], ValueType(False, 1, VTGroup.PURE | VTGroup.BOOL))
+        PureExec.__init__(
+            self, name, [a, b], ValueType(False, 1, VTGroup.PURE | VTGroup.BOOL)
+        )
 
     def il_exec(self):
         sl = (

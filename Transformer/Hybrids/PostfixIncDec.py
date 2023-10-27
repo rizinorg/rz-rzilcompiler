@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
-from Transformer.Pures.Register import Register
+from rzil_compiler.Transformer.Pures.Register import Register
 from rzil_compiler.Transformer.Hybrids.Hybrid import HybridType, Hybrid, HybridSeqOrder
 from rzil_compiler.Transformer.Pures.GlobalVar import GlobalVar
 from rzil_compiler.Transformer.Pures.LocalVar import LocalVar

@@ -10,6 +10,7 @@ from lark import Lark, Tree
 from lark.exceptions import VisitError
 from tqdm import tqdm
 
+from rzil_compiler.Transformer.Pures.Macro import Macro
 from rzil_compiler.Transformer.ValueType import get_value_type_by_c_type, split_var_decl
 from rzil_compiler.Transformer.Pures.Parameter import Parameter
 from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine
@@ -124,6 +125,7 @@ class Compiler:
         self.set_extension()
         self.set_il_op_transformer()
         self.set_preprocessor()
+        self.add_macros()
         self.add_sub_routines()
 
     def set_lark_parser(self):
@@ -168,6 +170,15 @@ class Compiler:
         log("Run preprocessor...")
         self.preprocessor.run_preprocess_steps()
 
+    def add_macros(self):
+        log("Add macros...")
+        with open(Conf.get_path(InputFile.HEXAGON_QEMU_RZIL_MACROS_JSON)) as f:
+            macros = json.load(f)
+        for name, macro in macros["macros"].items():
+            self.add_macro_to_transformer(
+                name, macro["return_type"], macro["params"], macro["rzil_macro"]
+            )
+
     def add_sub_routines(self):
         log("Add sub-routines...")
         with open(Conf.get_path(InputFile.HEXAGON_SUB_ROUTINES_JSON)) as f:
@@ -176,6 +187,14 @@ class Compiler:
             self.add_sub_routine(
                 name, routine["return_type"], routine["params"], routine["code"]
             )
+
+    def add_macro_to_transformer(
+        self, name: str, ret_type: str, param_types: list[str], rzil_name: str
+    ):
+        ret_type = get_value_type_by_c_type(ret_type)
+        param_types = [get_value_type_by_c_type(t) for t in param_types]
+        macro = {name: Macro(name, ret_type, param_types, rzil_name)}
+        self.transformer.update_macros(macro)
 
     def add_sub_routine(
         self, name: str, ret_type: str, params: list[str], body: str

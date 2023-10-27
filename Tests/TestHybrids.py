@@ -23,8 +23,12 @@ class TestHybrids(unittest.TestCase):
         cls.compiler = Compiler(ArchEnum.HEXAGON)
 
     def test_sub_routines(self):
-        self.assertEqual(self.compiler.sub_routines["sextract64"].value_type, ValueType(True, 64))
-        self.assertEqual(self.compiler.sub_routines["sextract64"].routine_name, "sextract64")
+        self.assertEqual(
+            self.compiler.sub_routines["sextract64"].value_type, ValueType(True, 64)
+        )
+        self.assertEqual(
+            self.compiler.sub_routines["sextract64"].routine_name, "sextract64"
+        )
         self.assertEqual(
             self.compiler.sub_routines["sextract64"].il_init(SubRoutineInitType.DECL),
             "RZ_OWN RzILOpEffect *hex_sextract64("
@@ -32,9 +36,14 @@ class TestHybrids(unittest.TestCase):
             "RZ_BORROW RzILOpPure *start, "
             "RZ_BORROW RzILOpPure *length)",
         )
-        result = self.compiler.sub_routines["sextract64"].il_init(SubRoutineInitType.DEF)
+        result = self.compiler.sub_routines["sextract64"].il_init(
+            SubRoutineInitType.DEF
+        )
         self.assertTrue(
-            re.findall(r'RzILOpEffect \*set_return_val_\d+ = SETL\("ret_val", op_RSHIFT_\d+\);', result)
+            re.findall(
+                r'RzILOpEffect \*set_return_val_\d+ = SETL\("ret_val", op_RSHIFT_\d+\);',
+                result,
+            )
         )
 
     def test_sub_routine_2(self):

@@ -1,6 +1,6 @@
 import re
 from copy import deepcopy
-from enum import Flag, auto
+from enum import Flag, auto, StrEnum
 
 from lark import Token
 
@@ -20,10 +20,34 @@ class VTGroup(Flag):
     # supporting architectures).
     VOID = auto()  # A void type.
     CONST = auto()  # A constant type
+    FLOAT = auto()  # A float number
+    DOUBLE = auto()  # A float number
+    IEEE = auto()  # A number following the IEEE standard (relevant for float).
 
     @staticmethod
     def get_external_types() -> list[str]:
-        return ["HexOp", "HexInsnPktBundle", "HexInsn", "HexPkt", "RzILOpEffect"]
+        return [
+            "HexOp",
+            "HexInsnPktBundle",
+            "HexInsn",
+            "HexPkt",
+            "RzILOpEffect",
+            "RzFloatFormat",
+        ]
+
+
+class FloatFormat(StrEnum):
+    IEEE754_BIN_16 = "IEEE754_BIN_16"
+    IEEE754_BIN_32 = "IEEE754_BIN_32"
+    IEEE754_BIN_64 = "IEEE754_BIN_64"
+    IEEE754_BIN_80 = "IEEE754_BIN_80"
+    IEEE754_BIN_128 = "IEEE754_BIN_128"
+    IEEE754_DEC_64 = "IEEE754_DEC_64"
+    IEEE754_DEC_128 = "IEEE754_DEC_128"
+
+    @staticmethod
+    def rzil_repr(float_form: str) -> str:
+        return f"RZ_FLOAT_{float_form}"
 
 
 class ValueType:
@@ -35,14 +59,27 @@ class ValueType:
         bit_width: int,
         group: VTGroup = VTGroup.PURE,
         external_type: str = None,
+        format: FloatFormat | None = None,
     ):
         self._signed = signed
         self._bit_width = bit_width
         self.group: VTGroup = group
+        self.format = format
         self.external_type: str = external_type
-        if self.group == VTGroup.EXTERNAL and not self.external_type:
+        if self.group & VTGroup.EXTERNAL and not self.external_type:
             raise ValueError(
                 "If the ValueTypeGroup is EXTERNAL a type name must be given as well."
+            )
+        if (
+            self.group & (VTGroup.FLOAT | VTGroup.DOUBLE)
+            and not self.group & VTGroup.IEEE
+        ):
+            raise ValueError(
+                "Double and floats need a standard assigned as well (like VTGroup.IEEE)."
+            )
+        if (self.group & VTGroup.IEEE) and not self.format:
+            raise ValueError(
+                f"If this ValueType follows an IEEE standard, the format must be given as well."
             )
 
     @property
@@ -96,7 +133,10 @@ class ValueType:
         raise ValueError(f"{self.group} not handled.")
 
     def __eq__(self, other):
-        return self.bit_width == other.bit_width and self.signed == other.signed
+        basics_match = self.bit_width == other.bit_width and self.signed == other.signed
+        if self.group & (VTGroup.FLOAT | VTGroup.DOUBLE):
+            return basics_match and self.format == other.format
+        return basics_match
 
     def __gt__(self, other):
         return self.bit_width > other.bit_width
@@ -141,6 +181,14 @@ def get_value_type_by_c_type(type_id: str) -> ValueType:
         return ValueType(True, 32)
     elif type_id == "unsigned":
         return ValueType(False, 32)
+    elif type_id == "float":
+        return ValueType(
+            True, 32, VTGroup.FLOAT | VTGroup.IEEE, format=FloatFormat.IEEE754_BIN_32
+        )
+    elif type_id == "double":
+        return ValueType(
+            True, 64, VTGroup.FLOAT | VTGroup.IEEE, format=FloatFormat.IEEE754_BIN_64
+        )
     elif any([t in type_id for t in VTGroup.get_external_types()]):
         return ValueType(False, 64, VTGroup.EXTERNAL, type_id)
     elif type_id == "void":

@@ -28,14 +28,20 @@ class ParserException:
 
 
 class ParsedInsn:
-    def __init__(self, name: str, asts: list[Tree], behaviors: list[str], exception: ParserException | None = None):
+    def __init__(
+        self,
+        name: str,
+        asts: list[Tree],
+        behaviors: list[str],
+        exception: ParserException | None = None,
+    ):
         self.name = name
         self.asts: list = asts
         self.behaviors: list = behaviors
         self.exception = exception
 
 
-def parse_single(bundle: InsnParsingBundle) -> dict[str: ParsedInsn]:
+def parse_single(bundle: InsnParsingBundle) -> dict[str:ParsedInsn]:
     name = bundle.name
     behaviors = bundle.behavior
     grammar = bundle.grammar

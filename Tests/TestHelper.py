@@ -22,7 +22,7 @@ class TestHelper(unittest.TestCase):
         unsigned = get_value_type_by_c_type("unsigned")
         self.assertEqual(unsigned, ValueType(False, 32))
         size7s_t = get_value_type_by_c_type("size7s_t")
-        self.assertEqual(size7s_t, ValueType(True, 7*8))
+        self.assertEqual(size7s_t, ValueType(True, 7 * 8))
 
     def test_var_decl_split(self):
         self.assertEqual(split_var_decl("uint64_t var"), ("uint64_t", "var"))

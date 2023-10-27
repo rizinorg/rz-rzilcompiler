@@ -33,9 +33,8 @@ class InputFile(StrEnum):
     HEXAGON_PP_MACROS_PATCHED_H = (
         "<REPO>/Resources/Hexagon/Preprocessor/macros_patched.h"
     )
-    HEXAGON_SUB_ROUTINES_JSON = (
-        "<REPO>/Resources/Hexagon/sub_routines.json"
-    )
+    HEXAGON_SUB_ROUTINES_JSON = "<REPO>/Resources/Hexagon/sub_routines.json"
+    HEXAGON_QEMU_RZIL_MACROS_JSON = "<REPO>/Resources/Hexagon/qemu_rzil_macros.json"
 
 
 def is_submodule() -> bool:

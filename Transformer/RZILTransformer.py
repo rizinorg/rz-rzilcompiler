@@ -4,6 +4,7 @@ from enum import Enum, auto
 
 from lark import Transformer, Token
 
+from rzil_compiler.Transformer.Pures.Macro import Macro, MacroInvocation
 from rzil_compiler.Transformer.Pures.Bool import Bool
 from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine, SubRoutineCall
 from rzil_compiler.Transformer.Pures.ReturnValue import ReturnValue
@@ -70,6 +71,7 @@ class RZILTransformer(Transformer):
         parameters: list[Parameter] = None,
         return_type: ValueType = None,
         code_format: CodeFormat = CodeFormat.READ_STATEMENTS,
+        macros: dict[str:Macro] = None,
     ):
         self.code_format = code_format
         # Classes of Pures which should not be initialized in the C code.
@@ -81,6 +83,9 @@ class RZILTransformer(Transformer):
         self.sub_routines: dict[str:SubRoutine] = (
             dict() if not sub_routines else sub_routines
         )
+        self.macros: dict[str:Macro] = dict() if not macros else macros
+
+        # Return type of this Transfomer. This is set if a sub-routine is transformed.
         self.return_type = return_type
         # List of parameters this transformer can take as given from outer scope.
         self.parameters: dict[str:Parameter] = (
@@ -112,6 +117,9 @@ class RZILTransformer(Transformer):
 
     def update_sub_routines(self, new_routines: dict[str:SubRoutine]) -> None:
         self.sub_routines.update(new_routines)
+
+    def update_macros(self, macro: dict[str:Macro]):
+        self.macros.update(macro)
 
     def get_op_id(self) -> int:
         return self.il_ops_holder.get_op_count()
@@ -343,6 +351,12 @@ class RZILTransformer(Transformer):
         Initializes and returns a Cast if the val_types and the pure.val_type
         mismatch. Otherwise, it simply returns the pure.
         """
+        if target_type.group & (
+            VTGroup.FLOAT | VTGroup.DOUBLE
+        ) or pure.value_type.group & (VTGroup.FLOAT | VTGroup.DOUBLE):
+            raise ValueError(
+                "Floats or doubles should not be casted. They get (de)coded via fUNFLOAT()"
+            )
         if target_type == pure.value_type:
             return pure
         if not cast_name:
@@ -653,7 +667,9 @@ class RZILTransformer(Transformer):
         self.update_assign_src(assignment)
         assignment = self.chk_hybrid_dep(self.add_op(assignment))
         if isinstance(items[2], Assignment):
-            return self.chk_hybrid_dep(self.add_op(Sequence("seq", [assignment, items[2]])))
+            return self.chk_hybrid_dep(
+                self.add_op(Sequence("seq", [assignment, items[2]]))
+            )
         return assignment
 
     def additive_expr(self, items):
@@ -818,6 +834,14 @@ class RZILTransformer(Transformer):
             va = self.il_ops_holder.get_op_by_name(va.value)
 
         return self.add_op(MemLoad(f"ml_{va.get_name()}", va, mem_acc_type))
+
+    def macro_expr(self, items):
+        self.ext.set_token_meta_data("macro_expr")
+        macro_name = items[0]
+        args = items[1:]
+        if macro_name not in self.macros:
+            raise ValueError(f"Macro {macro_name} is not defined.")
+        return self.add_op(MacroInvocation(macro_name, args, self.macros[macro_name]))
 
     def cast_sub_routine_args(
         self, fcn_name: str, args: list[Pure], predefined_types: list[ValueType] = None

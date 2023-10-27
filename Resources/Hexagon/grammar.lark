@@ -29,13 +29,21 @@ mem_store: MEM_STORE SIGN_TYPE BIT_WIDTH "(" _argument_expr_list ")" ";"
 ?generic_association: type_name ":" assignment_expr
 	| DEFAULT ":" assignment_expr
 
+FLOAT_MACRO: "fFLOAT"
+    | "fDOUBLE"
+    | "fUNFLOAT"
+    | "fUNDOUBLE"
+
+macro_expr: FLOAT_MACRO "(" [_argument_expr_list] ")"
+
 sub_routine: identifier "(" [_argument_expr_list] ")"
 
 ?postfix_expr: primary_expr
 	| postfix_expr "[" expr "]"
 	| postfix_expr "(" ")"
-	| sub_routine
 	| mem_load
+	| macro_expr
+	| sub_routine
 	| postfix_expr "." IDENTIFIER
 	| postfix_expr PTR_OP IDENTIFIER
 	| postfix_expr INC_OP

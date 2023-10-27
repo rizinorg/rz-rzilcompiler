@@ -151,6 +151,7 @@ class TestTransforming(unittest.TestCase):
                     ],
                     return_type=ValueType(False, 32, VTGroup.EXTERNAL, "RzILOpEffect"),
                     code_format=CodeFormat.EXEC_CLASSES,
+                    macros=self.compiler.transformer.macros,
                 )
                 return transformer.transform(tree)
         except UnexpectedToken as e:
@@ -454,6 +455,11 @@ class TestTransforming(unittest.TestCase):
         result = self.compile_behavior(behavior)
         self.assertFalse(isinstance(result, Exception))
 
+    def test_F2_sfadd(self):
+        behavior = self.insn_behavior["F2_sfadd"][0]
+        result = self.compile_behavior(behavior)
+        self.assertFalse(isinstance(result, Exception))
+
     def test_A2_abs_syntax(self):
         behavior = self.insn_behavior["A2_abs"][0]
         result = self.compile_behavior(behavior)
@@ -530,6 +536,7 @@ class TestStmtEmitting(unittest.TestCase):
                     Parameter("bundle", get_value_type_by_c_type("HexInsnPktBundle")),
                 ],
                 return_type=ValueType(False, 32, VTGroup.EXTERNAL, "RzILOpEffect"),
+                macros=self.compiler.transformer.macros,
             )
             return transformer.transform(tree)
 
@@ -768,6 +775,7 @@ class TestTransformerMeta(unittest.TestCase):
                 ],
                 return_type=ValueType(False, 32, VTGroup.EXTERNAL, "RzILOpEffect"),
                 code_format=CodeFormat.EXEC_CLASSES,
+                macros=self.compiler.transformer.macros,
             )
             transformer.transform(tree)
             return transformer.ext.get_meta()
@@ -1610,6 +1618,43 @@ class TestTransformerOutput(unittest.TestCase):
             // WRITE
             RzILOpEffect *instruction_sequence = EMPTY();
 
+            return instruction_sequence;""".replace(
+            "  ", ""
+        )
+        self.assertEqual(expected, output)
+
+    def test_float_double_enc_dec(self):
+        behavior = (
+            "{"
+            "int32_t RdV = fUNFLOAT(fFLOAT(RsV) + fFLOAT(RtV));"
+            "int64_t RdV = fUNDOUBLE(fDOUBLE(RssV) - fDOUBLE(RttV));"
+            "}"
+        )
+        self.compiler.transformer.code_format = CodeFormat.READ_STATEMENTS
+        ast = self.compiler.parser.parse(behavior)
+        output = self.compiler.transformer.transform(ast)
+        self.compiler.transformer.code_format = CodeFormat.EXEC_CLASSES
+        expected = """
+            // READ
+            const HexOp *Rs_op = ISA2REG(hi, 's', false);
+            RzILOpPure *Rs = READ_REG(pkt, Rs_op, false);
+            const HexOp *Rt_op = ISA2REG(hi, 't', false);
+            RzILOpPure *Rt = READ_REG(pkt, Rt_op, false);
+            // Declare: st64 RdV;
+            const HexOp *Rss_op = ISA2REG(hi, 's', false);
+            RzILOpPure *Rss = READ_REG(pkt, Rss_op, false);
+            const HexOp *Rtt_op = ISA2REG(hi, 't', false);
+            RzILOpPure *Rtt = READ_REG(pkt, Rtt_op, false);
+
+            // RdV = ((st32) fUNFLOAT(fFLOAT(RZ_FLOAT_IEEE754_BIN_32, Rs) + fFLOAT(RZ_FLOAT_IEEE754_BIN_32, Rt)));
+            RzILOpPure *op_ADD_4 = FADD(BV2F(RZ_FLOAT_IEEE754_BIN_32, Rs), BV2F(RZ_FLOAT_IEEE754_BIN_32, Rt));
+            RzILOpEffect *op_ASSIGN_7 = SETL("RdV", CAST(32, MSB(F2BV(op_ADD_4)), F2BV(DUP(op_ADD_4))));
+
+            // RdV = ((st64) ((st32) fUNDOUBLE(fDOUBLE(RZ_FLOAT_IEEE754_BIN_64, Rss) - fDOUBLE(RZ_FLOAT_IEEE754_BIN_64, Rtt))));
+            RzILOpPure *op_SUB_13 = FSUB(BV2F(RZ_FLOAT_IEEE754_BIN_64, Rss), BV2F(RZ_FLOAT_IEEE754_BIN_64, Rtt));
+            RzILOpEffect *op_ASSIGN_16 = SETL("RdV", CAST(64, MSB(CAST(32, MSB(F2BV(op_SUB_13)), F2BV(DUP(op_SUB_13)))), CAST(32, MSB(F2BV(DUP(op_SUB_13))), F2BV(DUP(op_SUB_13)))));
+
+            RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_7, op_ASSIGN_16);
             return instruction_sequence;""".replace(
             "  ", ""
         )

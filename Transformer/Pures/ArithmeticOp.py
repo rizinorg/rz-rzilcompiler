@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 from enum import StrEnum
 
+from rzil_compiler.Transformer.ValueType import VTGroup, FloatFormat
 from rzil_compiler.Transformer.Pures.Pure import Pure
 from rzil_compiler.Transformer.Pures.PureExec import PureExec
 
@@ -21,17 +22,23 @@ class ArithmeticOp(PureExec):
 
     def il_exec(self):
         if self.arith_type == ArithmeticType.ADD:
-            return f"ADD({self.ops[0].il_read()}, {self.ops[1].il_read()})"
+            code = f"ADD("
         elif self.arith_type == ArithmeticType.SUB:
-            return f"SUB({self.ops[0].il_read()}, {self.ops[1].il_read()})"
+            code = f"SUB("
         elif self.arith_type == ArithmeticType.MUL:
-            return f"MUL({self.ops[0].il_read()}, {self.ops[1].il_read()})"
+            code = f"MUL("
         elif self.arith_type == ArithmeticType.DIV:
-            return f"DIV({self.ops[0].il_read()}, {self.ops[1].il_read()})"
+            code = f"DIV("
         elif self.arith_type == ArithmeticType.MOD:
-            return f"MOD({self.ops[0].il_read()}, {self.ops[1].il_read()})"
+            code = f"MOD("
         else:
             raise NotImplementedError(f"Arithmetic type {self.arith_type} not handled.")
+        if (
+            self.ops[0].value_type.group & VTGroup.FLOAT
+            and self.ops[1].value_type.group & VTGroup.FLOAT
+        ):
+            return f"F{code}{FloatFormat.rzil_repr(self.ops[0].value_type.format)}, {self.ops[0].il_read()}, {self.ops[1].il_read()})"
+        return f"{code}{self.ops[0].il_read()}, {self.ops[1].il_read()})"
 
     def __str__(self):
         return f"{self.ops[0]} {self.arith_type} {self.ops[1]}"

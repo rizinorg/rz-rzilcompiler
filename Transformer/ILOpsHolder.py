@@ -11,7 +11,7 @@ class ILOpsHolder:
     def __init__(self):
         # Total count of hybrids seen during transformation
         self.hybrid_op_count = 0
-        self.hybrid_effect_dict: dict[str: Sequence] = dict()
+        self.hybrid_effect_dict: dict[str:Sequence] = dict()
         self.read_ops: dict = dict()
         self.exec_ops: dict = dict()
         self.write_ops: dict = dict()
@@ -92,7 +92,11 @@ class ILOpsHolder:
         # Remove the reference from the hybrid
         h_tmp_name = pure.get_name()
         h_seq: Sequence = self.hybrid_effect_dict[h_tmp_name]
-        hybrid = h_seq.effect_ops[0] if isinstance(h_seq.effect_ops[0], Hybrid) else h_seq.effect_ops[1]
+        hybrid = (
+            h_seq.effect_ops[0]
+            if isinstance(h_seq.effect_ops[0], Hybrid)
+            else h_seq.effect_ops[1]
+        )
         hybrid.references_set.remove(pure)
         if len(hybrid.references_set) == 0:
             # Last reference removed, remove the hybrid
