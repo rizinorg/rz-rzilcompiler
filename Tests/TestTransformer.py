@@ -1548,6 +1548,29 @@ class TestTransformerOutput(unittest.TestCase):
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
         )
 
+    def test_sign_change_on_reg_write(self):
+        behavior = "{ RdV = (size1u_t)(mem_load_u8(EA)); uint32_t a = RdV; }"
+        output = self.compile_behavior(behavior)
+        expected = ("""
+        // READ
+        const HexOp *Rd_op = ISA2REG(hi, 'd', false);
+        // Declare: ut32 EA;
+        // Declare: ut32 a;
+
+        // EXEC
+        RzILOpPure *ml_EA_2 = LOADW(8, VARL("EA"));
+
+        // WRITE
+        RzILOpEffect *op_ASSIGN_5 = WRITE_REG(bundle, Rd_op, CAST(32, IL_FALSE, CAST(8, IL_FALSE, ml_EA_2)));
+        RzILOpEffect *op_ASSIGN_7 = SETL("a", CAST(32, IL_FALSE, READ_REG(pkt, Rd_op, true)));
+        RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_5, op_ASSIGN_7);
+
+        return instruction_sequence;""".replace("  ", "")
+        )
+        self.assertEqual(
+            expected, output
+        )
+
     def test_reg_jump_flag_setter(self):
         behavior = "{ JUMP(0x0); }"
         output = self.compile_behavior(behavior)
