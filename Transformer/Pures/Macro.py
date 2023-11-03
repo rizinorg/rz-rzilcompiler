@@ -8,14 +8,7 @@ from rzil_compiler.Transformer.Pures.ExternalArgument import (
 from rzil_compiler.Transformer.Hybrids.SubRoutine import build_arg_list
 from rzil_compiler.Transformer.Pures.PureExec import PureExec
 from rzil_compiler.Transformer.Pures.Pure import Pure
-from rzil_compiler.Transformer.ValueType import ValueType, VTGroup
-
-qemu_rzil_macro_map = {
-    "fFLOAT": "B2F",
-    "fDOUBLE": "B2F",
-    "fUNFLOAT": "F2B",
-    "fUNDOUBLE": "F2B",
-}
+from rzil_compiler.Transformer.ValueType import ValueType
 
 
 class Macro:
@@ -24,16 +17,16 @@ class Macro:
         name: str,
         ret_type: ValueType,
         param_types: list[ValueType],
-        rzil_name: str,
+        rzil_macro: str,
     ):
         self.name = name
         self.qemu_name = name
         self.return_type = ret_type
         self.param_types = param_types
-        self.rzil_name = rzil_name
+        self.rzil_macro = rzil_macro
 
     def get_rzil_name(self):
-        return self.rzil_name
+        return self.rzil_macro
 
 
 class MacroInvocation(PureExec):
@@ -46,7 +39,7 @@ class MacroInvocation(PureExec):
     def __init__(self, name: str, arguments: list[Pure], macro: Macro):
         self.inlined: bool = True
         self.macro = macro
-        self.rzil_macro = qemu_rzil_macro_map[name]
+        self.rzil_macro = macro.rzil_macro
         if self.macro.qemu_name == "fFLOAT":
             arguments = [RZ_FLOAT_IEEE754_BIN_32_ARG] + arguments
         elif self.macro.qemu_name == "fDOUBLE":

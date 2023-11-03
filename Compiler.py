@@ -189,11 +189,11 @@ class Compiler:
             )
 
     def add_macro_to_transformer(
-        self, name: str, ret_type: str, param_types: list[str], rzil_name: str
+        self, name: str, ret_type: str, param_types: list[str], rzil_macro: str
     ):
         ret_type = get_value_type_by_c_type(ret_type)
         param_types = [get_value_type_by_c_type(t) for t in param_types]
-        macro = {name: Macro(name, ret_type, param_types, rzil_name)}
+        macro = {name: Macro(name, ret_type, param_types, rzil_macro)}
         self.transformer.update_macros(macro)
 
     def add_sub_routine(
