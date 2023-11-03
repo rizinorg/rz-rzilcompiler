@@ -1670,12 +1670,12 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpPure *Rtt = READ_REG(pkt, Rtt_op, false);
 
             // RdV = ((st32) fUNFLOAT(fFLOAT(RZ_FLOAT_IEEE754_BIN_32, Rs) + fFLOAT(RZ_FLOAT_IEEE754_BIN_32, Rt)));
-            RzILOpPure *op_ADD_4 = FADD(BV2F(RZ_FLOAT_IEEE754_BIN_32, Rs), BV2F(RZ_FLOAT_IEEE754_BIN_32, Rt));
-            RzILOpEffect *op_ASSIGN_7 = SETL("RdV", CAST(32, MSB(F2BV(op_ADD_4)), F2BV(DUP(op_ADD_4))));
+            RzILOpPure *op_ADD_4 = FADD(RZ_FLOAT_IEEE754_BIN_32, BV2F(RZ_FLOAT_IEEE754_BIN_32, Rs), BV2F(RZ_FLOAT_IEEE754_BIN_32, Rt));
+            RzILOpEffect *op_ASSIGN_7 = SETL("RdV", CAST(32, IL_FALSE, F2BV(op_ADD_4)));
 
             // RdV = ((st64) ((st32) fUNDOUBLE(fDOUBLE(RZ_FLOAT_IEEE754_BIN_64, Rss) - fDOUBLE(RZ_FLOAT_IEEE754_BIN_64, Rtt))));
-            RzILOpPure *op_SUB_13 = FSUB(BV2F(RZ_FLOAT_IEEE754_BIN_64, Rss), BV2F(RZ_FLOAT_IEEE754_BIN_64, Rtt));
-            RzILOpEffect *op_ASSIGN_16 = SETL("RdV", CAST(64, MSB(CAST(32, MSB(F2BV(op_SUB_13)), F2BV(DUP(op_SUB_13)))), CAST(32, MSB(F2BV(DUP(op_SUB_13))), F2BV(DUP(op_SUB_13)))));
+            RzILOpPure *op_SUB_13 = FSUB(RZ_FLOAT_IEEE754_BIN_64, BV2F(RZ_FLOAT_IEEE754_BIN_64, Rss), BV2F(RZ_FLOAT_IEEE754_BIN_64, Rtt));
+            RzILOpEffect *op_ASSIGN_16 = SETL("RdV", CAST(64, MSB(CAST(32, IL_FALSE, F2BV(op_SUB_13))), CAST(32, IL_FALSE, F2BV(DUP(op_SUB_13)))));
 
             RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_7, op_ASSIGN_16);
             return instruction_sequence;""".replace(

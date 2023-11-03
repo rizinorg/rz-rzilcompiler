@@ -1,10 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
 
-from rzil_compiler.Transformer.Pures.ExternalArgument import (
-    RZ_FLOAT_IEEE754_BIN_32_ARG,
-    RZ_FLOAT_IEEE754_BIN_64_ARG,
-)
 from rzil_compiler.Transformer.Hybrids.SubRoutine import build_arg_list
 from rzil_compiler.Transformer.Pures.PureExec import PureExec
 from rzil_compiler.Transformer.Pures.Pure import Pure
@@ -41,9 +37,9 @@ class MacroInvocation(PureExec):
         self.macro = macro
         self.rzil_macro = macro.rzil_macro
         if self.macro.qemu_name == "fFLOAT":
-            arguments = [RZ_FLOAT_IEEE754_BIN_32_ARG] + arguments
+            arguments = ["RZ_FLOAT_IEEE754_BIN_32"] + arguments
         elif self.macro.qemu_name == "fDOUBLE":
-            arguments = [RZ_FLOAT_IEEE754_BIN_64_ARG] + arguments
+            arguments = ["RZ_FLOAT_IEEE754_BIN_64"] + arguments
 
         PureExec.__init__(self, name, arguments, macro.return_type)
 

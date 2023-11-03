@@ -3,22 +3,22 @@
     "fFLOAT": {
       "return_type": "float",
       "params": ["RzFloatFormat format", "uint32_t bitvector"],
-      "rzil_macro": "B2F"
+      "rzil_macro": "BV2F"
     },
     "fDOUBLE": {
       "return_type": "double",
       "params": ["RzFloatFormat format", "uint64_t bitvector"],
-      "rzil_macro": "B2F"
+      "rzil_macro": "BV2F"
     },
     "fUNFLOAT": {
       "return_type": "uint32_t",
       "params": ["uint32_t bitvector"],
-      "rzil_macro": "F2B"
+      "rzil_macro": "F2BV"
     },
     "fUNDOUBLE": {
       "return_type": "uint64_t",
       "params": ["uint64_t bitvector"],
-      "rzil_macro": "F2B"
+      "rzil_macro": "F2BV"
     },
     "REGFIELD": {
       "return_type": "uint32_t",
