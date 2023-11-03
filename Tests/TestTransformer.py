@@ -1683,6 +1683,34 @@ class TestTransformerOutput(unittest.TestCase):
         )
         self.assertEqual(expected, output)
 
+    def test_fusr_fields(self):
+        behavior = (
+            "{"
+            "uint32_t a = REGFIELD(RF_WIDTH, HEX_REG_FIELD_OVR);"
+            "uint32_t b = REGFIELD(RF_OFFSET, HEX_REG_FIELD_OVR);"
+            "}"
+        )
+        self.compiler.transformer.code_format = CodeFormat.READ_STATEMENTS
+        ast = self.compiler.parser.parse(behavior)
+        output = self.compiler.transformer.transform(ast)
+        self.compiler.transformer.code_format = CodeFormat.EXEC_CLASSES
+        expected = """
+        // READ
+        // Declare: ut32 a;
+        // Declare: ut32 b;
+
+        // a = REGFIELD(RF_WIDTH, HEX_REG_FIELD_OVR);
+        RzILOpEffect *op_ASSIGN_2 = SETL("a", HEX_REGFIELD(RF_WIDTH, HEX_REG_FIELD_OVR));
+
+        // b = REGFIELD(RF_OFFSET, HEX_REG_FIELD_OVR);
+        RzILOpEffect *op_ASSIGN_5 = SETL("b", HEX_REGFIELD(RF_OFFSET, HEX_REG_FIELD_OVR));
+
+        RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, op_ASSIGN_5);
+        return instruction_sequence;""".replace(
+            "  ", ""
+        )
+        self.assertEqual(expected, output)
+
     def test_const_assign(self):
         behavior = "{ const uint32_t a; a = 1; }"
         self.assertRaises((ValueError, VisitError), self.compile_behavior, behavior)

@@ -34,7 +34,10 @@ FLOAT_MACRO: "fFLOAT"
     | "fUNFLOAT"
     | "fUNDOUBLE"
 
+RIZIN_MACRO: "REGFIELD"
+
 macro_expr: FLOAT_MACRO "(" [_argument_expr_list] ")"
+    | RIZIN_MACRO "(" [_argument_expr_list] ")"
 
 sub_routine: identifier "(" [_argument_expr_list] ")"
 

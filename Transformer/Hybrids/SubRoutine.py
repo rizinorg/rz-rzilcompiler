@@ -140,6 +140,9 @@ def build_arg_list(arguments: list[Pure], param_types: list[ValueType]) -> str:
                 continue
             # The argument should be of an external type. So only the variable name is printed.
             if "get_op_var" not in dir(arg):
+                if isinstance(arg, str):
+                    code += arg
+                    continue
                 raise ValueError(
                     f"{arg} as no method to get it's operand holding variable name."
                 )

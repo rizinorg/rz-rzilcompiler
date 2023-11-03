@@ -33,6 +33,8 @@ class VTGroup(Flag):
             "HexPkt",
             "RzILOpEffect",
             "RzFloatFormat",
+            "HexRegFieldProperty",
+            "HexRegField"
         ]
 
 

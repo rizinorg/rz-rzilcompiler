@@ -192,10 +192,6 @@ class HexagonTransformerExtension(TransformerExtension):
     def get_val_type_by_fcn(self, fcn_name: str):
         if fcn_name == "get_npc":
             return ValueType(False, 32)
-        elif fcn_name == "REGFIELD":
-            # Register field macros. Calls a function which returns the width or
-            # offset into the register of the field.
-            return ValueType(False, 32)
         elif fcn_name == "STORE_SLOT_CANCELLED":
             # Marks the slot i as cancelled in a global variable for this case.
             # returns void.
@@ -253,8 +249,6 @@ def get_fcn_param_types(fcn_name: str) -> [ValueType]:
     """
     if fcn_name == "get_npc":
         return [None]
-    elif fcn_name == "REGFIELD":
-        return [None, None]
     elif fcn_name == "WRITE_PRED":
         return [ValueType(False, 8), ValueType(False, 8)]
     elif fcn_name == "STORE_SLOT_CANCELLED":
