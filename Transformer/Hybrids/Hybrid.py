@@ -15,6 +15,7 @@ class HybridType(StrEnum):
     CALL = "call"
     SCALL = "sub_routine_call"
     SUB_ROUTINE = "sub_routine"
+    GCC_EXPR = "gcc_expr"
 
 
 class HybridSeqOrder(Enum):

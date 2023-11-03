@@ -1,5 +1,7 @@
 # SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
 # SPDX-License-Identifier: LGPL-3.0-only
+
+from rzil_compiler.Transformer.Hybrids.GCCStmtDeclExpr import GCCStmtDeclExpr
 from rzil_compiler.Transformer.Effects.Sequence import Sequence
 from rzil_compiler.Transformer.ValueType import VTGroup
 from rzil_compiler.Transformer.Effects.Effect import Effect
@@ -86,6 +88,8 @@ class ILOpsHolder:
         if name in self.exec_ops:
             self.exec_ops.pop(name)
         if name in self.write_ops:
+            if isinstance(self.write_ops[name], GCCStmtDeclExpr):
+                self.write_ops.pop(self.write_ops[name].stmt.get_name())
             self.write_ops.pop(name)
 
     def update_hybrid_ref(self, pure):

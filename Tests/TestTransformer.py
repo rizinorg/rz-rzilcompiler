@@ -1715,6 +1715,90 @@ class TestTransformerOutput(unittest.TestCase):
         behavior = "{ const uint32_t a; a = 1; }"
         self.assertRaises((ValueError, VisitError), self.compile_behavior, behavior)
 
+    def test_gcc_extensions_stmt_in_expr(self):
+        behavior = ("{ int k = 9;"
+                    "   uint32_t a = (k == 0) ? 1 : ({"
+                    "   int32_t x = 3;"
+                    "   5; "
+                    "}); "
+                    "}")
+        output = self.compile_behavior(behavior)
+        expected = """
+            """.replace(
+            "  ", ""
+        )
+        self.assertEqual(expected, output)
+
+    def test_gcc_extensions_stmt_in_expr_order(self):
+        behavior = ("{ int k = 9;"
+                    "   uint32_t a = (k == 0) ? 1 : ({"
+                    "   int32_t x = 3;"
+                    "   5; "
+                    "}); "
+                    "}")
+        transformer = RZILTransformer(
+            ArchEnum.HEXAGON, code_format=CodeFormat.READ_STATEMENTS
+        )
+        output = self.compile_behavior(behavior, transformer)
+        expected = """
+            // READ
+            // Declare: st32 k;
+            // Declare: st32 x;
+            // Declare: ut32 a;
+
+            // k = 0x9;
+            RzILOpEffect *op_ASSIGN_2 = SETL("k", SN(32, 9));
+
+            // x = 0x3;
+            RzILOpEffect *op_ASSIGN_8 = SETL("x", SN(32, 3));
+
+            / HYB(gcc_expr_if ((k == 0x0)) {{}} else {x = 0x3}, 0x5);
+            RzILOpPure *op_EQ_4 = EQ(VARL("k"), SN(32, 0));
+            RzILOpEffect *gcc_expr_10 = BRANCH(op_EQ_4, EMPTY(), op_ASSIGN_8);
+
+            // h_tmp0 = HYB(gcc_expr_if ((k == 0x0)) {{}} else {x = 0x3}, 0x5);
+            RzILOpEffect *op_ASSIGN_hybrid_tmp_12 = SETL("h_tmp0", SN(32, 5));
+
+            // seq(HYB(gcc_expr_if ((k == 0x0)) {{}} else {x = 0x3}, 0x5); h_tm ...;
+            RzILOpEffect *seq_13 = SEQN(2, gcc_expr_10, op_ASSIGN_hybrid_tmp_12);
+
+            // a = ((ut32) ((k == 0x0) ? 0x1 : h_tmp0));
+            RzILOpPure *cond_14 = ITE(op_EQ_4, SN(32, 1), VARL("h_tmp0"));
+            RzILOpEffect *op_ASSIGN_16 = SETL("a", CAST(32, IL_FALSE, cond_14));
+
+            // seq(seq(HYB(gcc_expr_if ((k == 0x0)) {{}} else {x = 0x3}, 0x5);  ...;
+            RzILOpEffect *seq_17 = SEQN(2, seq_13, op_ASSIGN_16);
+
+            RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, seq_17);
+            return instruction_sequence;""".replace(
+            "  ", ""
+        )
+        self.assertEqual(expected, output)
+
+    def test_gcc_extensions_stmt_in_expr_ignore(self):
+        behavior = ("{ "
+                    "   uint32_t a = (0 == 0) ? 1 : ({"
+                    "   int32_t x = 3;"
+                    "   5; "
+                    "}); "
+                    "}")
+        output = self.compile_behavior(behavior)
+        expected = """
+        // READ
+        // Declare: st32 x;
+        // Declare: ut32 a;
+
+        // EXEC
+
+        // WRITE
+        RzILOpEffect *op_ASSIGN_13 = SETL("a", CAST(32, IL_FALSE, SN(32, 1)));
+        RzILOpEffect *instruction_sequence = op_ASSIGN_13;
+
+        return instruction_sequence;""".replace(
+            "  ", ""
+        )
+        self.assertEqual(expected, output)
+
 
 class TestGrammar(unittest.TestCase):
     def test_early_compatibility(self):
@@ -1743,6 +1827,21 @@ class TestGrammar(unittest.TestCase):
 
     def test_and_ambiguity(self):
         behavior = "{ 0x0 & 0xffffff; 0x0 && 0xffffff; }"
+        with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
+            grammar = "".join(f.readlines())
+        self.parser = Lark(grammar, start="fbody", parser="earley")
+        ast = self.parser.parse(behavior)
+        result = RZILTransformer(
+            ArchEnum.HEXAGON, code_format=CodeFormat.EXEC_CLASSES
+        ).transform(ast)
+        self.assertNotIn("&", result)
+
+    def test_gcc_extensions(self):
+        behavior = ("{ uint32_t a = (0 == 0) ? 1 : ({"
+                    "   int32_t x = 1;"
+                    "   5; "
+                    "}); "
+                    "}")
         with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
             grammar = "".join(f.readlines())
         self.parser = Lark(grammar, start="fbody", parser="earley")

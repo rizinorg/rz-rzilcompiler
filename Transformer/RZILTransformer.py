@@ -4,6 +4,7 @@ from enum import Enum, auto
 
 from lark import Transformer, Token
 
+from rzil_compiler.Transformer.Hybrids.GCCStmtDeclExpr import GCCStmtDeclExpr
 from rzil_compiler.Transformer.Pures.Macro import Macro, MacroInvocation
 from rzil_compiler.Transformer.Pures.Bool import Bool
 from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine, SubRoutineCall
@@ -79,7 +80,6 @@ class RZILTransformer(Transformer):
         self.imm_set_effect_list = list()
 
         self.arch = arch
-        self.gcc_ext_effects = list()
         self.sub_routines: dict[str:SubRoutine] = (
             dict() if not sub_routines else sub_routines
         )
@@ -110,7 +110,6 @@ class RZILTransformer(Transformer):
 
     def reset(self):
         self.ext.reset_flags()
-        self.gcc_ext_effects.clear()
         self.il_ops_holder.hybrid_effect_dict.clear()
         self.imm_set_effect_list.clear()
         self.il_ops_holder.clear()
@@ -189,7 +188,6 @@ class RZILTransformer(Transformer):
                 for op in self.imm_set_effect_list
                 + left_hybrids
                 + flatten_list(items)
-                + self.gcc_ext_effects
                 if isinstance(op, Effect)
             ],
         )
@@ -533,7 +531,24 @@ class RZILTransformer(Transformer):
         result = self.simplify_conditional_expr(items)
         if result:
             return result
-        then_p, else_p = self.cast_operands(a=items[1], b=items[2], immutable_a=False)
+        then_p = items[1]
+        else_p = items[2]
+
+        if then_p.value_type.group & VTGroup.HYBRID_LVAR and isinstance(then_p.hybrid_owner, GCCStmtDeclExpr):
+            # The if/elif cases mean that the then/else expression are produced by an
+            # GCC-stmt-decl-expression.
+            # (See: https://gcc.gnu.org/onlinedocs/gcc-2.95.3/gcc_4.html#SEC62)
+            # The statements in this expression must be executed conditionally as well.
+            # So we update the corresponding GCCStmtDeclExpr statements with a BRANCH here.
+            hybrid = then_p.hybrid_owner
+            hybrid: GCCStmtDeclExpr
+            hybrid.update_stmt(Branch("branch", cond=items[0], then=hybrid.stmt, otherwise=Empty("")))
+        if else_p.value_type.group & VTGroup.HYBRID_LVAR and isinstance(else_p.hybrid_owner, GCCStmtDeclExpr):
+            hybrid = else_p.hybrid_owner
+            hybrid: GCCStmtDeclExpr
+            hybrid.update_stmt(Branch("branch", cond=items[0], then=Empty(""), otherwise=hybrid.stmt))
+
+        then_p, else_p = self.cast_operands(a=then_p, b=else_p, immutable_a=False)
         return self.add_op(Ternary(f"cond", items[0], then_p, else_p))
 
     def update_assign_src(self, assign: Assignment):
@@ -944,9 +959,9 @@ class RZILTransformer(Transformer):
         elif isinstance(items[0], list) or not items[1]:
             # This is a compound statement.
             return items[0]
-
-        self.gcc_ext_effects.append(self.chk_hybrid_dep(items[0]))
-        return items[1]  # expression
+        p: Pure = items[1]
+        e: Effect = items[0]
+        return self.resolve_hybrid(self.add_op(GCCStmtDeclExpr("gcc_expr", e, p, p.value_type)))
 
     def expr_stmt(self, items):
         self.ext.set_token_meta_data("expr_stmt")
@@ -1012,7 +1027,8 @@ class RZILTransformer(Transformer):
             return Number("VOID_VALUE", 0xFFFFFFFF, ValueType(False, 32, VTGroup.VOID))
         h_tmp_type = hybrid.value_type
         h_tmp_type.group |= VTGroup.HYBRID_LVAR
-        tmp_x = self.add_op(LocalVar(tmp_x_name, hybrid.value_type))
+        tmp_x = self.add_op(LocalVar(tmp_x_name, hybrid.value_type, hybrid_owner=hybrid))
+        tmp_x
         hybrid.references_set.add(tmp_x)
 
         # Assign the hybrid pure part to tmp_x.
