@@ -891,6 +891,11 @@ class TestTransformerOutput(unittest.TestCase):
             ArchEnum.HEXAGON, code_format=CodeFormat.EXEC_CLASSES
         )
 
+    def get_new_transformer(self, formatting: CodeFormat = CodeFormat.EXEC_CLASSES):
+        return RZILTransformer(
+            ArchEnum.HEXAGON, code_format=formatting
+        )
+
     def compile_behavior(
         self, behavior: str, transformer: RZILTransformer = None
     ) -> list[str]:
@@ -1296,7 +1301,7 @@ class TestTransformerOutput(unittest.TestCase):
         )
 
     def test_store_cancelled_fcn(self):
-        behavior = "{ STORE_SLOT_CANCELLED(slot); }"
+        behavior = "{ STORE_SLOT_CANCELLED(pkt, slot); }"
         output = self.compile_behavior(behavior)
         expected = "RzILOpEffect *c_call_0 = HEX_STORE_SLOT_CANCELLED(pkt, hi->slot);\n"
         self.assertTrue(
@@ -1416,7 +1421,7 @@ class TestTransformerOutput(unittest.TestCase):
 
     def test_for_loop(self):
         behavior = "{ for (int i = 0; i < 2; i++) { __NOP; }; }"
-        output = self.compile_behavior(behavior)
+        output = self.compile_behavior(behavior, self.get_new_transformer())
         expected = """
         // READ
         // Declare: st32 i;
@@ -1472,7 +1477,7 @@ class TestTransformerOutput(unittest.TestCase):
 
     def test_reg_alias_pc(self):
         behavior = "{ RdV = HEX_REG_ALIAS_PC; }"
-        output = self.compile_behavior(behavior)
+        output = self.compile_behavior(behavior, self.get_new_transformer())
         expected = """
             // READ
             const HexOp *Rd_op = ISA2REG(hi, 'd', false);
@@ -1481,7 +1486,7 @@ class TestTransformerOutput(unittest.TestCase):
             // EXEC
 
             // WRITE
-            RzILOpEffect *op_ASSIGN_3 = WRITE_REG(bundle, Rd_op, CAST(32, MSB(pc), DUP(pc)));
+            RzILOpEffect *op_ASSIGN_3 = WRITE_REG(bundle, Rd_op, CAST(32, IL_FALSE, pc));
             RzILOpEffect *instruction_sequence = op_ASSIGN_3;
 
             return instruction_sequence;""".replace(
@@ -1521,9 +1526,14 @@ class TestTransformerOutput(unittest.TestCase):
             self.compiler.sub_routines["trap"].body,
             """{\nreturn NOP();\n}""".replace("  ", ""),
         )
-        tree = self.compiler.parser.parse(behavior)
-        self.compiler.transformer.code_format = CodeFormat.EXEC_CLASSES
-        output = self.compiler.transformer.transform(tree)
+        ast = self.compiler.parser.parse(behavior)
+        transformer = RZILTransformer(
+            ArchEnum.HEXAGON, code_format=CodeFormat.EXEC_CLASSES
+        )
+        transformer.parameters = self.compiler.transformer.parameters
+        transformer.sub_routines = self.compiler.transformer.sub_routines
+        transformer.macros = self.compiler.transformer.macros
+        output = transformer.transform(ast)
         expected = """
             // READ
 
@@ -1540,17 +1550,24 @@ class TestTransformerOutput(unittest.TestCase):
 
     def test_reg_alias(self):
         behavior = "{ RdV = HEX_REG_ALIAS_USR; }"
-        output = self.compile_behavior(behavior)
+        output = self.compile_behavior(behavior, self.get_new_transformer())
         expected = (
-            "// READ\n"
-            "const HexOp *Rd_op = ISA2REG(hi, 'd', false);\n"
-            "const HexOp usr_op = ALIAS2OP(HEX_REG_ALIAS_USR, false);\n"
-            "RzILOpPure *usr = READ_REG(pkt, &usr_op, false);\n\n"
-            "// EXEC\n\n// WRITE\n"
-            "RzILOpEffect *op_ASSIGN_3 = WRITE_REG(bundle, Rd_op, CAST(32, MSB(usr), DUP(usr)));\n"
+            """
+            // READ
+            const HexOp *Rd_op = ISA2REG(hi, 'd', false);
+            const HexOp usr_op = ALIAS2OP(HEX_REG_ALIAS_USR, false);
+            RzILOpPure *usr = READ_REG(pkt, &usr_op, false);
+
+            // EXEC
+
+            // WRITE
+            RzILOpEffect *op_ASSIGN_3 = WRITE_REG(bundle, Rd_op, CAST(32, IL_FALSE, usr));
+            RzILOpEffect *instruction_sequence = op_ASSIGN_3;
+
+            return instruction_sequence;""".replace("    ", "")
         )
-        self.assertTrue(
-            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        self.assertEqual(
+            expected, output
         )
 
     def test_sign_change_on_reg_write(self):
@@ -1695,10 +1712,14 @@ class TestTransformerOutput(unittest.TestCase):
             "uint32_t b = REGFIELD(RF_OFFSET, HEX_REG_FIELD_OVR);"
             "}"
         )
-        self.compiler.transformer.code_format = CodeFormat.READ_STATEMENTS
         ast = self.compiler.parser.parse(behavior)
-        output = self.compiler.transformer.transform(ast)
-        self.compiler.transformer.code_format = CodeFormat.EXEC_CLASSES
+        transformer = RZILTransformer(
+            ArchEnum.HEXAGON, code_format=CodeFormat.READ_STATEMENTS
+        )
+        transformer.parameters = self.compiler.transformer.parameters
+        transformer.sub_routines = self.compiler.transformer.sub_routines
+        transformer.macros = self.compiler.transformer.macros
+        output = transformer.transform(ast)
         expected = """
         // READ
         // Declare: ut32 a;
@@ -1727,10 +1748,7 @@ class TestTransformerOutput(unittest.TestCase):
                     "   5; "
                     "}); "
                     "}")
-        transformer = RZILTransformer(
-            ArchEnum.HEXAGON, code_format=CodeFormat.READ_STATEMENTS
-        )
-        output = self.compile_behavior(behavior, transformer)
+        output = self.compile_behavior(behavior, self.get_new_transformer(CodeFormat.READ_STATEMENTS))
         expected = """
             // READ
             // Declare: st32 k;
@@ -1773,7 +1791,7 @@ class TestTransformerOutput(unittest.TestCase):
                     "   5; "
                     "}); "
                     "}")
-        output = self.compile_behavior(behavior)
+        output = self.compile_behavior(behavior, self.get_new_transformer())
         expected = """
         // READ
         // Declare: st32 x;
