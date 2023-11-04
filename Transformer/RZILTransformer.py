@@ -185,9 +185,7 @@ class RZILTransformer(Transformer):
             f"instruction_sequence",
             [
                 op
-                for op in self.imm_set_effect_list
-                + left_hybrids
-                + flatten_list(items)
+                for op in self.imm_set_effect_list + left_hybrids + flatten_list(items)
                 if isinstance(op, Effect)
             ],
         )
@@ -534,7 +532,11 @@ class RZILTransformer(Transformer):
         then_p = items[1]
         else_p = items[2]
 
-        if then_p.value_type.group & VTGroup.HYBRID_LVAR and hasattr(then_p, "hybrid_owner") and isinstance(then_p.hybrid_owner, GCCStmtDeclExpr):
+        if (
+            then_p.value_type.group & VTGroup.HYBRID_LVAR
+            and hasattr(then_p, "hybrid_owner")
+            and isinstance(then_p.hybrid_owner, GCCStmtDeclExpr)
+        ):
             # The if/elif cases mean that the then/else expression are produced by an
             # GCC-stmt-decl-expression.
             # (See: https://gcc.gnu.org/onlinedocs/gcc-2.95.3/gcc_4.html#SEC62)
@@ -542,11 +544,19 @@ class RZILTransformer(Transformer):
             # So we update the corresponding GCCStmtDeclExpr statements with a BRANCH here.
             hybrid = then_p.hybrid_owner
             hybrid: GCCStmtDeclExpr
-            hybrid.update_stmt(Branch("branch", cond=items[0], then=hybrid.stmt, otherwise=Empty("")))
-        if else_p.value_type.group & VTGroup.HYBRID_LVAR and hasattr(else_p, "hybrid_owner") and isinstance(else_p.hybrid_owner, GCCStmtDeclExpr):
+            hybrid.update_stmt(
+                Branch("branch", cond=items[0], then=hybrid.stmt, otherwise=Empty(""))
+            )
+        if (
+            else_p.value_type.group & VTGroup.HYBRID_LVAR
+            and hasattr(else_p, "hybrid_owner")
+            and isinstance(else_p.hybrid_owner, GCCStmtDeclExpr)
+        ):
             hybrid = else_p.hybrid_owner
             hybrid: GCCStmtDeclExpr
-            hybrid.update_stmt(Branch("branch", cond=items[0], then=Empty(""), otherwise=hybrid.stmt))
+            hybrid.update_stmt(
+                Branch("branch", cond=items[0], then=Empty(""), otherwise=hybrid.stmt)
+            )
 
         then_p, else_p = self.cast_operands(a=then_p, b=else_p, immutable_a=False)
         return self.add_op(Ternary(f"cond", items[0], then_p, else_p))
@@ -961,7 +971,9 @@ class RZILTransformer(Transformer):
             return items[0]
         p: Pure = items[1]
         e: Effect = items[0]
-        return self.resolve_hybrid(self.add_op(GCCStmtDeclExpr("gcc_expr", e, p, p.value_type)))
+        return self.resolve_hybrid(
+            self.add_op(GCCStmtDeclExpr("gcc_expr", e, p, p.value_type))
+        )
 
     def expr_stmt(self, items):
         self.ext.set_token_meta_data("expr_stmt")
@@ -1027,7 +1039,9 @@ class RZILTransformer(Transformer):
             return Number("VOID_VALUE", 0xFFFFFFFF, ValueType(False, 32, VTGroup.VOID))
         h_tmp_type = hybrid.value_type
         h_tmp_type.group |= VTGroup.HYBRID_LVAR
-        tmp_x = self.add_op(LocalVar(tmp_x_name, hybrid.value_type, hybrid_owner=hybrid))
+        tmp_x = self.add_op(
+            LocalVar(tmp_x_name, hybrid.value_type, hybrid_owner=hybrid)
+        )
         tmp_x
         hybrid.references_set.add(tmp_x)
 

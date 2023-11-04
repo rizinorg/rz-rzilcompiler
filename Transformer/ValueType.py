@@ -34,7 +34,7 @@ class VTGroup(Flag):
             "RzILOpEffect",
             "RzFloatFormat",
             "HexRegFieldProperty",
-            "HexRegField"
+            "HexRegField",
         ]
 
 
@@ -201,8 +201,10 @@ def get_value_type_by_c_type(type_id: str) -> ValueType:
     else:
         type_match = re.search(r"(?P<sign>u?)int(?P<width>\d+)_t", type_id)
     if not type_match or len(type_match.groups()) != 2:
-        raise ValueError(f"Types of the form {type_id} can't be parsed yet. If it is an external type,"
-                         f"add it to get_external_types()")
+        raise ValueError(
+            f"Types of the form {type_id} can't be parsed yet. If it is an external type,"
+            f"add it to get_external_types()"
+        )
 
     is_signed = False if type_match["sign"] == "u" else True
     width = int(type_match["width"])

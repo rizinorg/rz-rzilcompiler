@@ -12,9 +12,8 @@ class GCCStmtDeclExpr(Hybrid):
     This implements the GCC extension of statements and declare expressions"
     https://gcc.gnu.org/onlinedocs/gcc-2.95.3/gcc_4.html#SEC62
     """
-    def __init__(
-        self, name: str, stmt: Effect, expr: Pure, value_type: ValueType
-    ):
+
+    def __init__(self, name: str, stmt: Effect, expr: Pure, value_type: ValueType):
         self.op_type = HybridType.GCC_EXPR
         self.stmt: Effect = stmt
         self.expr: Pure = expr

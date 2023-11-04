@@ -892,9 +892,7 @@ class TestTransformerOutput(unittest.TestCase):
         )
 
     def get_new_transformer(self, formatting: CodeFormat = CodeFormat.EXEC_CLASSES):
-        return RZILTransformer(
-            ArchEnum.HEXAGON, code_format=formatting
-        )
+        return RZILTransformer(ArchEnum.HEXAGON, code_format=formatting)
 
     def compile_behavior(
         self, behavior: str, transformer: RZILTransformer = None
@@ -1551,8 +1549,7 @@ class TestTransformerOutput(unittest.TestCase):
     def test_reg_alias(self):
         behavior = "{ RdV = HEX_REG_ALIAS_USR; }"
         output = self.compile_behavior(behavior, self.get_new_transformer())
-        expected = (
-            """
+        expected = """
             // READ
             const HexOp *Rd_op = ISA2REG(hi, 'd', false);
             const HexOp usr_op = ALIAS2OP(HEX_REG_ALIAS_USR, false);
@@ -1564,16 +1561,15 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_3 = WRITE_REG(bundle, Rd_op, CAST(32, IL_FALSE, usr));
             RzILOpEffect *instruction_sequence = op_ASSIGN_3;
 
-            return instruction_sequence;""".replace("    ", "")
+            return instruction_sequence;""".replace(
+            "    ", ""
         )
-        self.assertEqual(
-            expected, output
-        )
+        self.assertEqual(expected, output)
 
     def test_sign_change_on_reg_write(self):
         behavior = "{ RdV = (size1u_t)(mem_load_u8(EA)); uint32_t a = RdV; }"
         output = self.compile_behavior(behavior)
-        expected = ("""
+        expected = """
         // READ
         const HexOp *Rd_op = ISA2REG(hi, 'd', false);
         // Declare: ut32 EA;
@@ -1587,11 +1583,10 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *op_ASSIGN_7 = SETL("a", CAST(32, IL_FALSE, READ_REG(pkt, Rd_op, true)));
         RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_5, op_ASSIGN_7);
 
-        return instruction_sequence;""".replace("  ", "")
+        return instruction_sequence;""".replace(
+            "  ", ""
         )
-        self.assertEqual(
-            expected, output
-        )
+        self.assertEqual(expected, output)
 
     def test_reg_jump_flag_setter(self):
         behavior = "{ JUMP(0x0); }"
@@ -1742,13 +1737,17 @@ class TestTransformerOutput(unittest.TestCase):
         self.assertRaises((ValueError, VisitError), self.compile_behavior, behavior)
 
     def test_gcc_extensions_stmt_in_expr_order(self):
-        behavior = ("{ int k = 9;"
-                    "   uint32_t a = (k == 0) ? 1 : ({"
-                    "   int32_t x = 3;"
-                    "   5; "
-                    "}); "
-                    "}")
-        output = self.compile_behavior(behavior, self.get_new_transformer(CodeFormat.READ_STATEMENTS))
+        behavior = (
+            "{ int k = 9;"
+            "   uint32_t a = (k == 0) ? 1 : ({"
+            "   int32_t x = 3;"
+            "   5; "
+            "}); "
+            "}"
+        )
+        output = self.compile_behavior(
+            behavior, self.get_new_transformer(CodeFormat.READ_STATEMENTS)
+        )
         expected = """
             // READ
             // Declare: st32 k;
@@ -1785,12 +1784,14 @@ class TestTransformerOutput(unittest.TestCase):
         self.assertEqual(expected, output)
 
     def test_gcc_extensions_stmt_in_expr_ignore(self):
-        behavior = ("{ "
-                    "   uint32_t a = (0 == 0) ? 1 : ({"
-                    "   int32_t x = 3;"
-                    "   5; "
-                    "}); "
-                    "}")
+        behavior = (
+            "{ "
+            "   uint32_t a = (0 == 0) ? 1 : ({"
+            "   int32_t x = 3;"
+            "   5; "
+            "}); "
+            "}"
+        )
         output = self.compile_behavior(behavior, self.get_new_transformer())
         expected = """
         // READ
@@ -1846,11 +1847,9 @@ class TestGrammar(unittest.TestCase):
         self.assertNotIn("&", result)
 
     def test_gcc_extensions(self):
-        behavior = ("{ uint32_t a = (0 == 0) ? 1 : ({"
-                    "   int32_t x = 1;"
-                    "   5; "
-                    "}); "
-                    "}")
+        behavior = (
+            "{ uint32_t a = (0 == 0) ? 1 : ({" "   int32_t x = 1;" "   5; " "}); " "}"
+        )
         with open(Conf.get_path(InputFile.GRAMMAR, ArchEnum.HEXAGON)) as f:
             grammar = "".join(f.readlines())
         self.parser = Lark(grammar, start="fbody", parser="earley")

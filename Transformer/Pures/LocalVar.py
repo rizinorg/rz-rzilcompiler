@@ -12,9 +12,13 @@ class LocalVar(Pure):
     LocalVars do not get initialized like global vars. They are set when a value is assigned to them.
     """
 
-    def __init__(self, name: str, value_type: ValueType, hybrid_owner: Hybrid | None = None):
+    def __init__(
+        self, name: str, value_type: ValueType, hybrid_owner: Hybrid | None = None
+    ):
         if value_type and value_type.group & VTGroup.HYBRID_LVAR and not hybrid_owner:
-            raise ValueError("If this local var is a return value of a hybrid, the hybrid must be given as reference.")
+            raise ValueError(
+                "If this local var is a return value of a hybrid, the hybrid must be given as reference."
+            )
         self.hybrid_owner = hybrid_owner
         Pure.__init__(self, name, PureType.LOCAL, value_type)
 
