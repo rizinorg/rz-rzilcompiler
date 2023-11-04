@@ -534,7 +534,7 @@ class RZILTransformer(Transformer):
         then_p = items[1]
         else_p = items[2]
 
-        if then_p.value_type.group & VTGroup.HYBRID_LVAR and isinstance(then_p.hybrid_owner, GCCStmtDeclExpr):
+        if then_p.value_type.group & VTGroup.HYBRID_LVAR and hasattr(then_p, "hybrid_owner") and isinstance(then_p.hybrid_owner, GCCStmtDeclExpr):
             # The if/elif cases mean that the then/else expression are produced by an
             # GCC-stmt-decl-expression.
             # (See: https://gcc.gnu.org/onlinedocs/gcc-2.95.3/gcc_4.html#SEC62)
@@ -543,7 +543,7 @@ class RZILTransformer(Transformer):
             hybrid = then_p.hybrid_owner
             hybrid: GCCStmtDeclExpr
             hybrid.update_stmt(Branch("branch", cond=items[0], then=hybrid.stmt, otherwise=Empty("")))
-        if else_p.value_type.group & VTGroup.HYBRID_LVAR and isinstance(else_p.hybrid_owner, GCCStmtDeclExpr):
+        if else_p.value_type.group & VTGroup.HYBRID_LVAR and hasattr(else_p, "hybrid_owner") and isinstance(else_p.hybrid_owner, GCCStmtDeclExpr):
             hybrid = else_p.hybrid_owner
             hybrid: GCCStmtDeclExpr
             hybrid.update_stmt(Branch("branch", cond=items[0], then=Empty(""), otherwise=hybrid.stmt))

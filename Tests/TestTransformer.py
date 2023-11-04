@@ -355,6 +355,11 @@ class TestTransforming(unittest.TestCase):
         result = self.compile_behavior(behavior)
         self.assertFalse(isinstance(result, Exception))
 
+    def test_A2_vavgwcr(self):
+        behavior = self.insn_behavior["A2_vavgwcr"][0]
+        result = self.compile_behavior(behavior)
+        self.assertFalse(isinstance(result, Exception))
+
     def test_A2_combinew(self):
         behavior = self.insn_behavior["A2_combinew"][0]
         result = self.compile_behavior(behavior)
