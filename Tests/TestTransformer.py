@@ -892,7 +892,10 @@ class TestTransformerOutput(unittest.TestCase):
         )
 
     def get_new_transformer(self, formatting: CodeFormat = CodeFormat.EXEC_CLASSES):
-        return RZILTransformer(ArchEnum.HEXAGON, code_format=formatting)
+        return RZILTransformer(ArchEnum.HEXAGON,
+                               code_format=formatting,
+                               sub_routines=self.compiler.transformer.sub_routines
+                               )
 
     def compile_behavior(
         self, behavior: str, transformer: RZILTransformer = None
@@ -1317,6 +1320,47 @@ class TestTransformerOutput(unittest.TestCase):
         )
         self.assertTrue(
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
+        )
+
+    def test_set_usr_field(self):
+        behavior = "{ set_usr_field(bundle, HEX_REG_FIELD_USR_OVF, 1); }"
+        output = self.compile_behavior(behavior, self.get_new_transformer())
+        expected = ("""
+            // READ
+
+            // EXEC
+
+            // WRITE
+            RzILOpEffect *set_usr_field_call_2 = hex_set_usr_field(bundle, HEX_REG_FIELD_USR_OVF, CAST(32, IL_FALSE, SN(32, 1)));
+            RzILOpEffect *instruction_sequence = set_usr_field_call_2;
+
+            return instruction_sequence;""".replace("    ", "")
+        )
+        self.assertEqual(
+            expected, output
+        )
+
+    def test_get_usr_field(self):
+        behavior = "{ uint32_t f = get_usr_field(bundle, HEX_REG_FIELD_USR_OVF); }"
+        output = self.compile_behavior(behavior, self.get_new_transformer())
+        expected = ("""
+            // READ
+            // Declare: ut32 f;
+
+            // EXEC
+
+            // WRITE
+            RzILOpEffect *get_usr_field_call_0 = hex_get_usr_field(bundle, HEX_REG_FIELD_USR_OVF);
+            RzILOpEffect *op_ASSIGN_hybrid_tmp_2 = SETL("h_tmp0", UNSIGNED(32, VARL("ret_val")));
+            RzILOpEffect *seq_3 = SEQN(2, get_usr_field_call_0, op_ASSIGN_hybrid_tmp_2);
+            RzILOpEffect *op_ASSIGN_5 = SETL("f", VARL("h_tmp0"));
+            RzILOpEffect *seq_6 = SEQN(2, seq_3, op_ASSIGN_5);
+            RzILOpEffect *instruction_sequence = seq_6;
+
+            return instruction_sequence;""".replace("    ", "")
+        )
+        self.assertEqual(
+            expected, output
         )
 
     def test_reg_read(self):

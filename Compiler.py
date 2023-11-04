@@ -285,13 +285,15 @@ class Compiler:
         ret_type = get_value_type_by_c_type(return_type)
         # Compile the body
         ast_body = self.parser.parse(body)
-        transformed_body = RZILTransformer(
+        transformer = RZILTransformer(
             ArchEnum.HEXAGON,
             sub_routines=self.sub_routines,
             parameters=params,
             return_type=ret_type,
-        ).transform(ast_body)
-        return SubRoutine(name, ret_type, params, transformed_body)
+        )
+        transformer.macros = self.transformer.macros
+        body = transformer.transform(ast_body)
+        return SubRoutine(name, ret_type, params, body)
 
     def compile_c_stmt(self, code: str) -> str:
         """

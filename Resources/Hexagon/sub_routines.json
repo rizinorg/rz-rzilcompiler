@@ -99,6 +99,16 @@
       "return_type": "int32_t",
       "params": ["int32_t a", "int n"],
       "code": "{ int64_t val; if (n == 0) { val = a; } else if ((a & ((1 << (n - 1)) - 1)) == 0) { val = ((((int64_t)((int32_t)(a)))) + (int64_t)(((uint32_t)((1 << n) & a)) >> 1)); } else { val = ((((int64_t)((int32_t)(a)))) + (1 << (n - 1))); } val = val >> n; return (int32_t)val; }"
+    },
+    "set_usr_field": {
+      "return_type": "void",
+      "params": ["HexInsnPktBundle *bundle", "HexRegField field", "uint32_t val"],
+      "code": "{ HEX_REG_ALIAS_USR = (REGFIELD(HEX_RF_WIDTH, field) ? deposit64(HEX_REG_ALIAS_USR, REGFIELD(HEX_RF_OFFSET, field), REGFIELD(HEX_RF_WIDTH, field), val) : HEX_REG_ALIAS_USR); }"
+    },
+    "get_usr_field": {
+      "return_type": "uint32_t",
+      "params": ["HexInsnPktBundle *bundle", "HexRegField field"],
+      "code": "{ return ((REGFIELD(HEX_RF_WIDTH, field)) ? extract64((HEX_REG_ALIAS_USR), (REGFIELD(HEX_RF_OFFSET, field)), (REGFIELD(HEX_RF_WIDTH, field))) : 0LL); }"
     }
   }
 }
