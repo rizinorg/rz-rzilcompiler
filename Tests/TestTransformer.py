@@ -1715,20 +1715,6 @@ class TestTransformerOutput(unittest.TestCase):
         behavior = "{ const uint32_t a; a = 1; }"
         self.assertRaises((ValueError, VisitError), self.compile_behavior, behavior)
 
-    def test_gcc_extensions_stmt_in_expr(self):
-        behavior = ("{ int k = 9;"
-                    "   uint32_t a = (k == 0) ? 1 : ({"
-                    "   int32_t x = 3;"
-                    "   5; "
-                    "}); "
-                    "}")
-        output = self.compile_behavior(behavior)
-        expected = """
-            """.replace(
-            "  ", ""
-        )
-        self.assertEqual(expected, output)
-
     def test_gcc_extensions_stmt_in_expr_order(self):
         behavior = ("{ int k = 9;"
                     "   uint32_t a = (k == 0) ? 1 : ({"
@@ -1752,7 +1738,7 @@ class TestTransformerOutput(unittest.TestCase):
             // x = 0x3;
             RzILOpEffect *op_ASSIGN_8 = SETL("x", SN(32, 3));
 
-            / HYB(gcc_expr_if ((k == 0x0)) {{}} else {x = 0x3}, 0x5);
+            // HYB(gcc_expr_if ((k == 0x0)) {{}} else {x = 0x3}, 0x5);
             RzILOpPure *op_EQ_4 = EQ(VARL("k"), SN(32, 0));
             RzILOpEffect *gcc_expr_10 = BRANCH(op_EQ_4, EMPTY(), op_ASSIGN_8);
 
@@ -1763,7 +1749,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *seq_13 = SEQN(2, gcc_expr_10, op_ASSIGN_hybrid_tmp_12);
 
             // a = ((ut32) ((k == 0x0) ? 0x1 : h_tmp0));
-            RzILOpPure *cond_14 = ITE(op_EQ_4, SN(32, 1), VARL("h_tmp0"));
+            RzILOpPure *cond_14 = ITE(DUP(op_EQ_4), SN(32, 1), VARL("h_tmp0"));
             RzILOpEffect *op_ASSIGN_16 = SETL("a", CAST(32, IL_FALSE, cond_14));
 
             // seq(seq(HYB(gcc_expr_if ((k == 0x0)) {{}} else {x = 0x3}, 0x5);  ...;
@@ -1771,7 +1757,7 @@ class TestTransformerOutput(unittest.TestCase):
 
             RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, seq_17);
             return instruction_sequence;""".replace(
-            "  ", ""
+            "    ", ""
         )
         self.assertEqual(expected, output)
 

@@ -20,9 +20,9 @@ class Branch(Effect):
         :return: RZIL ops to write the pure value.
         """
         if isinstance(self.cond, BooleanOp) or isinstance(self.cond, CompareOp):
-            cond = self.cond.pure_var()
+            cond = self.cond.il_read()
         else:
-            cond = f"NON_ZERO({self.cond.pure_var()})"
+            cond = f"NON_ZERO({self.cond.il_read()})"
         return (
             f"BRANCH({cond}, {self.then.effect_var()}, {self.otherwise.effect_var()})"
         )
