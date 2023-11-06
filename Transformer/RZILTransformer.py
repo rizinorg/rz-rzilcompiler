@@ -866,7 +866,9 @@ class RZILTransformer(Transformer):
         args = items[1:]
         if macro_name not in self.macros:
             raise ValueError(f"Macro {macro_name} is not defined.")
-        return self.add_op(MacroInvocation(macro_name, args, self.macros[macro_name]))
+        macro = self.macros[macro_name]
+        self.cast_arg_list(args, macro.param_types)
+        return self.add_op(MacroInvocation(macro_name, args, macro))
 
     def cast_sub_routine_args(
         self, fcn_name: str, args: list[Pure], predefined_types: list[ValueType] = None
@@ -875,8 +877,13 @@ class RZILTransformer(Transformer):
             param_types = predefined_types
         else:
             param_types = get_fcn_param_types(fcn_name)
+        self.cast_arg_list(args, param_types)
+        return args
+
+    def cast_arg_list(self, args: list, param_types: list[ValueType]) -> None:
         if len(args) != len(param_types):
-            raise NotImplementedError("Not all ops have a type assigned.")
+            raise ValueError(f"Argument and parameter count mismatch:\nargs: {args}\nparams: {param_types}")
+
         for i, (arg, p_type) in enumerate(zip(args, param_types)):
             if not p_type or isinstance(arg, str):
                 # Those sub-routines are not yet implemented properly and
@@ -889,7 +896,6 @@ class RZILTransformer(Transformer):
                 continue
 
             args[i] = self.init_a_cast(p_type, arg, "param_cast")
-        return args
 
     def c_call(self, items):
         self.ext.set_token_meta_data("c_call")
