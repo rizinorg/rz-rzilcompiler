@@ -573,8 +573,8 @@ class RZILTransformer(Transformer):
             assign.set_src(
                 ArithmeticOp(
                     f"op_ADD",
-                    assign.dest,
-                    assign.src,
+                    self.promotion_cast(assign.dest),
+                    self.promotion_cast(assign.src),
                     ArithmeticType.ADD,
                 )
             )
@@ -582,8 +582,8 @@ class RZILTransformer(Transformer):
             assign.set_src(
                 ArithmeticOp(
                     f"op_SUB",
-                    assign.dest,
-                    assign.src,
+                    self.promotion_cast(assign.dest),
+                    self.promotion_cast(assign.src),
                     ArithmeticType.SUB,
                 )
             )
@@ -591,8 +591,8 @@ class RZILTransformer(Transformer):
             assign.set_src(
                 ArithmeticOp(
                     f"op_MUL",
-                    assign.dest,
-                    assign.src,
+                    self.promotion_cast(assign.dest),
+                    self.promotion_cast(assign.src),
                     ArithmeticType.MUL,
                 )
             )
@@ -609,8 +609,8 @@ class RZILTransformer(Transformer):
             assign.set_src(
                 ArithmeticOp(
                     f"op_DIV",
-                    assign.dest,
-                    assign.src,
+                    self.promotion_cast(assign.dest),
+                    self.promotion_cast(assign.src),
                     ArithmeticType.DIV,
                 )
             )
@@ -618,8 +618,8 @@ class RZILTransformer(Transformer):
             assign.set_src(
                 BitOp(
                     f"op_SHIFTR",
-                    assign.dest,
-                    assign.src,
+                    self.promotion_cast(assign.dest),
+                    self.promotion_cast(assign.src),
                     BitOperationType.RSHIFT,
                 )
             )
@@ -627,8 +627,8 @@ class RZILTransformer(Transformer):
             assign.set_src(
                 BitOp(
                     f"op_SHIFTL",
-                    assign.dest,
-                    assign.src,
+                    self.promotion_cast(assign.dest),
+                    self.promotion_cast(assign.src),
                     BitOperationType.LSHIFT,
                 )
             )
