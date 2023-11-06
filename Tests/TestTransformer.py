@@ -892,10 +892,11 @@ class TestTransformerOutput(unittest.TestCase):
         )
 
     def get_new_transformer(self, formatting: CodeFormat = CodeFormat.EXEC_CLASSES):
-        return RZILTransformer(ArchEnum.HEXAGON,
-                               code_format=formatting,
-                               sub_routines=self.compiler.transformer.sub_routines
-                               )
+        return RZILTransformer(
+            ArchEnum.HEXAGON,
+            code_format=formatting,
+            sub_routines=self.compiler.transformer.sub_routines,
+        )
 
     def compile_behavior(
         self, behavior: str, transformer: RZILTransformer = None
@@ -1325,7 +1326,7 @@ class TestTransformerOutput(unittest.TestCase):
     def test_set_usr_field(self):
         behavior = "{ set_usr_field(bundle, HEX_REG_FIELD_USR_OVF, 1); }"
         output = self.compile_behavior(behavior, self.get_new_transformer())
-        expected = ("""
+        expected = """
             // READ
 
             // EXEC
@@ -1334,16 +1335,15 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *set_usr_field_call_2 = hex_set_usr_field(bundle, HEX_REG_FIELD_USR_OVF, CAST(32, IL_FALSE, SN(32, 1)));
             RzILOpEffect *instruction_sequence = set_usr_field_call_2;
 
-            return instruction_sequence;""".replace("    ", "")
+            return instruction_sequence;""".replace(
+            "    ", ""
         )
-        self.assertEqual(
-            expected, output
-        )
+        self.assertEqual(expected, output)
 
     def test_get_usr_field(self):
         behavior = "{ uint32_t f = get_usr_field(bundle, HEX_REG_FIELD_USR_OVF); }"
         output = self.compile_behavior(behavior, self.get_new_transformer())
-        expected = ("""
+        expected = """
             // READ
             // Declare: ut32 f;
 
@@ -1357,11 +1357,10 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *seq_6 = SEQN(2, seq_3, op_ASSIGN_5);
             RzILOpEffect *instruction_sequence = seq_6;
 
-            return instruction_sequence;""".replace("    ", "")
+            return instruction_sequence;""".replace(
+            "    ", ""
         )
-        self.assertEqual(
-            expected, output
-        )
+        self.assertEqual(expected, output)
 
     def test_reg_read(self):
         behavior = "{ RdV = RsV; }"
