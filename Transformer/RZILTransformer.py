@@ -41,6 +41,7 @@ from rzil_compiler.Transformer.ValueType import (
     c11_cast,
     get_value_type_by_c_number,
     VTGroup,
+    promoted_type,
 )
 from rzil_compiler.Transformer.Effects.Assignment import Assignment, AssignmentType
 from rzil_compiler.Transformer.Pures.ArithmeticOp import ArithmeticOp, ArithmeticType
@@ -709,6 +710,8 @@ class RZILTransformer(Transformer):
         name = f"op_{op_type.name}"
         if op_type != ArithmeticType.MOD:
             # Modular operations don't need matching types.
+            a = self.promotion_cast(a)
+            b = self.promotion_cast(b)
             a, b = self.cast_operands(a=a, b=b, immutable_a=False)
         return self.add_op(ArithmeticOp(name, a, b, op_type))
 
@@ -724,6 +727,8 @@ class RZILTransformer(Transformer):
         name = f"op_{op_type.name}"
         if op_type != ArithmeticType.MOD:
             # Modular operations don't need matching types.
+            a = self.promotion_cast(a)
+            b = self.promotion_cast(b)
             a, b = self.cast_operands(a=a, b=b, immutable_a=False)
         v = ArithmeticOp(name, a, b, op_type)
         return self.add_op(v)
@@ -822,7 +827,7 @@ class RZILTransformer(Transformer):
 
         if len(items) < 3:
             # Single operand bit operation e.g. ~
-            a = items[1]
+            a = self.promotion_cast(items[1])
             name = f"op_{op_type.name}"
             v = BitOp(name, a, None, op_type)
             return self.add_op(v)
@@ -832,6 +837,8 @@ class RZILTransformer(Transformer):
         if (a and b) and not (
             op_type == BitOperationType.RSHIFT or op_type == BitOperationType.LSHIFT
         ):
+            a = self.promotion_cast(a)
+            b = self.promotion_cast(b)
             a, b = self.cast_operands(a=a, b=b, immutable_a=False)
         v = BitOp(name, a, b, op_type)
         return self.add_op(v)
@@ -882,7 +889,9 @@ class RZILTransformer(Transformer):
 
     def cast_arg_list(self, args: list, param_types: list[ValueType]) -> None:
         if len(args) != len(param_types):
-            raise ValueError(f"Argument and parameter count mismatch:\nargs: {args}\nparams: {param_types}")
+            raise ValueError(
+                f"Argument and parameter count mismatch:\nargs: {args}\nparams: {param_types}"
+            )
 
         for i, (arg, p_type) in enumerate(zip(args, param_types)):
             if not p_type or isinstance(arg, str):
@@ -1090,14 +1099,14 @@ class RZILTransformer(Transformer):
         match operation:
             case "~":
                 result = ~val_a
-                a_type = a.value_type
+                a_type = promoted_type(a.value_type)
             case "-":
                 result = -val_a
-                a_type = a.value_type
+                a_type = promoted_type(a.value_type)
                 a_type.signed = True
             case "+":
                 result = +val_a
-                a_type = a.value_type
+                a_type = promoted_type(a.value_type)
             case _:
                 return None
 
@@ -1196,7 +1205,7 @@ class RZILTransformer(Transformer):
         Operand are names in the order: a, b, c, ...
         """
         if "a" not in ops and "b" not in ops:
-            raise NotImplementedError('At least operand "a" and "b" must e given.')
+            raise NotImplementedError('At least operand "a" and "b" must be given.')
         a = ops["a"]
         b = ops["b"]
         if not a.value_type and not b.value_type:
@@ -1228,3 +1237,13 @@ class RZILTransformer(Transformer):
             b = self.init_a_cast(casted_b, b)
 
         return a, b
+
+    def promotion_cast(self, pure: Pure) -> Pure:
+        """Checks the type of the given Pure if it needs to be promoted to (unsigned) int.
+        If so this returns a cast of the Pure to the given promoted type.
+        Otherwise, it returns the Pure given.
+        """
+        p_type = promoted_type(pure.value_type)
+        if p_type != pure.value_type:
+            return self.init_a_cast(p_type, pure)
+        return pure
