@@ -52,8 +52,6 @@ class Assignment(Effect):
         self.src = src_op
 
     def set_dest(self, dest_op: Pure) -> None:
-        if dest_op.value_type.group & VTGroup.CONST:
-            raise ValueError(f"Can not write to the value {dest_op} declared as const.")
         self.effect_ops.remove(self.dest)
         self.effect_ops.append(dest_op)
         self.dest = dest_op
