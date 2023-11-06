@@ -271,14 +271,12 @@ def c11_cast(a: ValueType, b: ValueType) -> tuple[ValueType, ValueType]:
 
 def promoted_type(pure_type: ValueType) -> ValueType:
     """Returns for a given type the promoted type.
-    For anything smaller of 32bit wide types this is int or unsigned int (32bit).
+    Currently, this means: For anything smaller of 32bit wide types this is signed int (32bit).
     Otherwise, the given type.
     """
     if pure_type.bit_width >= 32:
         return pure_type
-    if pure_type.signed:
-        return ValueType(True, 32)
-    return ValueType(False, 32)
+    return ValueType(True, 32)
 
 
 def get_value_type_from_reg_type(token_list: list) -> ValueType:
