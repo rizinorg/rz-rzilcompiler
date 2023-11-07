@@ -70,6 +70,9 @@ class Register(GlobalVar):
         var = GlobalVar.pure_var(self)
         return var.replace(":", "_")
 
+    def get_reg_read_code(self) -> str:
+        return f"READ_REG(pkt, {self.get_op_var()}, {str(self.is_new).lower()})"
+
     def il_init_var(self):
         if self.get_name() == "pc":
             return "RzILOpPure *pc = U32(pkt->pkt_addr);"
@@ -79,7 +82,12 @@ class Register(GlobalVar):
         else:
             init = self.il_isa_to_assoc_name() + "\n"
 
-        init += f"RzILOpPure *{self.pure_var()} = READ_REG(pkt, {self.get_op_var()}, {str(self.is_new).lower()});"
+        if self.isa_id == "x":
+            # Rx is always read newly. Since we read the _tmp reg
+            # after it was written once.
+            return init
+
+        init += f"RzILOpPure *{self.pure_var()} = {self.get_reg_read_code()};"
         return init
 
     def il_isa_to_assoc_name(self) -> str:
@@ -135,6 +143,9 @@ class Register(GlobalVar):
         # Examples: a2_svaddh, a4_vcmpbgt
         if self.access is RegisterAccessType.W or self.access is RegisterAccessType.PW:
             return f"READ_REG(pkt, {self.get_op_var()}, true)"
+        if self.isa_id == "x":
+            # Fresh reads for Rx registers, since their value changes.
+            return self.get_reg_read_code()
         if self.access == RegisterAccessType.UNKNOWN:
             self.access = RegisterAccessType.R
         return GlobalVar.il_read(self).replace(":", "_")
