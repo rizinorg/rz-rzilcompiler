@@ -774,6 +774,8 @@ class RZILTransformer(Transformer):
 
     def sub_routine(self, items):
         routine_name = items[0]
+        if routine_name == "fatal":
+            return Empty("fatal")
         if routine_name not in self.sub_routines:
             # Handle it in legacy c_call handler.
             return self.c_call(items)

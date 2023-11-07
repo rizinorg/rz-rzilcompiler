@@ -399,6 +399,7 @@ jump_stmt: jump
     | imm "iV"
     | number
     | identifier
+    | STRING_LITERAL
 
 identifier: IDENTIFIER
 
@@ -498,7 +499,7 @@ NORETURN: "_Noreturn"
 STATIC_ASSERT: "_Static_assert"
 THREAD_LOCAL: "_Thread_local"
 FUNC_NAME: "__func__"
-STRING_LITERAL: IDENTIFIER
+STRING_LITERAL: "\"" /.*/ "\""
 
 ELLIPSIS: "..."
 RIGHT_ASSIGN: ">>="
