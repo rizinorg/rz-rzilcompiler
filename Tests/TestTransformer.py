@@ -1470,6 +1470,24 @@ class TestTransformerOutput(unittest.TestCase):
         )
         self.assertEqual(expected, output)
 
+    def test_reg_gp(self):
+        behavior = "{ HEX_REG_ALIAS_GP = 0; }"
+        output = self.compile_behavior(behavior)
+        expected = """
+        // READ
+        const HexOp gp_op = ALIAS2OP(HEX_REG_ALIAS_GP, false);
+
+        // EXEC
+
+        // WRITE
+        RzILOpEffect *op_ASSIGN_3 = WRITE_REG(bundle, &gp_op, CAST(32, IL_FALSE, SN(32, 0)));
+        RzILOpEffect *instruction_sequence = op_ASSIGN_3;
+
+        return instruction_sequence;""".replace(
+            "  ", ""
+        )
+        self.assertEqual(expected, output)
+
     def test_for_loop(self):
         behavior = "{ for (int i = 0; i < 2; i++) { __NOP; }; }"
         output = self.compile_behavior(behavior, self.get_new_transformer())

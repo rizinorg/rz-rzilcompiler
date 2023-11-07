@@ -170,8 +170,6 @@
 #define fREAD_SA0 (READ_REG(HEX_REG_SA0))
 #define fREAD_SA1 (READ_REG(HEX_REG_SA1))
 #define fREAD_FP() (READ_REG(HEX_REG_FP))
-#define fREAD_GP()    (insn->extension_valid ? 0 : env->gpr[HEX_REG_GP])
-#define fREAD_GP() (env->gpr[HEX_REG_GP])
 #define fREAD_PC() (PC)
 #define fREAD_P0() READ_PREG(0)
 #define fCHECK_PCALIGN(A)
@@ -180,7 +178,6 @@
 #define fJUMPR(REGNO, TARGET, TYPE) fBRANCH(TARGET, COF_TYPE_JUMPR)
 #define fHINTJR(TARGET) { /* Not modelled in qemu */}
 #define fSET_OVERFLOW() SET_USR_FIELD(USR_OVF, 1)
-#define fSET_LPCFG(VAL) SET_USR_FIELD(USR_LPCFG, (VAL))
 #define fGET_LPCFG (GET_USR_FIELD(USR_LPCFG))
 #define fPART1(WORK) __COMPOUND_PART1__{ WORK; }__COMPOUND_PART1__
 #define fCAST4u(A) ((uint32_t)(A))
