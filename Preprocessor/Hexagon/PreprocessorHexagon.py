@@ -103,9 +103,14 @@ class PreprocessorHexagon:
 
         # Patch
         patched = []
+        succ_patched = dict()
         for macro in macros:
             m_name = re.search(r"^#define\s+([\w_]*).*", macro).group(1)
-            if m_name in patches.keys():
+            if m_name in succ_patched:
+                # Patched macro already added. Continue.
+                continue
+            elif m_name in patches.keys():
+                succ_patched[m_name] = patches[m_name]
                 patched.append(patches.pop(m_name))
             else:
                 patched.append(macro)

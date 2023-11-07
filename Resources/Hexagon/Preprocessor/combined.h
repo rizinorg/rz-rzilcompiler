@@ -108,7 +108,7 @@
 #define PCALIGN_MASK (PCALIGN - 1)
 #define GET_FIELD(FIELD, REGIN)     fEXTRACTU_BITS(REGIN, REGFIELD(RF_WIDTH, HEX_REG_FIELD_##FIELD),                    REGFIELD(RF_OFFSET, HEX_REG_FIELD_##FIELD))
 #define GET_USR_FIELD(FIELD) get_usr_field(bundle, HEX_REG_FIELD_##FIELD)
-#define SET_USR_FIELD(FIELD, VAL) set_usr_field(bundle, HEX_REG_FIELD_##FIELD, (VAL))
+#define SET_USR_FIELD(FIELD, VAL) set_usr_field(bundle, HEX_REG_FIELD_USR_##FIELD, (VAL))
 #define MEM_LOAD1s(VA) (mem_load_s8(VA))
 #define MEM_LOAD1u(VA) (mem_load_u8(VA))
 #define MEM_LOAD2s(VA) (mem_load_s16(VA))
@@ -177,7 +177,7 @@
 #define fBRANCH(LOC, TYPE)          fWRITE_NPC(LOC)
 #define fJUMPR(REGNO, TARGET, TYPE) fBRANCH(TARGET, COF_TYPE_JUMPR)
 #define fHINTJR(TARGET) { /* Not modelled in qemu */}
-#define fSET_OVERFLOW() SET_USR_FIELD(USR_OVF, 1)
+#define fSET_OVERFLOW() SET_USR_FIELD(OVF, 1)
 #define fGET_LPCFG (GET_USR_FIELD(USR_LPCFG))
 #define fPART1(WORK) __COMPOUND_PART1__{ WORK; }__COMPOUND_PART1__
 #define fCAST4u(A) ((uint32_t)(A))
