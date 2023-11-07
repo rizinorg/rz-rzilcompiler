@@ -377,30 +377,7 @@ class RZILTransformer(Transformer):
         if data.value_type == val_type:
             return data
 
-        if not isinstance(data, Cast):
-            return self.init_a_cast(val_type, data)
-
-        # Duplicate casts can be reduced to a single one.
-        # We check this here
-        if data.value_type.signed != val_type.signed:
-            # Always cast if signs mismatch.
-            return self.init_a_cast(val_type, data)
-
-        cast_i = data
-        # Skip consecutive casts of same type
-        while (
-            isinstance(cast_i, Cast)
-            and val_type.signed == cast_i.value_type.signed
-            and (
-                (val_type >= cast_i.value_type >= cast_i.get_ops()[0].value_type)
-                or (val_type <= cast_i.value_type <= cast_i.get_ops()[0].value_type)
-            )
-        ):
-            # Drop cast
-            self.il_ops_holder.rm_op_by_name(cast_i.get_name())
-            cast_i = cast_i.get_ops()[0]
-
-        return self.init_a_cast(val_type, cast_i)
+        return self.init_a_cast(val_type, data)
 
     def number(self, items):
         self.ext.set_token_meta_data("number")
