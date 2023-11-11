@@ -332,6 +332,9 @@ class RZILTransformer(Transformer):
     def jump(self, items):
         self.ext.set_token_meta_data("jump")
         ta: Pure = items[1]
+        if ta.value_type.bit_width != 32:
+            # Enforce 32bit values for now.
+            ta = self.init_a_cast(ValueType(False, 32), ta)
         return self.chk_hybrid_dep(self.add_op(Jump(f"jump_{ta.pure_var()}", ta)))
 
     def nop(self, items):
