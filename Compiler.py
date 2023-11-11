@@ -108,6 +108,7 @@ class Compiler:
     preprocessor = None
     parser = None  # Parser only used for single statement compilations. Instructions are compiled in Parser.py
     transformer = None
+    noped_insns: list[str] = list()
     compiled_insns = dict()
     parsed_insns = dict()  # Abstract syntax trees
     sub_routines: dict[
@@ -125,6 +126,7 @@ class Compiler:
         self.set_extension()
         self.set_il_op_transformer()
         self.set_preprocessor()
+        self.add_noped_insns()
         self.add_macros()
         self.add_sub_routines()
 
@@ -169,6 +171,12 @@ class Compiler:
     def run_preprocessor(self):
         log("Run preprocessor...")
         self.preprocessor.run_preprocess_steps()
+
+    def add_noped_insns(self):
+        log("Add noped instructions...")
+        with open(Conf.get_path(InputFile.HEXAGON_NOPED_INSNS_JSON)) as f:
+            noped = json.load(f)
+        self.noped_insns = noped["noped"]
 
     def add_macros(self):
         log("Add macros...")
@@ -331,8 +339,12 @@ class Compiler:
             pt: Tree
             for pt, text in zip(parsed_insns.asts, parsed_insns.behaviors):
                 self.transformer.reset()
-                rzil.append(self.transformer.transform(pt))
-                meta.append(self.transformer.ext.get_meta())
+                if insn in self.noped_insns:
+                    rzil.append("return NOP();")
+                    meta.append(self.transformer.ext.get_noped_meta())
+                else:
+                    rzil.append(self.transformer.transform(pt))
+                    meta.append(self.transformer.ext.get_meta())
                 trees.append(pt.pretty())
             self.compiled_insns[insn] = RZILInstruction(insn, rzil, meta, trees)
             return self.compiled_insns[insn]

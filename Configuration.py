@@ -35,6 +35,7 @@ class InputFile(StrEnum):
     )
     HEXAGON_SUB_ROUTINES_JSON = "<REPO>/Resources/Hexagon/sub_routines.json"
     HEXAGON_QEMU_RZIL_MACROS_JSON = "<REPO>/Resources/Hexagon/qemu_rzil_macros.json"
+    HEXAGON_NOPED_INSNS_JSON = "<REPO>/Resources/Hexagon/noped_insns.json"
 
 
 def is_submodule() -> bool:
