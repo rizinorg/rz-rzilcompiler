@@ -18,12 +18,12 @@
     "clz32": {
       "return_type": "uint32_t",
       "params": ["uint32_t t"],
-      "code": "{ uint32_t x = t; if (x == 0) { return 32; } uint32_t n = 0; if (x <= 0x0000ffffu) { n += 16; x <<= 16; } if (x <= 0x00ffffffu) { n += 8; x <<= 8; } if (x <= 0x0fffffffu) { n += 4; x <<= 4; } if (x <= 0x3fffffffu) { n += 2; x <<= 2; } if (x <= 0x7fffffffu) { n++; } return n; }"
+      "code": "{ uint32_t x = t; if (x == 0) { return 32; } else { uint32_t n = 0; if (x <= 0x0000ffffu) { n += 16; x <<= 16; } if (x <= 0x00ffffffu) { n += 8; x <<= 8; } if (x <= 0x0fffffffu) { n += 4; x <<= 4; } if (x <= 0x3fffffffu) { n += 2; x <<= 2; } if (x <= 0x7fffffffu) { n++; } return n; } }"
     },
     "clz64": {
       "return_type": "uint64_t",
       "params": ["uint64_t t"],
-      "code": "{ uint64_t x = t; if (x == 0) { return 64; } uint64_t n = 0; if (x <= 0x00000000ffffffffull) { n += 32; x <<= 32; } if (x <= 0x0000ffffffffffffull) { n += 16; x <<= 16; } if (x <= 0x00ffffffffffffffull) { n += 8; x <<= 8; } if (x <= 0x0fffffffffffffffull) { n += 4; x <<= 4; } if (x <= 0x3fffffffffffffffull) { n += 2; x <<= 2; } if (x <= 0x7fffffffffffffffull) { n++; } return n; }"
+      "code": "{ uint64_t x = t; if (x == 0) { return 64; } else { uint64_t n = 0; if (x <= 0x00000000ffffffffull) { n += 32; x <<= 32; } if (x <= 0x0000ffffffffffffull) { n += 16; x <<= 16; } if (x <= 0x00ffffffffffffffull) { n += 8; x <<= 8; } if (x <= 0x0fffffffffffffffull) { n += 4; x <<= 4; } if (x <= 0x3fffffffffffffffull) { n += 2; x <<= 2; } if (x <= 0x7fffffffffffffffull) { n++; } return n; } }"
     },
     "clo32": {
       "return_type": "uint32_t",
