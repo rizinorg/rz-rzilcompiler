@@ -266,8 +266,13 @@ class RZILTransformer(Transformer):
                 ret_val = self.il_ops_holder.get_op_by_name("ret_val")
             else:
                 ret_val = self.add_op(ReturnValue(self.return_type))
+            src: Pure = items[1]
+            if src.value_type.bit_width > 64:
+                raise ValueError("The return value of current sub-routines is currently only 64bit wide.")
+            if src.value_type.bit_width != 64:
+                src = self.init_a_cast(ValueType(False, 64), src)
             return self.add_op(
-                Assignment("set_return_val", AssignmentType.ASSIGN, ret_val, items[1])
+                Assignment("set_return_val", AssignmentType.ASSIGN, ret_val, src)
             )
         return items  # Pass them upwards
 
