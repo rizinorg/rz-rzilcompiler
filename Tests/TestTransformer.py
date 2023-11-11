@@ -300,6 +300,11 @@ class TestTransforming(unittest.TestCase):
         result = self.compile_behavior(behavior)
         self.assertFalse(isinstance(result, Exception))
 
+    def test_R6_release_at_vi(self):
+        behavior = self.insn_behavior["R6_release_at_vi"][0]
+        result = self.compile_behavior(behavior)
+        self.assertFalse(isinstance(result, Exception))
+
     def test_M2_mpyi(self):
         behavior = self.insn_behavior["M2_mpyi"][0]
         result = self.compile_behavior(behavior)

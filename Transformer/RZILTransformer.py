@@ -779,6 +779,8 @@ class RZILTransformer(Transformer):
         routine_name = items[0]
         if routine_name == "fatal":
             return Empty("fatal")
+        elif routine_name == "MEM_STORE0":
+            return self.add_op(NOP("nop"))
         if routine_name not in self.sub_routines:
             # Handle it in legacy c_call handler.
             return self.c_call(items)
