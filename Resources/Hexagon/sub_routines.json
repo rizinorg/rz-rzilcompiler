@@ -18,12 +18,12 @@
     "clz32": {
       "return_type": "uint32_t",
       "params": ["uint32_t t"],
-      "code": "{ uint32_t x = t; if (x == 0) { return 32; } else { uint32_t n = 0; if (x <= 0x0000ffffu) { n += 16; x <<= 16; } if (x <= 0x00ffffffu) { n += 8; x <<= 8; } if (x <= 0x0fffffffu) { n += 4; x <<= 4; } if (x <= 0x3fffffffu) { n += 2; x <<= 2; } if (x <= 0x7fffffffu) { n++; } return n; } }"
+      "code": "{ uint32_t clz32_x = t; if (clz32_x == 0) { return 32; } else { uint32_t clz32_n = 0; if (clz32_x <= 0x0000ffffu) { clz32_n += 16; clz32_x <<= 16; } if (clz32_x <= 0x00ffffffu) { clz32_n += 8; clz32_x <<= 8; } if (clz32_x <= 0x0fffffffu) { clz32_n += 4; clz32_x <<= 4; } if (clz32_x <= 0x3fffffffu) { clz32_n += 2; clz32_x <<= 2; } if (clz32_x <= 0x7fffffffu) { clz32_n++; } return clz32_n; } }"
     },
     "clz64": {
       "return_type": "uint64_t",
       "params": ["uint64_t t"],
-      "code": "{ uint64_t x = t; if (x == 0) { return 64; } else { uint64_t n = 0; if (x <= 0x00000000ffffffffull) { n += 32; x <<= 32; } if (x <= 0x0000ffffffffffffull) { n += 16; x <<= 16; } if (x <= 0x00ffffffffffffffull) { n += 8; x <<= 8; } if (x <= 0x0fffffffffffffffull) { n += 4; x <<= 4; } if (x <= 0x3fffffffffffffffull) { n += 2; x <<= 2; } if (x <= 0x7fffffffffffffffull) { n++; } return n; } }"
+      "code": "{ uint64_t clz64_x = t; if (clz64_x == 0) { return 64; } else { uint64_t clz64_n = 0; if (clz64_x <= 0x00000000ffffffffull) { clz64_n += 32; clz64_x <<= 32; } if (clz64_x <= 0x0000ffffffffffffull) { clz64_n += 16; clz64_x <<= 16; } if (clz64_x <= 0x00ffffffffffffffull) { clz64_n += 8; clz64_x <<= 8; } if (clz64_x <= 0x0fffffffffffffffull) { clz64_n += 4; clz64_x <<= 4; } if (clz64_x <= 0x3fffffffffffffffull) { clz64_n += 2; clz64_x <<= 2; } if (clz64_x <= 0x7fffffffffffffffull) { clz64_n++; } return clz64_n; } }"
     },
     "clo32": {
       "return_type": "uint32_t",
@@ -38,17 +38,17 @@
     "revbit16": {
       "return_type": "uint16_t",
       "params": ["uint16_t t"],
-      "code": "{ uint16_t x = bswap16(t); x = ((x & 0xf0f0) >> 4) | ((x & 0x0f0f) << 4); x = ((x & 0x8888) >> 3) | ((x & 0x4444) >> 1) | ((x & 0x2222) << 1) | ((x & 0x1111) << 3); return x; }"
+      "code": "{ uint16_t revbit16_x = bswap16(t); revbit16_x = ((uint16_t)((revbit16_x & 0xf0f0) >> 4)) | ((uint16_t)((revbit16_x & 0x0f0f) << 4)); revbit16_x = ((uint16_t)((revbit16_x & 0x8888) >> 3)) | ((uint16_t)((revbit16_x & 0x4444) >> 1)) | ((uint16_t)((revbit16_x & 0x2222) << 1)) | ((uint16_t)((revbit16_x & 0x1111) << 3)); return revbit16_x;}"
     },
     "revbit32": {
       "return_type": "uint32_t",
       "params": ["uint32_t t"],
-      "code": "{ uint32_t x = bswap32(t); x = ((x & 0xf0f0f0f0u) >> 4) | ((x & 0x0f0f0f0fu) << 4); x = ((x & 0x88888888u) >> 3) | ((x & 0x44444444u) >> 1) | ((x & 0x22222222u) << 1) | ((x & 0x11111111u) << 3); return x; }"
+      "code": "{ uint32_t revbit32_x = bswap32(t); revbit32_x = ((revbit32_x & 0xf0f0f0f0u) >> 4) | ((revbit32_x & 0x0f0f0f0fu) << 4); revbit32_x = ((revbit32_x & 0x88888888u) >> 3) | ((revbit32_x & 0x44444444u) >> 1) | ((revbit32_x & 0x22222222u) << 1) | ((revbit32_x & 0x11111111u) << 3); return revbit32_x; }"
     },
     "revbit64": {
       "return_type": "uint64_t",
       "params": ["uint64_t t"],
-      "code": "{ uint64_t x = bswap64(t); x = ((x & 0xf0f0f0f0f0f0f0f0ull) >> 4) | ((x & 0x0f0f0f0f0f0f0f0full) << 4); x = ((x & 0x8888888888888888ull) >> 3) | ((x & 0x4444444444444444ull) >> 1) | ((x & 0x2222222222222222ull) << 1) | ((x & 0x1111111111111111ull) << 3); return x; }"
+      "code": "{ uint64_t revbit64_x = bswap64(t); revbit64_x = ((revbit64_x & 0xf0f0f0f0f0f0f0f0ull) >> 4) | ((revbit64_x & 0x0f0f0f0f0f0f0f0full) << 4); revbit64_x = ((revbit64_x & 0x8888888888888888ull) >> 3) | ((revbit64_x & 0x4444444444444444ull) >> 1) | ((revbit64_x & 0x2222222222222222ull) << 1) | ((revbit64_x & 0x1111111111111111ull) << 3); return revbit64_x; }"
     },
     "fbrev": {
       "return_type": "uint32_t",
@@ -58,7 +58,7 @@
     "conv_round": {
       "return_type": "int32_t",
       "params": ["int32_t a", "int n"],
-      "code": "{ int64_t val; if (n == 0) { val = a; } else if ((a & ((1 << (n - 1)) - 1)) == 0) { val = ((((int64_t)((int32_t)(a)))) + (int64_t)(((uint32_t)((1 << n) & a)) >> 1)); } else { val = ((((int64_t)((int32_t)(a)))) + (1 << (n - 1))); } val = val >> n; return (int32_t)val; }"
+      "code": "{ int64_t conv_val; if (n == 0) { conv_val = a; } else if ((a & ((1 << (n - 1)) - 1)) == 0) { conv_val = ((((int64_t)((int32_t)(a)))) + (int64_t)(((uint32_t)((1 << n) & a)) >> 1)); } else { conv_val = ((((int64_t)((int32_t)(a)))) + (1 << (n - 1))); } conv_val = conv_val >> n; return (int32_t)conv_val; }"
     },
     "set_usr_field": {
       "return_type": "void",
