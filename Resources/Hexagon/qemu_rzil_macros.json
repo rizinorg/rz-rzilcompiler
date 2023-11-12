@@ -64,6 +64,11 @@
       "return_type": "uint32_t",
       "params": ["uint32_t value", "int32_t start", "int32_t length"],
       "rzil_macro": "EXTRACT32"
+    },
+    "get_corresponding_CS": {
+      "return_type": "int32_t",
+      "params": ["HexPkt *pkt", "HexOp *Mu"],
+      "rzil_macro": "HEX_GET_CORRESPONDING_CS"
     }
   }
 }

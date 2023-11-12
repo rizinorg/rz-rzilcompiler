@@ -43,6 +43,7 @@ RIZIN_MACRO: "REGFIELD"
     | "bswap16"
     | "bswap32"
     | "bswap64"
+    | "get_corresponding_CS"
 
 macro_expr: FLOAT_MACRO "(" [_argument_expr_list] ")"
     | RIZIN_MACRO "(" [_argument_expr_list] ")"
