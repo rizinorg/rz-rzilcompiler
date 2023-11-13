@@ -31,21 +31,27 @@ class CompareOp(PureExec):
             else "U"
         )
         if self.op_type == CompareOpType.LT:
-            return f"{sl}LT({self.ops[0].il_read()}, {self.ops[1].il_read()})"
+            code = f"{sl}LT({self.ops[0].il_read()}, {self.ops[1].il_read()})"
         elif self.op_type == CompareOpType.GT:
-            return f"{sl}GT({self.ops[0].il_read()}, {self.ops[1].il_read()})"
+            code = f"{sl}GT({self.ops[0].il_read()}, {self.ops[1].il_read()})"
         elif self.op_type == CompareOpType.LE:
-            return f"{sl}LE({self.ops[0].il_read()}, {self.ops[1].il_read()})"
-        if self.op_type == CompareOpType.GE:
-            return f"{sl}GE({self.ops[0].il_read()}, {self.ops[1].il_read()})"
+            code = f"{sl}LE({self.ops[0].il_read()}, {self.ops[1].il_read()})"
+        elif self.op_type == CompareOpType.GE:
+            code = f"{sl}GE({self.ops[0].il_read()}, {self.ops[1].il_read()})"
         elif self.op_type == CompareOpType.EQ:
-            return f"EQ({self.ops[0].il_read()}, {self.ops[1].il_read()})"
+            code = f"EQ({self.ops[0].il_read()}, {self.ops[1].il_read()})"
         elif self.op_type == CompareOpType.NE:
-            return f"INV(EQ({self.ops[0].il_read()}, {self.ops[1].il_read()}))"
+            code = f"INV(EQ({self.ops[0].il_read()}, {self.ops[1].il_read()}))"
         else:
             raise NotImplementedError(
                 f"Compare operation {self.op_type} not implemented."
             )
+        if (
+            self.ops[0].value_type.group & VTGroup.FLOAT
+            and self.ops[1].value_type.group & VTGroup.FLOAT
+        ):
+            return f"F{code}"
+        return code
 
     def __str__(self):
         return f"({self.ops[0]} {self.op_type} {self.ops[1]})"
