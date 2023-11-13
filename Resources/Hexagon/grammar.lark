@@ -4,6 +4,7 @@ fbody: stmt* -> fbody
 ?primary_expr: op
 	| "(" expr ")"
 	| generic_selection
+	| ESCAPED_STRING
 
 MEM_LOAD.10: "mem_load_"
 MEM_STORE.10: "mem_store_"
@@ -347,7 +348,7 @@ type_specifier: VOID
 ?designator: "[" constant_expr "]"
 	| "." IDENTIFIER
 
-?static_assert_declaration: STATIC_ASSERT "(" constant_expr "," STRING_LITERAL ")" ";"
+?static_assert_declaration: STATIC_ASSERT "(" constant_expr "," ESCAPED_STRING ")" ";"
 
 ?stmt: labeled_stmt
 	| jump_stmt
@@ -410,7 +411,6 @@ jump_stmt: jump
     | imm "iV"
     | number
     | identifier
-    | STRING_LITERAL
 
 identifier: IDENTIFIER
 
@@ -510,7 +510,6 @@ NORETURN: "_Noreturn"
 STATIC_ASSERT: "_Static_assert"
 THREAD_LOCAL: "_Thread_local"
 FUNC_NAME: "__func__"
-STRING_LITERAL: "\"" /.*/ "\""
 
 ELLIPSIS: "..."
 RIGHT_ASSIGN: ">>="

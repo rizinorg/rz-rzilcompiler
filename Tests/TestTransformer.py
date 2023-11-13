@@ -1210,6 +1210,17 @@ class TestTransformerOutput(unittest.TestCase):
             expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
         )
 
+    def test_string_as_primary_expression(self):
+        """ Not properly handled string in the grammar, messed up the AST."""
+        behavior = '{int x = 0; if (x == 0) {} else if (x == 1) {} else { if (x == 0) fatal("asd"); } x = 1; if (x == 0) {} else if (x == 1) {} else { if (x == 0) fatal("ASD"); } }'
+        self.compiler.transformer.code_format = CodeFormat.READ_STATEMENTS
+        ast = self.compiler.parser.parse(behavior)
+        print(ast.pretty())
+        output = self.compiler.transformer.transform(ast)
+        self.compiler.transformer.code_format = CodeFormat.EXEC_CLASSES
+        expected = "RzILOpEffect *instruction_sequence = SEQN(4, op_ASSIGN_2, branch_18, op_ASSIGN_20, branch_36);"
+        self.assertTrue(expected in output)
+
     def test_simplify_unary_expr_neg(self):
         # Simplify e.g. ~0x3
         behavior = "{ uint32_t a = ~0x3;  }"
