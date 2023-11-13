@@ -25,11 +25,20 @@ class CompareOp(PureExec):
         )
 
     def il_exec(self):
+        is_float = False
         sl = (
             "S"
             if (self.ops[0].value_type.signed or self.ops[1].value_type.signed)
             else "U"
         )
+
+        if (
+                self.ops[0].value_type.group & VTGroup.FLOAT
+                and self.ops[1].value_type.group & VTGroup.FLOAT
+        ):
+            is_float = True
+            sl = ""
+
         if self.op_type == CompareOpType.LT:
             code = f"{sl}LT({self.ops[0].il_read()}, {self.ops[1].il_read()})"
         elif self.op_type == CompareOpType.GT:
@@ -46,10 +55,7 @@ class CompareOp(PureExec):
             raise NotImplementedError(
                 f"Compare operation {self.op_type} not implemented."
             )
-        if (
-            self.ops[0].value_type.group & VTGroup.FLOAT
-            and self.ops[1].value_type.group & VTGroup.FLOAT
-        ):
+        if is_float:
             return f"F{code}"
         return code
 
