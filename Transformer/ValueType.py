@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023 Rot127 <unisono@quyllur.org>
+# SPDX-License-Identifier: LGPL-3.0-only
+
 import re
 from copy import deepcopy
 from enum import Flag, auto, StrEnum

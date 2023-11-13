@@ -48,3 +48,7 @@ License: GPL-2.0-or-later
 Files: Resources/Hexagon/Preprocessor/macros_patched.h
 Copyright: 2023 Qualcomm Innovation Center, Inc.
 License: GPL-2.0-or-later
+
+Files: Resources/Hexagon/*.json
+Copyright: 2023 Rot127 <unisono@quyllur.org>
+License: LGPL-3.0-only
