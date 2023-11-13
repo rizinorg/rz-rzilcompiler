@@ -127,13 +127,15 @@ class SubRoutineCall(Hybrid):
 
 
 def build_arg_list(arguments: list[Pure], param_types: list[ValueType]) -> str:
+    from rzil_compiler.Transformer.Pures.Macro import MacroInvocation
+
     if len(arguments) != len(param_types):
         raise ValueError("Length of argument and parameter list does not match")
     code = ""
     for i, (arg, ptype) in enumerate(zip(arguments, param_types)):
         if i > 0:
             code += ", "
-        if ptype.group & VTGroup.EXTERNAL:
+        if ptype.group & VTGroup.EXTERNAL or isinstance(arg, MacroInvocation):
             # Parameter passed from outer scope
             if isinstance(arg, Parameter):
                 code += arg.get_name()

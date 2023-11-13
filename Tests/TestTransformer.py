@@ -310,6 +310,11 @@ class TestTransforming(unittest.TestCase):
         result = self.compile_behavior(behavior)
         self.assertFalse(isinstance(result, Exception))
 
+    def test_F2_conv_df2d(self):
+        behavior = self.insn_behavior["F2_conv_df2d"][0]
+        result = self.compile_behavior(behavior)
+        self.assertFalse(isinstance(result, Exception))
+
     def test_M2_mpyi(self):
         behavior = self.insn_behavior["M2_mpyi"][0]
         result = self.compile_behavior(behavior)

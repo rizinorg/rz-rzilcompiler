@@ -36,10 +36,6 @@ class MacroInvocation(PureExec):
         self.inlined: bool = True
         self.macro = macro
         self.rzil_macro = macro.rzil_macro
-        if self.macro.qemu_name == "fFLOAT":
-            arguments = ["RZ_FLOAT_IEEE754_BIN_32"] + arguments
-        elif self.macro.qemu_name == "fDOUBLE":
-            arguments = ["RZ_FLOAT_IEEE754_BIN_64"] + arguments
 
         PureExec.__init__(self, name, arguments, macro.return_type)
 
@@ -53,6 +49,9 @@ class MacroInvocation(PureExec):
 
     def il_init_var(self):
         return ""
+
+    def get_op_var(self):
+        return self.il_exec()
 
     def __str__(self):
         return f"{self.macro.name}({', '.join(str(op) for op in self.ops)})"

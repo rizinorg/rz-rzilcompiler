@@ -35,6 +35,7 @@ class VTGroup(Flag):
             "RzFloatFormat",
             "HexRegFieldProperty",
             "HexRegField",
+            "RzFloatRMode"
         ]
 
 
@@ -195,6 +196,8 @@ def get_value_type_by_c_type(type_id: str) -> ValueType:
         return ValueType(False, 64, VTGroup.EXTERNAL, type_id)
     elif type_id == "void":
         return ValueType(False, 32, VTGroup.VOID)
+    elif type_id == "bool":
+        return ValueType(False, 1, VTGroup.PURE & VTGroup.BOOL)
 
     if type_id.startswith("size"):
         type_match = re.search(r"size(?P<width>\d+)(?P<sign>[us])_t", type_id)
@@ -202,7 +205,7 @@ def get_value_type_by_c_type(type_id: str) -> ValueType:
         type_match = re.search(r"(?P<sign>u?)int(?P<width>\d+)_t", type_id)
     if not type_match or len(type_match.groups()) != 2:
         raise ValueError(
-            f"Types of the form {type_id} can't be parsed yet. If it is an external type,"
+            f"Types of the form '{type_id}' can't be parsed yet. If it is an external type,"
             f"add it to get_external_types()"
         )
 

@@ -29,10 +29,20 @@ mem_store: MEM_STORE SIGN_TYPE BIT_WIDTH "(" _argument_expr_list ")" ";"
 ?generic_association: type_name ":" assignment_expr
 	| DEFAULT ":" assignment_expr
 
-FLOAT_MACRO: "fFLOAT"
-    | "fDOUBLE"
+FLOAT_MACRO: "FLOAT"
+    | "DOUBLE"
     | "fUNFLOAT"
     | "fUNDOUBLE"
+    | "HEX_GET_INSN_RMODE"
+    | "HEX_SETROUND"
+    | "HEX_SINT_TO_D"
+    | "HEX_SINT_TO_F"
+    | "HEX_INT_TO_D"
+    | "HEX_INT_TO_F"
+    | "HEX_F_TO_SINT"
+    | "HEX_D_TO_SINT"
+    | "HEX_F_TO_INT"
+    | "HEX_D_TO_INT"
 
 RIZIN_MACRO: "REGFIELD"
     | "extract32"

@@ -158,11 +158,28 @@
 
 #define fTRAP(TRAPTYPE, IMM) trap(TRAPTYPE, IMM)
 
-// TODO
-// fCARRY_FROM_ADD
-// fEA_BREVR
-// fCARRY_FROM_ADD
-// fFLOAT
-// fSF_RECIP_COMMON
-// fSF_INVSQRT_COMMON
-// fDOUBLE
+#define fFLOAT(src) FLOAT(RZ_FLOAT_IEEE754_BIN_32, src)
+#define fDOUBLE(src) DOUBLE(RZ_FLOAT_IEEE754_BIN_64, src)
+
+#define fFPSETROUND_CHOP() HEX_SETROUND(hi, RZ_FLOAT_RMODE_RTZ)
+#define fFPSETROUND_NEAREST() HEX_SETROUND(hi, RZ_FLOAT_RMODE_RNE)
+
+#define conv_8s_to_df(src) HEX_SINT_TO_D(HEX_GET_INSN_RMODE(hi), src)
+#define conv_8s_to_f(src) HEX_SINT_TO_F(HEX_GET_INSN_RMODE(hi), src)
+#define conv_8u_to_df(src) HEX_INT_TO_D(HEX_GET_INSN_RMODE(hi), src)
+#define conv_8u_to_f(src) HEX_INT_TO_F(HEX_GET_INSN_RMODE(hi), src)
+#define conv_4s_to_df(src) HEX_SINT_TO_D(HEX_GET_INSN_RMODE(hi), src)
+#define conv_4s_to_f(src) HEX_SINT_TO_F(HEX_GET_INSN_RMODE(hi), src)
+#define conv_4u_to_df(src) HEX_INT_TO_D(HEX_GET_INSN_RMODE(hi), src)
+#define conv_4u_to_f(src) HEX_INT_TO_F(HEX_GET_INSN_RMODE(hi), src)
+
+#define conv_df_to_8s(src) HEX_D_TO_SINT(HEX_GET_INSN_RMODE(hi), src)
+#define conv_f_to_8s(src) HEX_F_TO_SINT(HEX_GET_INSN_RMODE(hi), src)
+#define conv_df_to_8u(src) HEX_D_TO_INT(HEX_GET_INSN_RMODE(hi), src)
+#define conv_f_to_8u(src) HEX_F_TO_INT(HEX_GET_INSN_RMODE(hi), src)
+#define conv_df_to_4s(src) HEX_D_TO_SINT(HEX_GET_INSN_RMODE(hi), src)
+#define conv_f_to_4s(src) HEX_F_TO_SINT(HEX_GET_INSN_RMODE(hi), src)
+#define conv_df_to_4u(src) HEX_D_TO_INT(HEX_GET_INSN_RMODE(hi), src)
+#define conv_f_to_4u(src) HEX_F_TO_INT(HEX_GET_INSN_RMODE(hi), src)
+
+#define isinf(f) IS_FINF(f)

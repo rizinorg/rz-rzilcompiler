@@ -1,14 +1,69 @@
 {
   "macros": {
-    "fFLOAT": {
+    "HEX_GET_INSN_RMODE": {
+      "return_type": "RzFloatRMode",
+      "params": ["HexInsn"],
+      "rzil_macro": "HEX_GET_INSN_RMODE"
+    },
+    "HEX_SETROUND": {
+      "return_type": "void",
+      "params": ["HexInsn", "RzFloatRMode"],
+      "rzil_macro": "HEX_SETROUND"
+    },
+    "FLOAT": {
       "return_type": "float",
-      "params": ["RzFloatFormat format", "uint32_t bitvector"],
+      "params": ["RzFloatFormat", "uint32_t"],
       "rzil_macro": "BV2F"
     },
-    "fDOUBLE": {
+    "DOUBLE": {
       "return_type": "double",
-      "params": ["RzFloatFormat format", "uint64_t bitvector"],
+      "params": ["RzFloatFormat", "uint64_t"],
       "rzil_macro": "BV2F"
+    },
+    "HEX_INT_TO_D": {
+      "return_type": "double",
+      "params": ["RzFloatRMode", "uint64_t"],
+      "rzil_macro": "HEX_INT_TO_D"
+    },
+    "HEX_INT_TO_F": {
+      "return_type": "float",
+      "params": ["RzFloatRMode", "uint64_t"],
+      "rzil_macro": "HEX_INT_TO_F"
+    },
+    "HEX_SINT_TO_D": {
+      "return_type": "double",
+      "params": ["RzFloatRMode", "int64_t"],
+      "rzil_macro": "HEX_SINT_TO_D"
+    },
+    "HEX_SINT_TO_F": {
+      "return_type": "float",
+      "params": ["RzFloatRMode", "int64_t"],
+      "rzil_macro": "HEX_SINT_TO_F"
+    },
+    "HEX_D_TO_INT": {
+      "return_type": "uint64_t",
+      "params": ["RzFloatRMode", "double"],
+      "rzil_macro": "HEX_D_TO_INT"
+    },
+    "HEX_F_TO_INT": {
+      "return_type": "uint64_t",
+      "params": ["RzFloatRMode", "float"],
+      "rzil_macro": "HEX_F_TO_INT"
+    },
+    "HEX_D_TO_SINT": {
+      "return_type": "uint64_t",
+      "params": ["RzFloatRMode", "double"],
+      "rzil_macro": "HEX_D_TO_SINT"
+    },
+    "HEX_F_TO_SINT": {
+      "return_type": "uint64_t",
+      "params": ["RzFloatRMode", "float"],
+      "rzil_macro": "HEX_F_TO_SINT"
+    },
+    "IS_INF": {
+      "return_type": "bool",
+      "params": ["float"],
+      "rzil_macro": "IS_INF"
     },
     "fUNFLOAT": {
       "return_type": "uint32_t",
