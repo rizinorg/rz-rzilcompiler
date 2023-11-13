@@ -345,6 +345,13 @@ class RZILTransformer(Transformer):
     def nop(self, items):
         return self.add_op(NOP("nop"))
 
+    def specifier_qualifier_list(self, items):
+        self.ext.set_token_meta_data("specifier_qualifier_list")
+        if items[0] != ValueType(False, 32) or items[1] != ValueType(True, 32):
+            raise ValueError(f"Handling specifier qualifier lists only rudimentary implemented. Can't process {items}")
+        # unsigned int case
+        return ValueType(False, 32)
+
     def type_specifier(self, items):
         self.ext.set_token_meta_data("data_type")
         return self.ext.get_value_type_by_resource_type(items)
