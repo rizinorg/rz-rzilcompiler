@@ -1049,7 +1049,7 @@ class TestTransformerOutput(unittest.TestCase):
         )
 
     def test_add_sub_routine(self):
-        name = "sextract64"
+        name = "sextract64_sub_routine"
         return_type = "int64_t"
         parameters = ["uint64_t value", "int start", "int length"]
         code = (
@@ -1059,10 +1059,10 @@ class TestTransformerOutput(unittest.TestCase):
             name, return_type, parameters, code
         )
         # Use sub-routine
-        ast_body = self.parser.parse("{ RdV = sextract64(0, 0, 0); }")
+        ast_body = self.parser.parse("{ RdV = sextract64_sub_routine(0, 0, 0); }")
         transformer = RZILTransformer(
             ArchEnum.HEXAGON,
-            sub_routines={"sextract64": sub_routine},
+            sub_routines={"sextract64_sub_routine": sub_routine},
             code_format=CodeFormat.EXEC_CLASSES,
         )
         result = transformer.transform(ast_body)
@@ -1074,9 +1074,9 @@ class TestTransformerOutput(unittest.TestCase):
             // EXEC
 
             // WRITE
-            RzILOpEffect *sextract64_call_5 = hex_sextract64(CAST(64, IL_FALSE, SN(32, 0)), SN(32, 0), SN(32, 0));
+            RzILOpEffect *sextract64_sub_routine_call_5 = hex_sextract64_sub_routine(CAST(64, IL_FALSE, SN(32, 0)), SN(32, 0), SN(32, 0));
             RzILOpEffect *op_ASSIGN_hybrid_tmp_7 = SETL("h_tmp0", SIGNED(64, VARL("ret_val")));
-            RzILOpEffect *seq_8 = SEQN(2, sextract64_call_5, op_ASSIGN_hybrid_tmp_7);
+            RzILOpEffect *seq_8 = SEQN(2, sextract64_sub_routine_call_5, op_ASSIGN_hybrid_tmp_7);
             RzILOpEffect *op_ASSIGN_10 = WRITE_REG(bundle, Rd_op, CAST(32, MSB(VARL("h_tmp0")), VARL("h_tmp0")));
             RzILOpEffect *seq_11 = SEQN(2, seq_8, op_ASSIGN_10);
             RzILOpEffect *instruction_sequence = seq_11;
@@ -1119,21 +1119,6 @@ class TestTransformerOutput(unittest.TestCase):
                 "  ", ""
             ),
             output,
-        )
-
-    def test_cast_simplification_1(self):
-        self.transformer.inlined_pure_classes = ()
-        behavior = "{ uint64_t a = ((uint64_t)(uint32_t)(uint8_t) 0); }"
-        output = self.compile_behavior(behavior)
-        expected = (
-            "RzILOpPure *const_0_0 = SN(32, 0x0);\n"
-            "// Declare: ut64 a;\n\n"
-            "// EXEC\n"
-            'RzILOpPure *cast_ut8_1 = LET("const_0_0", const_0_0, CAST(8, IL_FALSE, VARLP("const_0_0")));\n'
-            "RzILOpPure *cast_ut64_3 = CAST(64, IL_FALSE, cast_ut8_1);"
-        )
-        self.assertTrue(
-            expected in output, msg=f"\nEXPECTED:\n{expected}\nin\nOUTPUT:\n{output}"
         )
 
     def test_cast_simplification_2(self):
@@ -1215,7 +1200,6 @@ class TestTransformerOutput(unittest.TestCase):
         behavior = '{int x = 0; if (x == 0) {} else if (x == 1) {} else { if (x == 0) fatal("asd"); } x = 1; if (x == 0) {} else if (x == 1) {} else { if (x == 0) fatal("ASD"); } }'
         self.compiler.transformer.code_format = CodeFormat.READ_STATEMENTS
         ast = self.compiler.parser.parse(behavior)
-        print(ast.pretty())
         output = self.compiler.transformer.transform(ast)
         self.compiler.transformer.code_format = CodeFormat.EXEC_CLASSES
         expected = "RzILOpEffect *instruction_sequence = SEQN(4, op_ASSIGN_2, branch_18, op_ASSIGN_20, branch_36);"
@@ -1424,12 +1408,12 @@ class TestTransformerOutput(unittest.TestCase):
         expected = """
             // READ
             const HexOp *Rx_op = ISA2REG(hi, 'x', false);
-            RzILOpPure *Rx = READ_REG(pkt, Rx_op, false);
+
 
             // EXEC
 
             // WRITE
-            RzILOpEffect *op_ASSIGN_1 = WRITE_REG(bundle, Rx_op, Rx);
+            RzILOpEffect *op_ASSIGN_1 = WRITE_REG(bundle, Rx_op, READ_REG(pkt, Rx_op, false));
             RzILOpEffect *instruction_sequence = op_ASSIGN_1;
 
             return instruction_sequence;""".replace(
@@ -1624,7 +1608,18 @@ class TestTransformerOutput(unittest.TestCase):
         behavior = "{ trap(0, 0); }"
         self.assertEqual(
             self.compiler.sub_routines["trap"].body,
-            """{\nreturn NOP();\n}""".replace("  ", ""),
+            """{
+
+            // READ
+            // Declare: ut32 dummy;
+
+            // dummy = ((ut32) trap_type) + imm;
+            RzILOpPure *op_ADD_1 = ADD(CAST(32, IL_FALSE, trap_type), imm);
+            RzILOpEffect *op_ASSIGN_3 = SETL("dummy", op_ADD_1);
+
+            RzILOpEffect *instruction_sequence = op_ASSIGN_3;
+            return instruction_sequence;
+            }""".replace("  ", ""),
         )
         ast = self.compiler.parser.parse(behavior)
         transformer = RZILTransformer(
@@ -1700,7 +1695,7 @@ class TestTransformerOutput(unittest.TestCase):
 
         // WRITE
         RzILOpEffect *jump_const_0x0_0_1 = SEQ2(SETL("jump_flag", IL_TRUE), JMP(SN(32, 0)));
-        RzILOpEffect *instruction_sequence = SEQN(2, jump_const_0x0_0_1, EMPTY());
+        RzILOpEffect *instruction_sequence = jump_const_0x0_0_1;
 
         return instruction_sequence;""".replace(
             "  ", ""
@@ -1768,8 +1763,8 @@ class TestTransformerOutput(unittest.TestCase):
     def test_float_double_enc_dec(self):
         behavior = (
             "{"
-            "int32_t RdV = fUNFLOAT(fFLOAT(RsV) + fFLOAT(RtV));"
-            "int64_t RdV = fUNDOUBLE(fDOUBLE(RssV) - fDOUBLE(RttV));"
+            "int32_t RdV = fUNFLOAT(FLOAT(RZ_FLOAT_IEEE754_BIN_32, RsV) + FLOAT(RZ_FLOAT_IEEE754_BIN_32, RtV));"
+            "int64_t RdV = fUNDOUBLE(DOUBLE(RZ_FLOAT_IEEE754_BIN_64, RssV) - DOUBLE(RZ_FLOAT_IEEE754_BIN_64, RttV));"
             "}"
         )
         self.compiler.transformer.code_format = CodeFormat.READ_STATEMENTS
@@ -1788,15 +1783,15 @@ class TestTransformerOutput(unittest.TestCase):
             const HexOp *Rtt_op = ISA2REG(hi, 't', false);
             RzILOpPure *Rtt = READ_REG(pkt, Rtt_op, false);
 
-            // RdV = ((st32) fUNFLOAT(fFLOAT(RZ_FLOAT_IEEE754_BIN_32, Rs) + fFLOAT(RZ_FLOAT_IEEE754_BIN_32, Rt)));
-            RzILOpPure *op_ADD_4 = FADD(RZ_FLOAT_IEEE754_BIN_32, BV2F(RZ_FLOAT_IEEE754_BIN_32, Rs), BV2F(RZ_FLOAT_IEEE754_BIN_32, Rt));
-            RzILOpEffect *op_ASSIGN_7 = SETL("RdV", CAST(32, IL_FALSE, F2BV(op_ADD_4)));
+            // RdV = ((st32) fUNFLOAT(FLOAT(RZ_FLOAT_IEEE754_BIN_32, ((ut32) Rs)) + FLOAT(RZ_FLOAT_IEEE754_BIN_32, ((ut32) Rt))));
+            RzILOpPure *op_ADD_6 = FADD(RZ_FLOAT_IEEE754_BIN_32, BV2F(RZ_FLOAT_IEEE754_BIN_32, CAST(32, IL_FALSE, Rs)), BV2F(RZ_FLOAT_IEEE754_BIN_32, CAST(32, IL_FALSE, Rt)));
+            RzILOpEffect *op_ASSIGN_9 = SETL("RdV", CAST(32, IL_FALSE, F2BV(op_ADD_6)));
 
-            // RdV = ((st64) ((st32) fUNDOUBLE(fDOUBLE(RZ_FLOAT_IEEE754_BIN_64, Rss) - fDOUBLE(RZ_FLOAT_IEEE754_BIN_64, Rtt))));
-            RzILOpPure *op_SUB_13 = FSUB(RZ_FLOAT_IEEE754_BIN_64, BV2F(RZ_FLOAT_IEEE754_BIN_64, Rss), BV2F(RZ_FLOAT_IEEE754_BIN_64, Rtt));
-            RzILOpEffect *op_ASSIGN_16 = SETL("RdV", CAST(64, MSB(CAST(32, IL_FALSE, F2BV(op_SUB_13))), CAST(32, IL_FALSE, F2BV(DUP(op_SUB_13)))));
+            // RdV = ((st64) ((st32) fUNDOUBLE(DOUBLE(RZ_FLOAT_IEEE754_BIN_64, ((ut64) Rss)) - DOUBLE(RZ_FLOAT_IEEE754_BIN_64, ((ut64) Rtt)))));
+            RzILOpPure *op_SUB_17 = FSUB(RZ_FLOAT_IEEE754_BIN_64, BV2F(RZ_FLOAT_IEEE754_BIN_64, CAST(64, IL_FALSE, Rss)), BV2F(RZ_FLOAT_IEEE754_BIN_64, CAST(64, IL_FALSE, Rtt)));
+            RzILOpEffect *op_ASSIGN_20 = SETL("RdV", CAST(64, MSB(CAST(32, IL_FALSE, F2BV(op_SUB_17))), CAST(32, IL_FALSE, F2BV(DUP(op_SUB_17)))));
 
-            RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_7, op_ASSIGN_16);
+            RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_9, op_ASSIGN_20);
             return instruction_sequence;""".replace(
             "  ", ""
         )

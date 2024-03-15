@@ -67,57 +67,57 @@
     },
     "fUNFLOAT": {
       "return_type": "uint32_t",
-      "params": ["uint32_t bitvector"],
+      "params": ["float"],
       "rzil_macro": "F2BV"
     },
     "fUNDOUBLE": {
       "return_type": "uint64_t",
-      "params": ["uint64_t bitvector"],
+      "params": ["double"],
       "rzil_macro": "F2BV"
     },
     "REGFIELD": {
       "return_type": "uint32_t",
-      "params": ["HexRegFieldProperty property", "HexRegField field"],
+      "params": ["HexRegFieldProperty", "HexRegField"],
       "rzil_macro": "HEX_REGFIELD"
     },
     "bswap16": {
       "return_type": "uint16_t",
-      "params": ["uint16_t t"],
+      "params": ["uint16_t"],
       "rzil_macro": "BSWAP16"
     },
     "bswap32": {
       "return_type": "uint32_t",
-      "params": ["uint32_t t"],
+      "params": ["uint32_t"],
       "rzil_macro": "BSWAP32"
     },
     "bswap64": {
       "return_type": "uint64_t",
-      "params": ["uint64_t t"],
+      "params": ["uint64_t"],
       "rzil_macro": "BSWAP64"
     },
     "extract64": {
       "return_type": "uint64_t",
-      "params": ["uint64_t value", "int32_t start", "int32_t length"],
+      "params": ["uint64_t", "int32_t", "int32_t"],
       "rzil_macro": "EXTRACT64"
     },
     "sextract64": {
       "return_type": "int64_t",
-      "params": ["uint64_t value", "int32_t start", "int32_t length"],
+      "params": ["uint64_t", "int32_t", "int32_t"],
       "rzil_macro": "SEXTRACT64"
     },
     "deposit64": {
       "return_type": "uint64_t",
-      "params": ["uint64_t value", "int32_t start", "int32_t length", "uint64_t fieldval"],
+      "params": ["uint64_t", "int32_t", "int32_t", "uint64_t"],
       "rzil_macro": "DEPOSIT64"
     },
     "deposit32": {
       "return_type": "uint32_t",
-      "params": ["uint32_t value", "int32_t start", "int32_t length", "uint32_t fieldval"],
+      "params": ["uint32_t", "int32_t", "int32_t", "uint32_t"],
       "rzil_macro": "DEPOSIT32"
     },
     "extract32": {
       "return_type": "uint32_t",
-      "params": ["uint32_t value", "int32_t start", "int32_t length"],
+      "params": ["uint32_t", "int32_t", "int32_t"],
       "rzil_macro": "EXTRACT32"
     },
     "get_corresponding_CS": {

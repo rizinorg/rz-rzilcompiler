@@ -22,28 +22,12 @@ class TestHybrids(unittest.TestCase):
         cls.maxDiff = 1000
         cls.compiler = Compiler(ArchEnum.HEXAGON)
 
-    def test_sub_routines(self):
+    def test_macro(self):
         self.assertEqual(
-            self.compiler.sub_routines["sextract64"].value_type, ValueType(True, 64)
-        )
-        self.assertEqual(
-            self.compiler.sub_routines["sextract64"].routine_name, "sextract64"
+            self.compiler.transformer.macros["sextract64"].return_type, ValueType(True, 64)
         )
         self.assertEqual(
-            self.compiler.sub_routines["sextract64"].il_init(SubRoutineInitType.DECL),
-            "RZ_OWN RzILOpEffect *hex_sextract64("
-            "RZ_BORROW RzILOpPure *value, "
-            "RZ_BORROW RzILOpPure *start, "
-            "RZ_BORROW RzILOpPure *length)",
-        )
-        result = self.compiler.sub_routines["sextract64"].il_init(
-            SubRoutineInitType.DEF
-        )
-        self.assertTrue(
-            re.findall(
-                r'RzILOpEffect \*set_return_val_\d+ = SETL\("ret_val", op_RSHIFT_\d+\);',
-                result,
-            )
+            self.compiler.transformer.macros["sextract64"].name, "sextract64"
         )
 
     def test_sub_routine_2(self):
