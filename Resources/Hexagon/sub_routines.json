@@ -13,7 +13,7 @@
     "trap": {
       "return_type": "void",
       "params": ["int32_t trap_type", "uint32_t imm"],
-      "code": "{ __NOP; }"
+      "code": "{ uint32_t dummy = trap_type + imm; }"
     },
     "clz32": {
       "return_type": "uint32_t",
