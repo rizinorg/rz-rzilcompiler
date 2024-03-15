@@ -10,6 +10,8 @@ class Sequence(Effect):
         eff = list()
         self.effect_ops = list()
         for e in effects:
+            if isinstance(e, Empty):
+                continue
             if isinstance(e, Effect):
                 eff.append(e)
             else:
