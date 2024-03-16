@@ -4,6 +4,7 @@
 import logging
 import re
 import unittest
+from time import sleep
 
 from Compiler import RZILInstruction, Compiler
 from rzil_compiler.Transformer.Hybrids.SubRoutine import SubRoutine, SubRoutineInitType
@@ -920,6 +921,7 @@ class TestTransformerOutput(unittest.TestCase):
         cls.transformer = RZILTransformer(
             ArchEnum.HEXAGON, code_format=CodeFormat.EXEC_CLASSES
         )
+        cls.poor_mans_mutex_set = False
 
     def get_new_transformer(self, formatting: CodeFormat = CodeFormat.EXEC_CLASSES):
         return RZILTransformer(
@@ -933,6 +935,9 @@ class TestTransformerOutput(unittest.TestCase):
     ) -> list[str]:
         try:
             tree = self.parser.parse(behavior)
+            while self.poor_mans_mutex_set:
+                sleep(0.5)
+            self.poor_mans_mutex_set = True
             if transformer:
                 return transformer.transform(tree)
             else:
@@ -952,6 +957,8 @@ class TestTransformerOutput(unittest.TestCase):
             exception = e
         except Exception as e:
             exception = e
+        finally:
+            self.poor_mans_mutex_set = False
         raise exception
 
     def test_empty_stmt_is_empty(self):
@@ -1199,8 +1206,7 @@ class TestTransformerOutput(unittest.TestCase):
         """ Not properly handled string in the grammar, messed up the AST."""
         behavior = '{int x = 0; if (x == 0) {} else if (x == 1) {} else { if (x == 0) fatal("asd"); } x = 1; if (x == 0) {} else if (x == 1) {} else { if (x == 0) fatal("ASD"); } }'
         self.compiler.transformer.code_format = CodeFormat.READ_STATEMENTS
-        ast = self.compiler.parser.parse(behavior)
-        output = self.compiler.transformer.transform(ast)
+        output = self.compile_behavior(behavior)
         self.compiler.transformer.code_format = CodeFormat.EXEC_CLASSES
         expected = "RzILOpEffect *instruction_sequence = SEQN(4, op_ASSIGN_2, branch_18, op_ASSIGN_20, branch_36);"
         self.assertTrue(expected in output)
