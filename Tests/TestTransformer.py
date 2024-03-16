@@ -1203,7 +1203,7 @@ class TestTransformerOutput(unittest.TestCase):
         )
 
     def test_string_as_primary_expression(self):
-        """ Not properly handled string in the grammar, messed up the AST."""
+        """Not properly handled string in the grammar, messed up the AST."""
         behavior = '{int x = 0; if (x == 0) {} else if (x == 1) {} else { if (x == 0) fatal("asd"); } x = 1; if (x == 0) {} else if (x == 1) {} else { if (x == 0) fatal("ASD"); } }'
         self.compiler.transformer.code_format = CodeFormat.READ_STATEMENTS
         output = self.compile_behavior(behavior)
@@ -1625,7 +1625,9 @@ class TestTransformerOutput(unittest.TestCase):
 
             RzILOpEffect *instruction_sequence = op_ASSIGN_3;
             return instruction_sequence;
-            }""".replace("  ", ""),
+            }""".replace(
+                "  ", ""
+            ),
         )
         ast = self.compiler.parser.parse(behavior)
         transformer = RZILTransformer(

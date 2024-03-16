@@ -149,7 +149,11 @@ def build_arg_list(arguments: list[Pure], param_types: list[ValueType]) -> str:
                     f"{arg} as no method to get it's operand holding variable name."
                 )
             code += arg.get_op_var()
-        elif ptype.group & VTGroup.PURE or ptype.group & VTGroup.FLOAT or ptype.group & VTGroup.DOUBLE:
+        elif (
+            ptype.group & VTGroup.PURE
+            or ptype.group & VTGroup.FLOAT
+            or ptype.group & VTGroup.DOUBLE
+        ):
             # Normal pure.
             code += arg.il_read()
         else:

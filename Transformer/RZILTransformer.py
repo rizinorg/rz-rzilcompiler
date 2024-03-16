@@ -268,7 +268,9 @@ class RZILTransformer(Transformer):
                 ret_val = self.add_op(ReturnValue(self.return_type))
             src: Pure = items[1]
             if src.value_type.bit_width > 64:
-                raise ValueError("The return value of current sub-routines is currently only 64bit wide.")
+                raise ValueError(
+                    "The return value of current sub-routines is currently only 64bit wide."
+                )
             if src.value_type.bit_width != 64:
                 src = self.init_a_cast(ValueType(False, 64), src)
             return self.add_op(
@@ -348,7 +350,9 @@ class RZILTransformer(Transformer):
     def specifier_qualifier_list(self, items):
         self.ext.set_token_meta_data("specifier_qualifier_list")
         if items[0] != ValueType(False, 32) or items[1] != ValueType(True, 32):
-            raise ValueError(f"Handling specifier qualifier lists only rudimentary implemented. Can't process {items}")
+            raise ValueError(
+                f"Handling specifier qualifier lists only rudimentary implemented. Can't process {items}"
+            )
         # unsigned int case
         return ValueType(False, 32)
 

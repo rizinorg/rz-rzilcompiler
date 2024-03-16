@@ -38,7 +38,7 @@ class VTGroup(Flag):
             "RzFloatFormat",
             "HexRegFieldProperty",
             "HexRegField",
-            "RzFloatRMode"
+            "RzFloatRMode",
         ]
 
 

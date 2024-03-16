@@ -19,7 +19,8 @@ class TestHybrids(unittest.TestCase):
 
     def test_macro(self):
         self.assertEqual(
-            self.compiler.transformer.macros["sextract64"].return_type, ValueType(True, 64)
+            self.compiler.transformer.macros["sextract64"].return_type,
+            ValueType(True, 64),
         )
         self.assertEqual(
             self.compiler.transformer.macros["sextract64"].name, "sextract64"

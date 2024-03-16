@@ -190,7 +190,7 @@ class HexagonTransformerExtension(TransformerExtension):
         return flags
 
     def get_noped_meta(self):
-        """ Returns the meta information about a noped instruction."""
+        """Returns the meta information about a noped instruction."""
         return ["HEX_IL_INSN_ATTR_NONE"]
 
     def get_val_type_by_fcn(self, fcn_name: str):

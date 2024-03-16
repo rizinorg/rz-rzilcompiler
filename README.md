@@ -29,7 +29,7 @@ pip3 install -e .
 **Run tests**
 
 ```bash
-python -m unittest Tests/TestTransformer.py
+python -m unittest Tests/test_all.py
 ```
 
 ## Code generation

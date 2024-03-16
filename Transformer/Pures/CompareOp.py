@@ -33,8 +33,8 @@ class CompareOp(PureExec):
         )
 
         if (
-                self.ops[0].value_type.group & VTGroup.FLOAT
-                and self.ops[1].value_type.group & VTGroup.FLOAT
+            self.ops[0].value_type.group & VTGroup.FLOAT
+            and self.ops[1].value_type.group & VTGroup.FLOAT
         ):
             is_float = True
             sl = ""
