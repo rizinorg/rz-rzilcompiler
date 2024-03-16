@@ -3,4 +3,4 @@
 
 from setuptools import setup, find_packages
 
-setup(name="rzil_hexagon", version="1.0", packages=find_packages())
+setup(name="rzilcompiler", version="1.0", packages=find_packages())
