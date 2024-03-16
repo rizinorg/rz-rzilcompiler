@@ -17,7 +17,7 @@ class Jump(Effect):
         Effect.__init__(self, name, EffectType.JUMP)
 
     def il_write(self):
-        return f'SEQ2(SETL("jump_flag", IL_TRUE), JMP({self.target.il_read()}))'
+        return f'SEQ2(SETL("jump_flag", IL_TRUE), SETL("jump_target", {self.target.il_read()}))'
 
     def __str__(self):
         return f"jump({self.target})"
