@@ -111,9 +111,9 @@ class Compiler:
     noped_insns: list[str] = list()
     compiled_insns = dict()
     parsed_insns = dict()  # Abstract syntax trees
-    sub_routines: dict[
-        str:SubRoutine
-    ] = dict()  # dict of sub-routines which can be used by other instructions.
+    sub_routines: dict[str:SubRoutine] = (
+        dict()
+    )  # dict of sub-routines which can be used by other instructions.
     ext = None
 
     def __init__(

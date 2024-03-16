@@ -668,9 +668,9 @@ class RZILTransformer(Transformer):
             # Predicates need special handling.
             self.ext.set_token_meta_data(
                 "pred_write",
-                pred_num=dest.get_pred_num()
-                if dname[1] in ["0", "1", "2", "3"]
-                else -1,
+                pred_num=(
+                    dest.get_pred_num() if dname[1] in ["0", "1", "2", "3"] else -1
+                ),
             )
         op_type = AssignmentType(items[1])
         if isinstance(items[2], Assignment):

@@ -9,7 +9,6 @@ from rzilcompiler.Transformer.Pures.CompareOp import CompareOp
 
 
 class ForLoop(Effect):
-
     """
     for (init ; control ; after_cycle) { compound }
     """
