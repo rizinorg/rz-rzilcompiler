@@ -37,7 +37,7 @@ class ArithmeticOp(PureExec):
             self.ops[0].value_type.group & VTGroup.FLOAT
             and self.ops[1].value_type.group & VTGroup.FLOAT
         ):
-            return f"F{code}{FloatFormat.rzil_repr(self.ops[0].value_type.format)}, {self.ops[0].il_read()}, {self.ops[1].il_read()})"
+            return f"F{code}HEX_GET_INSN_RMODE(hi), {self.ops[0].il_read()}, {self.ops[1].il_read()})"
         return f"{code}{self.ops[0].il_read()}, {self.ops[1].il_read()})"
 
     def __str__(self):
