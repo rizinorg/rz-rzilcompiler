@@ -1702,7 +1702,7 @@ class TestTransformerOutput(unittest.TestCase):
         // EXEC
 
         // WRITE
-        RzILOpEffect *jump_const_0x0_0_1 = SEQ2(SETL("jump_flag", IL_TRUE), JMP(SN(32, 0)));
+        RzILOpEffect *jump_const_0x0_0_1 = SEQ2(SETL("jump_flag", IL_TRUE), SETL("jump_target", SN(32, 0)));
         RzILOpEffect *instruction_sequence = jump_const_0x0_0_1;
 
         return instruction_sequence;""".replace(

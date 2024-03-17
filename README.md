@@ -23,13 +23,13 @@ pip3 install -e .
 **Compile all instructions and show exceptions which occurred.**
 
 ```bash
-./Compiler.py -a Hexagon -t
+./rzilcompiler/Compiler.py -a Hexagon -t
 ```
 
 **Run tests**
 
 ```bash
-python -m unittest Tests/test_all.py
+python -m unittest ./rzilcompiler/Tests/test_all.py
 ```
 
 ## Code generation
