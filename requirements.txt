@@ -1,4 +1,4 @@
-lark~=1.1.7
-setuptools~=68.1.2
+lark~=1.1.9
+setuptools~=70.3.0
 pcpp~=1.30
-tqdm~=4.64.0
+tqdm~=4.66.4

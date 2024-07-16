@@ -1,6 +1,6 @@
 name: reuse
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   linter:
