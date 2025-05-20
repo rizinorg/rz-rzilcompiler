@@ -1,0 +1,75 @@
+version = 1
+SPDX-PackageName = "rzil-compiler"
+SPDX-PackageSupplier = "Rot127 <unisono@quyllur.org>"
+
+[[annotations]]
+path = "test_bins/euclid/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 Rot127 <unisono@quyllur.org>"
+SPDX-License-Identifier = "LGPL-3.0-only"
+
+[[annotations]]
+path = "test_bins/qemu/hexagon/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2019-2023 Qualcomm Innovation Center, Inc."
+SPDX-License-Identifier = "GPL-2.0-or-later"
+
+[[annotations]]
+path = "test_bins/qemu/hexagon/README.md"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 Rot127 <unisono@quyllur.org>"
+SPDX-License-Identifier = "LGPL-3.0-only"
+
+[[annotations]]
+path = "**.lark"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 Rot127 <unisono@quyllur.org>"
+SPDX-License-Identifier = "LGPL-3.0-only"
+
+[[annotations]]
+path = ".python-version"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 Rot127 <unisono@quyllur.org>"
+SPDX-License-Identifier = "LGPL-3.0-only"
+
+[[annotations]]
+path = "pyproject.toml"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2025 Rot127 <unisono@quyllur.org>"
+SPDX-License-Identifier = "LGPL-3.0-only"
+
+[[annotations]]
+path = ".gitignore"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 Rot127 <unisono@quyllur.org>"
+SPDX-License-Identifier = "LGPL-3.0-only"
+
+[[annotations]]
+path = ".github/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 Rot127 <unisono@quyllur.org>"
+SPDX-License-Identifier = "LGPL-3.0-only"
+
+[[annotations]]
+path = "Resources/Hexagon/Preprocessor/shortcode**.h"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 Qualcomm Innovation Center, Inc."
+SPDX-License-Identifier = "GPL-2.0-or-later"
+
+[[annotations]]
+path = "Resources/Hexagon/Preprocessor/combined.h"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 Qualcomm Innovation Center, Inc."
+SPDX-License-Identifier = "GPL-2.0-or-later"
+
+[[annotations]]
+path = "Resources/Hexagon/Preprocessor/macros_patched.h"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 Qualcomm Innovation Center, Inc."
+SPDX-License-Identifier = "GPL-2.0-or-later"
+
+[[annotations]]
+path = "Resources/Hexagon/**.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 Rot127 <unisono@quyllur.org>"
+SPDX-License-Identifier = "LGPL-3.0-only"
