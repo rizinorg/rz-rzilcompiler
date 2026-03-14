@@ -11,11 +11,10 @@ C to RzIL Compiler to extend the Rizin Hexagon plugin.
 ## Install
 
 ```bash
-# Python 3.11 required
-python3 -m venv .venv
+uv venv
 source .venv/bin/activate
-pip3 install -r requirements.txt
-pip3 install -e .
+uv sync
+uv pip install -e .
 ```
 
 ## Run

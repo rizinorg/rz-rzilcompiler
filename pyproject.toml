@@ -10,4 +10,5 @@ dependencies = [
   "setuptools~=80.8.0",
   "pcpp~=1.30",
   "tqdm~=4.66.4",
+  "reuse>=6.2.0",
 ]
