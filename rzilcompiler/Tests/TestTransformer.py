@@ -516,9 +516,7 @@ class TestTransforming(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_6 = WRITE_REG(bundle, Rd_op, cond_5);
             RzILOpEffect *instruction_sequence = op_ASSIGN_6;
 
-            return instruction_sequence;""".replace(
-                "  ", ""
-            ),
+            return instruction_sequence;""".replace("  ", ""),
             result,
         )
 
@@ -539,9 +537,7 @@ class TestTransforming(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_7 = SETL("b", CAST(64, IL_FALSE, SN(32, 1)));
             RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, op_ASSIGN_7);
 
-            return instruction_sequence;""".replace(
-                "  ", ""
-            ),
+            return instruction_sequence;""".replace("  ", ""),
             result,
         )
 
@@ -628,9 +624,7 @@ class TestStmtEmitting(unittest.TestCase):
         RzILOpEffect *seq_38 = SEQN(2, op_ASSIGN_2, for_37);
 
         RzILOpEffect *instruction_sequence = seq_38;
-        return instruction_sequence;""".replace(
-                "  ", ""
-            ),
+        return instruction_sequence;""".replace("  ", ""),
             result,
         )
 
@@ -733,9 +727,7 @@ class TestStmtEmitting(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_76 = WRITE_REG(bundle, Pd_op, CAST(8, MSB(cond_74), DUP(cond_74)));
 
             RzILOpEffect *instruction_sequence = SEQN(6, op_ASSIGN_6, op_ASSIGN_17, op_ASSIGN_27, seq_51, op_ASSIGN_AND_59, op_ASSIGN_76);
-            return instruction_sequence;""".replace(
-                "  ", ""
-            ),
+            return instruction_sequence;""".replace("  ", ""),
             result,
         )
 
@@ -781,9 +773,7 @@ class TestStmtEmitting(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_31 = WRITE_REG(bundle, Rdd_op, CAST(64, MSB(cond_29), DUP(cond_29)));
 
             RzILOpEffect *instruction_sequence = SEQN(2, seq_14, op_ASSIGN_31);
-            return instruction_sequence;""".replace(
-                "  ", ""
-            ),
+            return instruction_sequence;""".replace("  ", ""),
             result,
         )
 
@@ -1049,9 +1039,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *seq_6 = SEQN(2, test_routine_call_3, op_ASSIGN_hybrid_tmp_5);
             RzILOpEffect *instruction_sequence = seq_6;
 
-            return instruction_sequence;""".replace(
-                "  ", ""
-            ),
+            return instruction_sequence;""".replace("  ", ""),
             body,
         )
 
@@ -1088,9 +1076,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *seq_11 = SEQN(2, seq_8, op_ASSIGN_10);
             RzILOpEffect *instruction_sequence = seq_11;
 
-            return instruction_sequence;""".replace(
-                "  ", ""
-            ),
+            return instruction_sequence;""".replace("  ", ""),
             result,
         )
 
@@ -1122,9 +1108,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *set_return_val_8 = SETL("ret_val", op_AND_6);
             RzILOpEffect *instruction_sequence = set_return_val_8;
 
-            return instruction_sequence;""".replace(
-                "  ", ""
-            ),
+            return instruction_sequence;""".replace("  ", ""),
             output,
         )
 
@@ -1146,9 +1130,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_4 = SETL("a", cast_ut64_5);
             RzILOpEffect *instruction_sequence = op_ASSIGN_4;
 
-            return instruction_sequence;""".replace(
-            "  ", ""
-        )
+            return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_cast_simplification_compares_conditionals_1(self):
@@ -1168,9 +1150,7 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *seq_9 = SEQN(2, clz32_call_6, op_ASSIGN_hybrid_tmp_8);
 
         RzILOpEffect *instruction_sequence = seq_9;
-        return instruction_sequence;""".replace(
-            "  ", ""
-        )
+        return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_cast_simplification_compares_conditionals_2(self):
@@ -1185,9 +1165,7 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *op_ASSIGN_11 = SETL("a", SN(32, 2));
 
         RzILOpEffect *instruction_sequence = op_ASSIGN_11;
-        return instruction_sequence;""".replace(
-            "  ", ""
-        )
+        return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_simplify_arith_expr(self):
@@ -1225,9 +1203,7 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *op_ASSIGN_3 = SETL("a", CAST(32, IL_FALSE, SN(32, -4)));
         RzILOpEffect *instruction_sequence = op_ASSIGN_3;
 
-        return instruction_sequence;""".replace(
-            "  ", ""
-        )
+        return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_simplify_unary_expr_pm(self):
@@ -1243,9 +1219,7 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *op_ASSIGN_7 = SETL("a", CAST(32, IL_FALSE, SN(32, 3)));
         RzILOpEffect *instruction_sequence = op_ASSIGN_7;
 
-        return instruction_sequence;""".replace(
-            "  ", ""
-        )
+        return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_simplify_unary_expr_minus(self):
@@ -1261,9 +1235,7 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *op_ASSIGN_4 = SETL("a", SN(32, -3));
         RzILOpEffect *instruction_sequence = op_ASSIGN_4;
 
-        return instruction_sequence;""".replace(
-            "  ", ""
-        )
+        return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_inlining_nothing(self):
@@ -1366,9 +1338,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *set_usr_field_call_2 = hex_set_usr_field(bundle, HEX_REG_FIELD_USR_OVF, CAST(32, IL_FALSE, SN(32, 1)));
             RzILOpEffect *instruction_sequence = set_usr_field_call_2;
 
-            return instruction_sequence;""".replace(
-            "    ", ""
-        )
+            return instruction_sequence;""".replace("    ", "")
         self.assertEqual(expected, output)
 
     def test_get_usr_field(self):
@@ -1388,9 +1358,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *seq_6 = SEQN(2, seq_3, op_ASSIGN_5);
             RzILOpEffect *instruction_sequence = seq_6;
 
-            return instruction_sequence;""".replace(
-            "    ", ""
-        )
+            return instruction_sequence;""".replace("    ", "")
         self.assertEqual(expected, output)
 
     def test_reg_read(self):
@@ -1422,9 +1390,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_1 = WRITE_REG(bundle, Rx_op, READ_REG(pkt, Rx_op, false));
             RzILOpEffect *instruction_sequence = op_ASSIGN_1;
 
-            return instruction_sequence;""".replace(
-            "  ", ""
-        )
+            return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_reg_explicit_assign(self):
@@ -1446,9 +1412,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_5 = WRITE_REG(bundle, &R11_10_new_op, C31_30);
             RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, op_ASSIGN_5);
 
-            return instruction_sequence;""".replace(
-            "  ", ""
-        )
+            return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_reg_explicit_new(self):
@@ -1466,9 +1430,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_2 = WRITE_REG(bundle, &P0_op, P0_new);
             RzILOpEffect *instruction_sequence = op_ASSIGN_2;
 
-            return instruction_sequence;""".replace(
-            "  ", ""
-        )
+            return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_reg_alias_new(self):
@@ -1486,9 +1448,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_2 = WRITE_REG(bundle, &lr_op, lr_new);
             RzILOpEffect *instruction_sequence = op_ASSIGN_2;
 
-            return instruction_sequence;""".replace(
-            "  ", ""
-        )
+            return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_reg_gp(self):
@@ -1504,9 +1464,7 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *op_ASSIGN_3 = WRITE_REG(bundle, &gp_op, CAST(32, IL_FALSE, SN(32, 0)));
         RzILOpEffect *instruction_sequence = op_ASSIGN_3;
 
-        return instruction_sequence;""".replace(
-            "  ", ""
-        )
+        return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_for_loop(self):
@@ -1530,9 +1488,7 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *seq_12 = SEQN(2, op_ASSIGN_2, for_11);
         RzILOpEffect *instruction_sequence = seq_12;
 
-        return instruction_sequence;""".replace(
-            "  ", ""
-        )
+        return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_reg_nums(self):
@@ -1579,9 +1535,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_3 = WRITE_REG(bundle, Rd_op, CAST(32, IL_FALSE, pc));
             RzILOpEffect *instruction_sequence = op_ASSIGN_3;
 
-            return instruction_sequence;""".replace(
-            "  ", ""
-        )
+            return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_n_reg(self):
@@ -1605,9 +1559,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *ms_cast_ut32_8_9 = STOREW(VARL("EA"), CAST(32, IL_FALSE, Nt_new));
             RzILOpEffect *instruction_sequence = SEQN(3, imm_assign_0, op_ASSIGN_6, ms_cast_ut32_8_9);
 
-            return instruction_sequence;""".replace(
-            "  ", ""
-        )
+            return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_trap(self):
@@ -1625,9 +1577,7 @@ class TestTransformerOutput(unittest.TestCase):
 
             RzILOpEffect *instruction_sequence = op_ASSIGN_3;
             return instruction_sequence;
-            }""".replace(
-                "  ", ""
-            ),
+            }""".replace("  ", ""),
         )
         ast = self.compiler.parser.parse(behavior)
         transformer = RZILTransformer(
@@ -1646,9 +1596,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *trap_call_3 = hex_trap(SN(32, 0), CAST(32, IL_FALSE, SN(32, 0)));
             RzILOpEffect *instruction_sequence = trap_call_3;
 
-            return instruction_sequence;""".replace(
-            "  ", ""
-        )
+            return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_reg_alias(self):
@@ -1666,9 +1614,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_3 = WRITE_REG(bundle, Rd_op, CAST(32, IL_FALSE, usr));
             RzILOpEffect *instruction_sequence = op_ASSIGN_3;
 
-            return instruction_sequence;""".replace(
-            "    ", ""
-        )
+            return instruction_sequence;""".replace("    ", "")
         self.assertEqual(expected, output)
 
     def test_sign_change_on_reg_write(self):
@@ -1688,9 +1634,7 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *op_ASSIGN_7 = SETL("a", CAST(32, IL_FALSE, READ_REG(pkt, Rd_op, true)));
         RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_5, op_ASSIGN_7);
 
-        return instruction_sequence;""".replace(
-            "  ", ""
-        )
+        return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_reg_jump_flag_setter(self):
@@ -1705,9 +1649,7 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *jump_const_0x0_0_1 = SEQ2(SETL("jump_flag", IL_TRUE), SETL("jump_target", SN(32, 0)));
         RzILOpEffect *instruction_sequence = jump_const_0x0_0_1;
 
-        return instruction_sequence;""".replace(
-            "  ", ""
-        )
+        return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_assign_op(self):
@@ -1725,9 +1667,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_LEFT_5 = SETL("a", op_SHIFTL_4);
             RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, op_ASSIGN_LEFT_5);
 
-            return instruction_sequence;""".replace(
-            "  ", ""
-        )
+            return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_cast_bool(self):
@@ -1746,9 +1686,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_6 = SETL("b", ite_cast_ut32_4);
             RzILOpEffect *instruction_sequence = op_ASSIGN_6;
 
-            return instruction_sequence;""".replace(
-            "  ", ""
-        )
+            return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_unsigned_int(self):
@@ -1763,9 +1701,7 @@ class TestTransformerOutput(unittest.TestCase):
             // WRITE
             RzILOpEffect *instruction_sequence = EMPTY();
 
-            return instruction_sequence;""".replace(
-            "  ", ""
-        )
+            return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_float_double_enc_dec(self):
@@ -1800,9 +1736,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *op_ASSIGN_20 = SETL("RdV", CAST(64, MSB(CAST(32, IL_FALSE, F2BV(op_SUB_17))), CAST(32, IL_FALSE, F2BV(DUP(op_SUB_17)))));
 
             RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_9, op_ASSIGN_20);
-            return instruction_sequence;""".replace(
-            "  ", ""
-        )
+            return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_fusr_fields(self):
@@ -1832,9 +1766,7 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *op_ASSIGN_5 = SETL("b", HEX_REGFIELD(RF_OFFSET, HEX_REG_FIELD_OVR));
 
         RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, op_ASSIGN_5);
-        return instruction_sequence;""".replace(
-            "  ", ""
-        )
+        return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
     def test_const_assign(self):
@@ -1883,9 +1815,7 @@ class TestTransformerOutput(unittest.TestCase):
             RzILOpEffect *seq_17 = SEQN(2, seq_13, op_ASSIGN_16);
 
             RzILOpEffect *instruction_sequence = SEQN(2, op_ASSIGN_2, seq_17);
-            return instruction_sequence;""".replace(
-            "    ", ""
-        )
+            return instruction_sequence;""".replace("    ", "")
         self.assertEqual(expected, output)
 
     def test_gcc_extensions_stmt_in_expr_ignore(self):
@@ -1909,9 +1839,7 @@ class TestTransformerOutput(unittest.TestCase):
         RzILOpEffect *op_ASSIGN_13 = SETL("a", CAST(32, IL_FALSE, SN(32, 1)));
         RzILOpEffect *instruction_sequence = op_ASSIGN_13;
 
-        return instruction_sequence;""".replace(
-            "  ", ""
-        )
+        return instruction_sequence;""".replace("  ", "")
         self.assertEqual(expected, output)
 
 
