@@ -267,7 +267,7 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/05/35/298d9410b3635107ce586725cdfbca4c219c08d77a3511551f5e479a78db/reuse-6.2.0.tar.gz", hash = "sha256:4feae057a2334c9a513e6933cdb9be819d8b822f3b5b435a36138bd218897d23", size = 1615611, upload-time = "2025-10-27T15:25:46.336Z" }
 
 [[package]]
-name = "rzil-compiler"
+name = "rzilcompiler"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

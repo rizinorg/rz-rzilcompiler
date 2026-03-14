@@ -1,7 +1,7 @@
 [project]
-name = "rzil-compiler"
+name = "rzilcompiler"
 version = "0.1.0"
-description = "Add your description here"
+description = "C to RzIL Compiler to extend the Rizin Hexagon plugin."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
