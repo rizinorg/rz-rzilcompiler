@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Rot127 <unisono@quyllur.org>
+# SPDX-FileCopyrightText: 2022 Rot127 <rot127@posteo.com>
 # SPDX-License-Identifier: LGPL-3.0-only
 from rzilcompiler.Transformer.Hybrids.Hybrid import Hybrid, HybridType, HybridSeqOrder
 from rzilcompiler.Transformer.PluginInfo import hexagon_c_call_prefix

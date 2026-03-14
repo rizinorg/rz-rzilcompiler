@@ -1,11 +1,11 @@
 version = 1
 SPDX-PackageName = "rzil-compiler"
-SPDX-PackageSupplier = "Rot127 <unisono@quyllur.org>"
+SPDX-PackageSupplier = "Rot127 <rot127@posteo.com>"
 
 [[annotations]]
 path = "test_bins/euclid/**"
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2023 Rot127 <unisono@quyllur.org>"
+SPDX-FileCopyrightText = "2023 Rot127 <rot127@posteo.com>"
 SPDX-License-Identifier = "LGPL-3.0-only"
 
 [[annotations]]
@@ -17,37 +17,37 @@ SPDX-License-Identifier = "GPL-2.0-or-later"
 [[annotations]]
 path = "test_bins/qemu/hexagon/README.md"
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2023 Rot127 <unisono@quyllur.org>"
+SPDX-FileCopyrightText = "2023 Rot127 <rot127@posteo.com>"
 SPDX-License-Identifier = "LGPL-3.0-only"
 
 [[annotations]]
 path = "**.lark"
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2023 Rot127 <unisono@quyllur.org>"
+SPDX-FileCopyrightText = "2023 Rot127 <rot127@posteo.com>"
 SPDX-License-Identifier = "LGPL-3.0-only"
 
 [[annotations]]
 path = ".python-version"
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2025 Rot127 <unisono@quyllur.org>"
+SPDX-FileCopyrightText = "2025 Rot127 <rot127@posteo.com>"
 SPDX-License-Identifier = "LGPL-3.0-only"
 
 [[annotations]]
 path = "pyproject.toml"
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2025 Rot127 <unisono@quyllur.org>"
+SPDX-FileCopyrightText = "2025 Rot127 <rot127@posteo.com>"
 SPDX-License-Identifier = "LGPL-3.0-only"
 
 [[annotations]]
 path = ".gitignore"
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2023 Rot127 <unisono@quyllur.org>"
+SPDX-FileCopyrightText = "2023 Rot127 <rot127@posteo.com>"
 SPDX-License-Identifier = "LGPL-3.0-only"
 
 [[annotations]]
 path = ".github/**"
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2023 Rot127 <unisono@quyllur.org>"
+SPDX-FileCopyrightText = "2023 Rot127 <rot127@posteo.com>"
 SPDX-License-Identifier = "LGPL-3.0-only"
 
 [[annotations]]
@@ -71,11 +71,11 @@ SPDX-License-Identifier = "GPL-2.0-or-later"
 [[annotations]]
 path = "Resources/Hexagon/**.json"
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2023 Rot127 <unisono@quyllur.org>"
+SPDX-FileCopyrightText = "2023 Rot127 <rot127@posteo.com>"
 SPDX-License-Identifier = "LGPL-3.0-only"
 
 [[annotations]]
 path = "uv.lock"
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2026 Rot127 <unisono@quyllur.org>"
+SPDX-FileCopyrightText = "2026 Rot127 <rot127@posteo.com>"
 SPDX-License-Identifier = "LGPL-3.0-only"
