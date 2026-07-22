@@ -1646,7 +1646,9 @@ class TestTransformerOutput(unittest.TestCase):
         // EXEC
 
         // WRITE
-        RzILOpEffect *jump_const_0x0_0_1 = SEQ2(SETL("jump_flag", IL_TRUE), SETL("jump_target", SN(32, 0)));
+        RzILOpEffect *jump_const_0x0_0_1 = SETL(bundle->jmp_flags[bundle->jmp_cnt], IL_TRUE);
+        bundle->jmp_set_addr[bundle->jmp_cnt] = SETL(bundle->jmp_targets[bundle->jmp_cnt], SN(32, 0));
+        bundle->jmp_cnt++;
         RzILOpEffect *instruction_sequence = jump_const_0x0_0_1;
 
         return instruction_sequence;""".replace("  ", "")
